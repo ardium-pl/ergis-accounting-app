@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@ardium-ui/devkit": "^1.0.2"
+  }
+}
