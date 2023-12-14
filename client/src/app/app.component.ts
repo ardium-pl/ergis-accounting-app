@@ -16,5 +16,5 @@ import { MainPage } from './pages/main/main.page';
     styleUrl: './app.component.scss'
 })
 export class AppComponent {
-    title = 'client';
+    
 }

@@ -1,10 +1,16 @@
-import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { coerceBooleanProperty } from '@ardium-ui/devkit';
 
 @Component({
-  selector: 'app-section',
-  templateUrl: './section.component.html',
-  styleUrl: './section.component.scss'
+    selector: 'app-section',
+    standalone: true,
+    imports: [
+        CommonModule
+    ],
+    encapsulation: ViewEncapsulation.None,
+    templateUrl: './section.component.html',
+    styleUrl: './section.component.scss'
 })
 export class SectionComponent {
 

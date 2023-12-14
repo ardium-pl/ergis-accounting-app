@@ -1,0 +1,62 @@
+.file-drop-zone-wrapper {
+    position: relative;
+    min-width: max-content;
+    margin: 0 auto;
+}
+
+.file-drop-zone-input {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    opacity: 0;
+    appearance: none;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.file-drop-zone {
+    height: 200px;
+    padding: 1rem 1rem 0.4rem 1rem;
+    border-radius: 8px;
+    border: 2px dashed var(--detail);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    transition: background-color 0.15s ease;
+    user-select: none;
+}
+
+span.upload-icon {
+    font-size: 3rem;
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 200,
+        'GRAD' 0,
+        'opsz' 24;
+}
+
+.file-drop-zone-text {
+    font-size: 1rem;
+    padding-bottom: 2rem;
+    display: flex;
+    gap: 0.6ch;
+}
+
+.file-drop-zone-text strong {
+    transition: color 0.15s ease;
+    font-weight: 600;
+    letter-spacing: 0.25px;
+}
+
+.file-drop-zone-input:hover+.file-drop-zone {
+    background: rgba(255, 255, 255, 50%);
+}
+
+.file-drop-zone-input:hover+.file-drop-zone strong {
+    color: var(--main);
+}

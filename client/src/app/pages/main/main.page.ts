@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
-import { SectionModule } from '../../components';
+import { Component, signal } from '@angular/core';
+import { FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
 
 @Component({
     selector: 'app-main',
     standalone: true,
     imports: [
-        SectionModule
+        SectionComponent,
+        FileDropZoneComponent,
+        FileDisplayComponent,
     ],
     templateUrl: './main.page.html',
     styleUrl: './main.page.scss'
