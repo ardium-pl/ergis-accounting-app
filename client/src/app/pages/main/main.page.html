@@ -1,8 +1,15 @@
 <main>
     <h1>Konwerter plików PRN</h1>
     <div class="sections-wrapper">
-        <app-section header="Dodaj plik PRN">
-            
+        <app-section required header="Dodaj plik PRN">
+            <app-file-drop-zone (upload)="onFileUpload($event)"></app-file-drop-zone>
+            <app-file-display [file]="fileStorage.file()"></app-file-display>
+        </app-section>
+        <app-section header="Przejrzyj podgląd pliku">
+            <textarea rows="7" [value]="fileStorage.fileContent()"></textarea>
+        </app-section>
+        <app-section required header="Dodaj dane o kwotach ujemnych">
+            <textarea rows="7" #negatives (input)="onNegativeValuesInput(negatives.value)"></textarea>
         </app-section>
     </div>
 </main>
