@@ -8,8 +8,7 @@
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss",
-          "skipTests": true,
-          "standalone": false
+          "skipTests": true
         },
         "@schematics/angular:directive": { "skipTests": true },
         "@schematics/angular:guard": { "skipTests": true },
