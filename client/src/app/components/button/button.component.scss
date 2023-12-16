@@ -15,7 +15,7 @@ button {
     user-select: none;
     position: relative;
     
-    transition: box-shadow 0.28s var(--timing-fn);
+    transition: box-shadow 0.28s var(--timing-fn), background-color 0.2s ease, opacity 0.2s ease;
     box-shadow: var(--simple-shadow);
     
     &:hover,
@@ -36,11 +36,21 @@ button {
         border-radius: inherit;
         opacity: 0;
         transition: opacity 0.15s ease-in-out;
+        pointer-events: none;
     }
     &:hover .focus-overlay {
         opacity: 8%;
     }
     &:active .focus-overlay {
         opacity: 16%;
+    }
+
+    &[disabled] {
+        opacity: 50%;
+        background-color: #888;
+
+        .focus-overlay {
+            opacity: 0;
+        }
     }
 }

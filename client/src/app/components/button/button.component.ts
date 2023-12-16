@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
+import { coerceBooleanProperty } from '@ardium-ui/devkit';
 
 @Component({
   selector: 'app-button',
@@ -9,4 +10,9 @@ import { Component } from '@angular/core';
 })
 export class ButtonComponent {
 
+    @HostBinding('class.no-pointer')
+    private _disabled: boolean = false;
+    @Input()
+    get disabled(): boolean { return this._disabled; }
+    set disabled(v: any) { this._disabled = coerceBooleanProperty(v); }
 }

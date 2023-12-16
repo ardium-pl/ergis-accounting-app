@@ -1,5 +1,6 @@
-import { Component, computed, effect } from '@angular/core';
-import { FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
+import { Component, computed, signal } from '@angular/core';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ButtonComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
 import { FileStorageService } from '@services';
 
 @Component({
@@ -9,6 +10,8 @@ import { FileStorageService } from '@services';
         SectionComponent,
         FileDropZoneComponent,
         FileDisplayComponent,
+        MatProgressSpinnerModule,
+        ButtonComponent,
     ],
     templateUrl: './main.page.html',
     styleUrl: './main.page.scss'
@@ -43,6 +46,13 @@ export class MainPage {
         formatted = formatted.trim().split('\n').map(v => v.trim()).join('\n');
         return formatted;
     });
+
+    results = true;
+    areResultsLoading = signal(false);
+
+    isButtonDisabled = signal(true);
+
+    gptResponse = signal("");
 
     onNegativeValuesInput(v: string): void {
         

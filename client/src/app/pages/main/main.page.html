@@ -11,5 +11,18 @@
         <app-section required header="Dodaj dane o kwotach ujemnych">
             <textarea rows="7" #negatives (input)="onNegativeValuesInput(negatives.value)"></textarea>
         </app-section>
+        <app-section header="Generuj rozliczenie kursów">
+            <div class="button-container">
+                <app-button [disabled]="isButtonDisabled">Generuj</app-button>
+                @if (areResultsLoading()) {<mat-spinner></mat-spinner>}
+            </div>
+            <pre class="gpt-response-wrapper" [class.no-data]="!gptResponse()">{{ gptResponse() || "\nTutaj pojawią się dane wygenerowane przez AI." }}</pre>
+        </app-section>
+
+        @if (results) {
+        <app-section header="Przejrzyj wyniki">
+
+        </app-section>
+        }
     </div>
 </main>
