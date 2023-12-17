@@ -1,7 +1,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ButtonComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
+import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
 import { FileStorageService } from '@services';
+import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
 @Component({
     selector: 'app-main',
@@ -12,6 +13,7 @@ import { FileStorageService } from '@services';
         FileDisplayComponent,
         MatProgressSpinnerModule,
         ButtonComponent,
+        ErrorBoxComponent,
     ],
     templateUrl: './main.page.html',
     styleUrl: './main.page.scss'
@@ -51,10 +53,22 @@ export class MainPage {
     areResultsLoading = signal(false);
 
     isButtonDisabled = signal(true);
+    errorBoxState = signal<ErrorBoxType>(ErrorBoxType.Info);
+    isWrongFormat = signal(false);
 
     gptResponse = signal("");
 
     onNegativeValuesInput(v: string): void {
-        
+        this.isButtonDisabled.set(v.length == 0);
+    }
+    onNegativeValuesBlur(v: string): void {
+        this.errorBoxState.set(v.length == 0 ? ErrorBoxType.Error : ErrorBoxType.Success);
+        try {
+            JSON.parse(v);
+            this.isWrongFormat.set(false);
+        } catch (err) {
+            this.isWrongFormat.set(true);
+            this.errorBoxState.set(ErrorBoxType.Error);
+        }
     }
 }
