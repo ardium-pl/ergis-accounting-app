@@ -11,6 +11,9 @@ main {
 app-file-display {
     width: 80%;
 }
+app-error-box {
+    width: 100%;
+}
 
 textarea, pre {
     width: 35rem;
@@ -55,7 +58,4 @@ mat-spinner {
     width: 2.25rem !important;
     position: absolute;
     left: calc(100% + 1rem);
-}
-app-error-box {
-    
 }

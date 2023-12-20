@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MainPage } from './pages/main/main.page';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
     selector: 'app-root',
@@ -9,6 +10,7 @@ import { MainPage } from './pages/main/main.page';
     imports: [
         CommonModule,
         RouterOutlet,
+        HttpClientModule,
         //pages
         MainPage,
     ],

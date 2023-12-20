@@ -52,15 +52,11 @@ export class MainPage {
     results = true;
     areResultsLoading = signal(false);
 
-    isButtonDisabled = signal(true);
     errorBoxState = signal<ErrorBoxType>(ErrorBoxType.Info);
     isWrongFormat = signal(false);
 
     gptResponse = signal("");
 
-    onNegativeValuesInput(v: string): void {
-        this.isButtonDisabled.set(v.length == 0);
-    }
     onNegativeValuesBlur(v: string): void {
         this.errorBoxState.set(v.length == 0 ? ErrorBoxType.Error : ErrorBoxType.Success);
         try {
@@ -70,5 +66,9 @@ export class MainPage {
             this.isWrongFormat.set(true);
             this.errorBoxState.set(ErrorBoxType.Error);
         }
+    }
+
+    onGenerateButtonClick(): void {
+        
     }
 }

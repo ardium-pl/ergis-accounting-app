@@ -9,8 +9,7 @@
             <pre class="file-content-wrapper">{{ formattedFile() }}</pre>
         </app-section>
         <app-section required header="Dodaj dane o kwotach ujemnych">
-            <textarea rows="7" #negatives (input)="onNegativeValuesInput(negatives.value)"
-                (blur)="onNegativeValuesBlur(negatives.value)"></textarea>
+            <textarea rows="7" #negatives (blur)="onNegativeValuesBlur(negatives.value)"></textarea>
             <app-error-box [type]="errorBoxState()">
                 @if (errorBoxState() == 'info') {
                     Tutaj wprowadź dane o kwotach ujemnych.
@@ -27,7 +26,7 @@
         </app-section>
         <app-section header="Generuj rozliczenie kursów">
             <div class="button-container">
-                <app-button [disabled]="isButtonDisabled()">Generuj</app-button>
+                <app-button [disabled]="errorBoxState() != 'success'" (click)="onGenerateButtonClick()">Generuj</app-button>
                 @if (areResultsLoading()) {<mat-spinner></mat-spinner>}
             </div>
             <pre class="gpt-response-wrapper"
