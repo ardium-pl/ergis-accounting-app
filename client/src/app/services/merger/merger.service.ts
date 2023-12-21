@@ -29,7 +29,7 @@ export class MergerService {
     readonly processedData = computed(() => {
         try {
             const negatives = JSON.parse(this.negativesData()) as MergerObject[];
-            const positives = this.gptService._jsonResponse();
+            const positives = this.gptService.jsonResponse();
             return this._processData(positives ?? [], negatives);
         } catch (err) {
             return null;

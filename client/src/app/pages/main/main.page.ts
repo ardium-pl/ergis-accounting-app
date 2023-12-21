@@ -1,7 +1,7 @@
 import { HttpClientModule } from '@angular/common/http';
 import { Component, computed, signal, effect } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
+import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, FinalTableComponent, SectionComponent } from '@components';
 import { FileStorageService, FinalMergerObject, GptService, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
@@ -16,6 +16,7 @@ import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
         ButtonComponent,
         ErrorBoxComponent,
         HttpClientModule,
+        FinalTableComponent,
     ],
     templateUrl: './main.page.html',
     styleUrl: './main.page.scss'
@@ -57,16 +58,21 @@ export class MainPage {
 
     results = true;
     readonly areResultsLoading = signal(false);
+    readonly wasNegativesTouched = signal(false);
 
-    readonly errorBoxState = signal<ErrorBoxType>(ErrorBoxType.Info);
+    readonly errorBoxState = computed<ErrorBoxType>(() => {
+        if (!this.wasNegativesTouched()) return ErrorBoxType.Info;
+        if (!this.mergerService.isNegativeDataValid()) {
+            return ErrorBoxType.Error;
+        }
+        if (this.mergerService.negativesData().length == 0) {
+            ErrorBoxType.Error
+        }
+        return ErrorBoxType.Success;
+    });
     readonly isWrongFormat = this.mergerService.isNegativeDataValid;
 
     readonly errorBoxStateEffect = effect(() => {
-        if (!this.mergerService.isNegativeDataValid()) {
-            this.errorBoxState.set(ErrorBoxType.Error);
-            return;
-        }
-        this.errorBoxState.set(this.mergerService.negativesData().length == 0 ? ErrorBoxType.Error : ErrorBoxType.Success);
     });
 
     onNegativeValuesBlur(v: string): void {

@@ -35,7 +35,10 @@
 
         @if (results) {
         <app-section header="Przejrzyj wyniki">
-            
+            <app-final-table [data]="tableData"></app-final-table>
+        </app-section>
+        <app-section header="Skopiuj nieużyte pozycje">
+
         </app-section>
         }
     </div>
