@@ -30,12 +30,12 @@
                 @if (areResultsLoading()) {<mat-spinner></mat-spinner>}
             </div>
             <pre class="gpt-response-wrapper"
-                [class.no-data]="!gptResponse()">{{ gptResponse() || "\nTutaj pojawią się dane wygenerowane przez AI." }}</pre>
+                [class.no-data]="!gptService.response">{{ gptService.response() || "\nTutaj pojawią się dane wygenerowane przez AI." }}</pre>
         </app-section>
 
         @if (results) {
         <app-section header="Przejrzyj wyniki">
-
+            
         </app-section>
         }
     </div>

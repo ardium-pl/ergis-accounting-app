@@ -1,7 +1,8 @@
-import { Component, computed, signal } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
+import { Component, computed, signal, effect } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
-import { FileStorageService } from '@services';
+import { FileStorageService, FinalMergerObject, GptService, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
 @Component({
@@ -14,13 +15,18 @@ import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
         MatProgressSpinnerModule,
         ButtonComponent,
         ErrorBoxComponent,
+        HttpClientModule,
     ],
     templateUrl: './main.page.html',
     styleUrl: './main.page.scss'
 })
 export class MainPage {
 
-    constructor(public fileStorage: FileStorageService) {}
+    constructor(
+        public fileStorage: FileStorageService,
+        public gptService: GptService,
+        private mergerService: MergerService,
+    ) { }
 
     onFileUpload(file: File): void {
         if (file.size > 10 * 1024 * 1024) {
@@ -50,25 +56,30 @@ export class MainPage {
     });
 
     results = true;
-    areResultsLoading = signal(false);
+    readonly areResultsLoading = signal(false);
 
-    errorBoxState = signal<ErrorBoxType>(ErrorBoxType.Info);
-    isWrongFormat = signal(false);
+    readonly errorBoxState = signal<ErrorBoxType>(ErrorBoxType.Info);
+    readonly isWrongFormat = this.mergerService.isNegativeDataValid;
 
-    gptResponse = signal("");
+    readonly errorBoxStateEffect = effect(() => {
+        if (!this.mergerService.isNegativeDataValid()) {
+            this.errorBoxState.set(ErrorBoxType.Error);
+            return;
+        }
+        this.errorBoxState.set(this.mergerService.negativesData().length == 0 ? ErrorBoxType.Error : ErrorBoxType.Success);
+    });
 
     onNegativeValuesBlur(v: string): void {
-        this.errorBoxState.set(v.length == 0 ? ErrorBoxType.Error : ErrorBoxType.Success);
-        try {
-            JSON.parse(v);
-            this.isWrongFormat.set(false);
-        } catch (err) {
-            this.isWrongFormat.set(true);
-            this.errorBoxState.set(ErrorBoxType.Error);
-        }
+        this.mergerService.setNegativesData(v);
     }
 
+    tableData: FinalMergerObject[] | null = [
+        { referencjaKG: 'JL1', currencyCorrection: 200 },
+        { referencjaKG: 'JL2', currencyCorrection: -100 },
+        { referencjaKG: 'JL3', currencyCorrection: 0 },
+        { referencjaKG: 'JL4', currencyCorrection: 50 },
+    ];
     onGenerateButtonClick(): void {
-        
+        this.tableData = this.mergerService.processedData();
     }
 }

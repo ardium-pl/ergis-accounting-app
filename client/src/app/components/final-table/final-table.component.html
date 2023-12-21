@@ -1,0 +1,30 @@
+@if (data) {
+<div class="tables-container">
+    <table class="results-table">
+        <tbody class="results-table-body">
+            @for (row of data; track $index) {
+            <tr class="results-row">
+                <td>{{ row.currencyCorrection > 0 ? 750 : 751 }}</td>
+                <td>75210</td>
+                <td>0d00</td>
+                <td>RK{{ row.referencjaKG }}</td>
+                <td>{{ abs(row.currencyCorrection) }}</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+    <table class="results-table">
+        <tbody class="results-table-body">
+            @for (row of data; track $index) {
+            <tr class="results-row">
+                <td>264</td>
+                <td>26403</td>
+                <td>0000</td>
+                <td>RK{{ row.referencjaKG }}</td>
+                <td>{{ row.currencyCorrection }}</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+}
