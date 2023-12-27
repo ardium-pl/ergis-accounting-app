@@ -16,7 +16,8 @@ app-error-box {
 }
 
 textarea, pre {
-    width: 35rem;
+    min-width: 35rem;
+    width: 100%;
     min-height: 4em;
     height: 10em;
     max-height: 24em;
@@ -29,7 +30,6 @@ textarea, pre {
     overflow: auto;
 }
 textarea {
-    width: 100%;
     min-height: 7.5em;
     border-radius: 8px;
     border-bottom-right-radius: 4px;

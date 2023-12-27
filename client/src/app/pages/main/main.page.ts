@@ -79,19 +79,21 @@ export class MainPage {
         this.mergerService.setNegativesData(v);
     }
 
-    tableData: FinalMergerObject[] | null = [
+    tableData = signal<FinalMergerObject[] | null>([
         { referencjaKG: 'JL1', currencyCorrection: 200 },
         { referencjaKG: 'JL2', currencyCorrection: -100 },
         { referencjaKG: 'JL3', currencyCorrection: 0 },
         { referencjaKG: 'JL4', currencyCorrection: 50 },
-    ];
+    ]);
+    readonly unusedNegatives = signal("");
     onGenerateButtonClick(): void {
         const processedData = this.mergerService.processedData();
         if (!processedData) {
-            this.tableData = null;
+            this.tableData.set(null);
             return;
         }
-        const [tableData, negatives] = processedData;
-        this.tableData = tableData;
+        const [data, negatives] = processedData;
+        this.tableData.set(data);
+        this.unusedNegatives.set(JSON.stringify(negatives));
     }
 }
