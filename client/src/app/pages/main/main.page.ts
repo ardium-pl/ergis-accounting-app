@@ -86,6 +86,12 @@ export class MainPage {
         { referencjaKG: 'JL4', currencyCorrection: 50 },
     ];
     onGenerateButtonClick(): void {
-        this.tableData = this.mergerService.processedData();
+        const processedData = this.mergerService.processedData();
+        if (!processedData) {
+            this.tableData = null;
+            return;
+        }
+        const [tableData, negatives] = processedData;
+        this.tableData = tableData;
     }
 }

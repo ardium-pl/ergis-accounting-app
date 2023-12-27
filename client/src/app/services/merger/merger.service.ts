@@ -18,7 +18,7 @@ export class MergerService {
             return [];
         }
     })
-    
+
     readonly negativesData = computed(() => this._negativesData());
     readonly isNegativeDataValid = computed(() => this._negativesDataJson()?.length > 0);
 
@@ -36,80 +36,65 @@ export class MergerService {
         }
     });
 
-    private _processData(positives: MergerObject[], negatives: MergerObject[]): FinalMergerObject[] {
-        if (negatives.length == 0) return [];
+    private _processData(positives: MergerObject[], negatives: MergerObject[]): [FinalMergerObject[], MergerObject[]] {
+        if (negatives.length == 0) return [[], []];
+        negatives = negatives.map(v => ({ ...v, kwotaWWalucie: -v.kwotaWWalucie, kwotaWZł: -v.kwotaWZł }));
 
         let positiveObject: MergerObject = positives.shift()!;
         let negativeObject: MergerObject = negatives.shift()!;
 
-        let positiveSilo: number = positiveObject?.kwotaWWalucie;
-        let negativeSilo: number = negativeObject.kwotaWWalucie;
-
-        let negativeExchangeRate: number = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
+        let positiveAmount: number = positiveObject?.kwotaWWalucie;
+        let negativeAmount: number = negativeObject.kwotaWWalucie;
 
         if (positives.length == 0) {
-            this._retrieveUnusedNegatives(negativeSilo, negatives, negativeExchangeRate);
-            return [];
+            const negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
+            negatives = this._retrieveUnusedNegatives(negativeAmount, negatives, negativeExchangeRate);
+            return [[], negatives];
         }
 
-        const allCurrencyCorrections = [];
+        const allCurrencyCorrections: FinalMergerObject[] = [];
 
-        while ((positives.length > 0 && negatives.length > 0) || (!isNaN(positiveSilo) && negatives.length > 0)) {
-            negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
+        while ((positives.length > 0 || !isNaN(positiveAmount)) && negatives.length > 0) {
+            const negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
             const positiveExchangeRate = positiveObject.kwotaWZł / positiveObject.kwotaWWalucie;
 
-            const correctionReference = positiveObject.referencjaKG;
-
             let correctionAmount: number;
-            if (positiveSilo > -negativeSilo) {
-                correctionAmount = -negativeSilo;
-                positiveSilo += negativeSilo;
+            if (positiveAmount >= negativeAmount) {
+                correctionAmount = negativeAmount;
+                positiveAmount -= negativeAmount;
 
-                if (negatives.length > 0) {
-                    negativeObject = negatives.shift()!;
-                    negativeSilo = negativeObject.kwotaWWalucie;
-                }
-                else negativeSilo = NaN;
-
-            }
-            else if (positiveSilo < -negativeSilo) {
-                correctionAmount = positiveSilo;
-                negativeSilo += positiveSilo;
-
-                if (positives.length > 0) {
-                    positiveObject = positives.shift()!;
-                    positiveSilo = positiveObject.kwotaWWalucie;
-                }
-                else positiveSilo = NaN;
-
-            }
-            else {
-                correctionAmount = positiveSilo;
-                positiveObject = positives.shift()!;
                 negativeObject = negatives.shift()!;
-                positiveSilo = positiveObject.kwotaWWalucie;
-                negativeSilo = negativeObject.kwotaWWalucie;
+                negativeAmount = negativeObject?.kwotaWWalucie ?? NaN;
             }
-            const currencyCorrection = correctionAmount * (negativeExchangeRate - positiveExchangeRate);
+            if (positiveAmount <= negativeAmount) {
+                correctionAmount ||= positiveAmount;
+                negativeAmount -= positiveAmount;
+
+                positiveObject = positives.shift()!;
+                positiveAmount = positiveObject?.kwotaWWalucie ?? NaN;
+            }
+            const currencyCorrection = correctionAmount! * (negativeExchangeRate - positiveExchangeRate);
 
             allCurrencyCorrections.push({
-                referencjaKG: correctionReference,
+                referencjaKG: positiveObject.referencjaKG,
                 currencyCorrection,
             });
         }
-        this._retrieveUnusedNegatives(negativeSilo, negatives, negativeExchangeRate);
-        return allCurrencyCorrections;
+        const negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
+        negatives = this._retrieveUnusedNegatives(negativeAmount, negatives, negativeExchangeRate);
+        return [allCurrencyCorrections, negatives];
     }
 
-    private _retrieveUnusedNegatives(negativeSilo: number, negativeArray: MergerObject[], negativeExchangeRate: number) {
-        const kwotaWZł = negativeExchangeRate * negativeSilo;
+    private _retrieveUnusedNegatives(negativeAmount: number, negativeArray: MergerObject[], negativeExchangeRate: number) {
+        const kwotaWZł = negativeExchangeRate * negativeAmount;
 
         negativeArray.unshift({
             referencjaKG: "NieUżytyElement",
             naDzien: "NieUżytyElement",
-            kwotaWWalucie: negativeSilo,
+            kwotaWWalucie: negativeAmount,
             kwotaWZł,
             korekta: "Nie"
         });
+        return negativeArray;
     }
 }
