@@ -78,12 +78,7 @@ export class MainPage {
         this.mergerService.setNegativesData(v);
     }
 
-    tableData = signal<FinalMergerObject[] | null>([
-        { referencjaKG: 'JL1', currencyCorrection: 200 },
-        { referencjaKG: 'JL2', currencyCorrection: -100 },
-        { referencjaKG: 'JL3', currencyCorrection: 0 },
-        { referencjaKG: 'JL4', currencyCorrection: 50 },
-    ]);
+    tableData = signal<FinalMergerObject[] | null>(null);
     readonly unusedNegatives = signal("\nWszystkie pozycje zostały wykorzystane!");
     readonly hasAnyUnusedNegatives = signal(false);
     onGenerateButtonClick(): void {
