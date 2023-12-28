@@ -6,10 +6,49 @@
             <app-file-display [file]="fileStorage.file()"></app-file-display>
         </app-section>
         <app-section header="Przejrzyj podgląd pliku">
-            <textarea rows="7" [value]="fileStorage.fileContent()"></textarea>
+            <pre class="file-content-wrapper">{{ formattedFile() }}</pre>
         </app-section>
         <app-section required header="Dodaj dane o kwotach ujemnych">
-            <textarea rows="7" #negatives (input)="onNegativeValuesInput(negatives.value)"></textarea>
+            <textarea rows="7" #negatives (blur)="onNegativeValuesBlur(negatives.value)"></textarea>
+            <app-error-box [type]="errorBoxState()">
+                @if (errorBoxState() == 'info') {
+                Tutaj wprowadź dane o kwotach ujemnych.
+                } @else if (errorBoxState() == 'error') {
+                @if (negatives.value) {
+                Wprowadzone dane są w nieprawidłowym formacie.
+                } @else {
+                Dane o kwotach ujemnych są wymagane!
+                }
+                } @else {
+                Wprowadzone dane są prawidłowe!
+                }
+            </app-error-box>
         </app-section>
+        <app-section header="Generuj rozliczenie kursów">
+            <div class="button-container">
+                <app-button [disabled]="errorBoxState() != 'success'"
+                    (click)="onGenerateButtonClick()">Generuj</app-button>
+                @if (areResultsLoading()) {<mat-spinner></mat-spinner>}
+            </div>
+            <pre class="gpt-response-wrapper"
+                [class.no-data]="!gptService.response()">{{ gptService.response() || "\nTutaj pojawią się dane wygenerowane przez AI." }}</pre>
+        </app-section>
+        @if (results) {
+        <app-section header="Przejrzyj wyniki">
+            <app-final-table [data]="tableData()"></app-final-table>
+        </app-section>
+        <app-section header="Skopiuj nieużyte pozycje">
+            <pre class="unuseds-wrapper" [class.no-data]="!hasAnyUnusedNegatives()">
+            @if (unusedNegatives()) {
+                @if (hasAnyUnusedNegatives()) {
+                <app-icon-button (click)="copyUnusedNegatives()">
+                    <span class="material-symbols-outlined">content_copy</span>
+                </app-icon-button>
+                }
+                <span>{{ unusedNegatives() }}</span>
+            }
+            </pre>
+        </app-section>
+        }
     </div>
 </main>

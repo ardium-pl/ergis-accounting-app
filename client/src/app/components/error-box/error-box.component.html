@@ -1,0 +1,10 @@
+<div class="error-box" [class]="'type-'+type">
+    <span class="material-symbols-outlined">
+        @if (type == "error") { error }
+        @else if (type == "info") { info }
+        @else { check_circle }
+    </span>
+    <div class="content-wrapper">
+        <ng-content></ng-content>
+    </div>
+</div>
