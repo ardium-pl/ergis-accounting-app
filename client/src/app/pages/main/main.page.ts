@@ -63,7 +63,7 @@ export class MainPage {
 
     readonly errorBoxState = computed<ErrorBoxType>(() => {
         if (!this.wasNegativesTouched()) return ErrorBoxType.Info;
-        if (!this.mergerService.isNegativeDataValid()) {
+        if (!this.isWrongFormat()) {
             return ErrorBoxType.Error;
         }
         if (this.mergerService.negativesData().length == 0) {
@@ -73,10 +73,8 @@ export class MainPage {
     });
     readonly isWrongFormat = this.mergerService.isNegativeDataValid;
 
-    readonly errorBoxStateEffect = effect(() => {
-    });
-
     onNegativeValuesBlur(v: string): void {
+        this.wasNegativesTouched.set(true);
         this.mergerService.setNegativesData(v);
     }
 
