@@ -8,6 +8,10 @@ main {
     align-items: center;
 }
 
+.sections-wrapper {
+    max-width: 100%;
+}
+
 app-file-display {
     width: 80%;
 }
@@ -38,8 +42,20 @@ textarea {
     resize: vertical;
     font-family: monospace;
 }
+.unuseds-wrapper {
+    white-space: wrap;
+    text-align: justify;
 
-.gpt-response-wrapper.no-data {
+    >app-icon-button {
+        float: right;
+        margin: 0 0 0 0.625rem;
+    }
+    >span {
+        font: inherit;
+    }
+}
+
+.no-data {
     text-align: center;
     font-family: inherit;
     font-size: 90%;

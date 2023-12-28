@@ -1,5 +1,5 @@
 button {
-    background-color: var(--main);
+    background: transparent;
     cursor: pointer;
     height: 2.25rem;
     width: 2.25rem;
@@ -9,6 +9,9 @@ button {
     font-size: 1rem;
     user-select: none;
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     transition: background-color 0.2s ease, opacity 0.2s ease;
 
@@ -25,10 +28,13 @@ button {
         pointer-events: none;
     }
     &:hover .focus-overlay {
-        opacity: 8%;
+        opacity: 4%;
     }
     &:active .focus-overlay {
-        opacity: 16%;
+        opacity: 12%;
+    }
+    &:active .focus-overlay {
+        opacity: 10%;
     }
 
     &[disabled] {

@@ -1,7 +1,7 @@
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal, effect } from '@angular/core';
+import { Component, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, FinalTableComponent, SectionComponent } from '@components';
+import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, FinalTableComponent, IconButtonComponent, SectionComponent } from '@components';
 import { FileStorageService, FinalMergerObject, GptService, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
@@ -17,6 +17,7 @@ import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
         ErrorBoxComponent,
         HttpClientModule,
         FinalTableComponent,
+        IconButtonComponent,
     ],
     templateUrl: './main.page.html',
     styleUrl: './main.page.scss'
@@ -85,7 +86,8 @@ export class MainPage {
         { referencjaKG: 'JL3', currencyCorrection: 0 },
         { referencjaKG: 'JL4', currencyCorrection: 50 },
     ]);
-    readonly unusedNegatives = signal("");
+    readonly unusedNegatives = signal("\nWszystkie pozycje zostały wykorzystane!");
+    readonly hasAnyUnusedNegatives = signal(false);
     onGenerateButtonClick(): void {
         const processedData = this.mergerService.processedData();
         if (!processedData) {
@@ -94,6 +96,16 @@ export class MainPage {
         }
         const [data, negatives] = processedData;
         this.tableData.set(data);
-        this.unusedNegatives.set(JSON.stringify(negatives));
+        if (negatives.length > 0) {
+            this.hasAnyUnusedNegatives.set(false);
+            this.unusedNegatives.set('\nWszystkie pozycje zostały wykorzystane!');
+        } else {
+            this.hasAnyUnusedNegatives.set(true);
+            this.unusedNegatives.set(JSON.stringify(negatives));
+        }
+    }
+
+    copyUnusedNegatives(): void {
+        navigator.clipboard.writeText(this.unusedNegatives());
     }
 }
