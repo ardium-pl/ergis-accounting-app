@@ -1,15 +1,11 @@
 {
-  "name": "ergis-accounting-app",
-  "version": "0.0.0",
-  "description": "",
-  "author": "",
-  "scripts": {
-    "start": "node src/index.js",
-    "publish": "npm run build && gh-pages --dist server --dest dist --branch release",
-    "build": "cd client && npm run build && cd ../server && npm install"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "gh-pages": "^6.1.1"
-  }
+    "name": "ergis-accounting-app",
+    "version": "0.0.0",
+    "description": "",
+    "author": "",
+    "scripts": {
+        "start": "cd ../server && npm install && node src/index.js",
+        "build": "cd client && npm run build"
+    },
+    "license": "MIT"
 }
