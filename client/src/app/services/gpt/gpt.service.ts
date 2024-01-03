@@ -23,20 +23,21 @@ export class GptService {
         }
     })
 
-    constructor(private http: HttpClient) { }
+    // constructor(private http: HttpClient) { }
 
     fetchGptData(rawData: string): void {
-        this.http.post<GptResponse>(
-            "/send-mfg-data-for-faktoring",
-            rawData
-        ).subscribe({
-            next: v => {
-                this._response.set(v.data);
-            },
-            error: err => {
-                alert('Wystąpił błąd w czasie próby skontaktowania się z serwerem AI. Zgłoś ten błąd administratorom!');
-                console.error(err);
-            },
-        });
+        console.log('%cfetching gpt data', "color:lime");
+        // this.http.post<GptResponse>(
+        //     "/send-mfg-data-for-faktoring",
+        //     rawData
+        // ).subscribe({
+        //     next: v => {
+        //         this._response.set(v.data);
+        //     },
+        //     error: err => {
+        //         alert('Wystąpił błąd w czasie próby skontaktowania się z serwerem AI. Zgłoś ten błąd administratorom!');
+        //         console.error(err);
+        //     },
+        // });
     }
 }
