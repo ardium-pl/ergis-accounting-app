@@ -23,24 +23,20 @@ export class GptService {
         }
     })
 
-    constructor() { }
+    constructor(private http: HttpClient) { }
 
     fetchGptData(rawData: string): void {
-        const url = process.env['GPT_URL'];
-        if (!url) {
-            throw new Error("Cannot find the GPT url in .env");
-        }
-        // this.http.post<GptResponse>(
-        //     url,
-        //     rawData
-        // ).subscribe({
-        //     next: v => {
-        //         this._response.set(v.data);
-        //     },
-        //     error: err => {
-        //         alert('Wystąpił błąd w czasie próby skontaktowania się z serwerem AI. Zgłoś ten błąd administratorom!');
-        //         console.error(err);
-        //     },
-        // });
+        this.http.post<GptResponse>(
+            "/send-mfg-data-for-faktoring",
+            rawData
+        ).subscribe({
+            next: v => {
+                this._response.set(v.data);
+            },
+            error: err => {
+                alert('Wystąpił błąd w czasie próby skontaktowania się z serwerem AI. Zgłoś ten błąd administratorom!');
+                console.error(err);
+            },
+        });
     }
 }
