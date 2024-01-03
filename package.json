@@ -5,7 +5,7 @@
   "author": "",
   "scripts": {
     "start": "node src/index.js",
-    "publish": "npm run build && gh-pages --dist server --dest dist",
+    "publish": "npm run build && gh-pages --dist server --dest dist --branch release",
     "build": "cd client && npm run build && cd ../server && npm install"
   },
   "license": "MIT",
