@@ -1,0 +1,11 @@
+{
+    "name": "ergis-accounting-app",
+    "version": "0.0.0",
+    "description": "",
+    "author": "",
+    "scripts": {
+        "start": "npm run build && cd server && npm install && node src/index.js",
+        "build": "cd client && npm run build"
+    },
+    "license": "MIT"
+}
