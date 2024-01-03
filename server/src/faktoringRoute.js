@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const router = express.Router();
 
-// Replace 'path-to-your-angular-app' !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-router.use('/faktoring', express.static(path.join(__dirname, 'path-to-your-angular-app')));
+router.use('/', express.static(path.join(__dirname, "../client/browser")));
+console.log(path.join(__dirname, "../client/browser"))
 
 module.exports = router;
