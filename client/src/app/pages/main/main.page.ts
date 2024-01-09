@@ -5,6 +5,8 @@ import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneC
 import { FileStorageService, FinalMergerObject, GptService, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
+const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
+
 @Component({
     selector: 'app-main',
     standalone: true,
@@ -78,25 +80,32 @@ export class MainPage {
         this.mergerService.setNegativesData(v);
     }
 
-    tableData = signal<FinalMergerObject[] | null>(null);
-    readonly unusedNegatives = signal("\nWszystkie pozycje zostały wykorzystane!");
-    readonly hasAnyUnusedNegatives = signal(false);
     onGenerateButtonClick(): void {
+        this.gptService.fetchGptData(this.formattedFile());
+    }
+    
+    readonly tableData = computed(() => {
         const processedData = this.mergerService.processedData();
         if (!processedData) {
-            this.tableData.set(null);
-            return;
+            return null;
         }
-        const [data, negatives] = processedData;
-        this.tableData.set(data);
-        if (negatives.length > 0) {
-            this.hasAnyUnusedNegatives.set(false);
-            this.unusedNegatives.set('\nWszystkie pozycje zostały wykorzystane!');
-        } else {
-            this.hasAnyUnusedNegatives.set(true);
-            this.unusedNegatives.set(JSON.stringify(negatives));
+        const [data] = processedData;
+        return data;
+    });
+    readonly unusedNegatives = computed(() => {
+        const processedData = this.mergerService.processedData();
+        if (!processedData) {
+            return NO_UNUSED_NEGATIVES_MESSAGE;
         }
-    }
+        const [_, negatives] = processedData;
+        if (negatives.length == 0) {
+            return NO_UNUSED_NEGATIVES_MESSAGE;
+        }
+        return JSON.stringify(negatives);
+    });
+    readonly hasAnyUnusedNegatives = computed(() => {
+        return this.unusedNegatives() != NO_UNUSED_NEGATIVES_MESSAGE;
+    });
 
     copyUnusedNegatives(): void {
         navigator.clipboard.writeText(this.unusedNegatives());

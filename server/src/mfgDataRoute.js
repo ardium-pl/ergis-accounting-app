@@ -12,7 +12,7 @@ router.post("/send-mfg-data-for-faktoring", async (req, res) => {
     }
 
     try {
-        const filePath = path.join(__dirname, 'faktoring_system_message.txt'); 
+        const filePath = path.join(__dirname, '../system/faktoring_system_message.txt'); 
         const systemMessage = fs.readFileSync(filePath, 'utf8');
 
         const apiKey = process.env.OPEN_AI_KEY; 
