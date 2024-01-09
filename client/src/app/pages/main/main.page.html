@@ -34,11 +34,11 @@
                 [class.no-data]="!gptService.response()">{{ gptService.response() || "\nTutaj pojawią się dane wygenerowane przez AI." }}</pre>
         </app-section>
         @if (tableData()) {
-            <app-section header="Przejrzyj wyniki">
-                <app-final-table [data]="tableData()"></app-final-table>
-            </app-section>
-            <app-section header="Skopiuj nieużyte pozycje">
-                <pre class="unuseds-wrapper" [class.no-data]="!hasAnyUnusedNegatives()">
+        <app-section header="Przejrzyj wyniki">
+            <app-final-table [data]="tableData()"></app-final-table>
+        </app-section>
+        <app-section header="Skopiuj nieużyte pozycje">
+            <pre class="unuseds-wrapper" [class.no-data]="!hasAnyUnusedNegatives()">
                 @if (unusedNegatives()) {
                     @if (hasAnyUnusedNegatives()) {
                     <app-icon-button (click)="copyUnusedNegatives()">
@@ -48,7 +48,7 @@
                     <span>{{ unusedNegatives() }}</span>
                 }
                 </pre>
-            </app-section>
+        </app-section>
         }
     </div>
 </main>
