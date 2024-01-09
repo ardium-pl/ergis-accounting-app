@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MainPage } from './pages/main/main.page';
-import { HttpClientModule } from '@angular/common/http';
+import { GptService } from './services/gpt/gpt.service';
+import { MergerService } from './services/merger/merger.service';
 
 @Component({
     selector: 'app-root',
@@ -13,6 +15,10 @@ import { HttpClientModule } from '@angular/common/http';
         HttpClientModule,
         //pages
         MainPage,
+    ],
+    providers: [
+        GptService,
+        MergerService,
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
