@@ -3,5 +3,6 @@ import { MainPage } from './pages/main/main.page';
 
 export const routes: Routes = [
     { path: "", component: MainPage },
-    { path: "*", redirectTo: "" }
+    { path: "faktoring", component: MainPage },
+    { path: "**", redirectTo: "" }
 ];
