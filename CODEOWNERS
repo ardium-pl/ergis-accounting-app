@@ -1,0 +1,4 @@
+# this file sets who is a an owner of parts of the code base
+
+# frontend
+/client/ @joker876
