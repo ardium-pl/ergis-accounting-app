@@ -23,7 +23,7 @@ export class GptService {
         }
     })
 
-    // constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) { }
 
     fetchGptData(rawData: string): void {
         console.log('%cfetching gpt data', "color:lime");

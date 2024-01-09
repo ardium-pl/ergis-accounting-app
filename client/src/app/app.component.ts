@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MainPage } from './pages/main/main.page';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 @Component({
     selector: 'app-root',
@@ -13,6 +13,9 @@ import { HttpClientModule } from '@angular/common/http';
         HttpClientModule,
         //pages
         MainPage,
+    ],
+    providers: [
+        HttpClient,
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
