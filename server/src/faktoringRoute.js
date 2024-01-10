@@ -2,7 +2,10 @@ const express = require("express");
 const path = require("path");
 const router = express.Router();
 
-// Replace 'path-to-your-angular-app' !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-router.use('/faktoring', express.static(path.join(__dirname, 'path-to-your-angular-app')));
+//if we want all possible URLs to point to the main page we need to use both
+//removing the first one completely breaks the app
+//removing the second one doesn't load the page when using invalid url
+router.use('/', express.static(path.join(__dirname, "../client/browser")));
+router.use('*', express.static(path.join(__dirname, "../client/browser")));
 
 module.exports = router;
