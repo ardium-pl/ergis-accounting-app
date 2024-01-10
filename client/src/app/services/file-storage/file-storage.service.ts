@@ -10,7 +10,7 @@ export class FileStorageService {
     file = signal<File | undefined>(undefined);
     fileContent = signal<string>("");
     
-    setFile(file: File): void {
+    setFile(file: File, readAs?: 'text' | 'binary'): void { //TODO implement readAs
         this.file.set(file);
 
         const reader = new FileReader();
