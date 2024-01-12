@@ -1,7 +1,4 @@
 const express = require("express");
-const fs = require("fs");
-const axios = require("axios");
-const path = require("path");
 const router = express.Router();
 
 router.post("/send-mfg-data-for-faktoring", async (req, res) => {
@@ -12,41 +9,47 @@ router.post("/send-mfg-data-for-faktoring", async (req, res) => {
     }
 
     try {
-        const filePath = path.join(__dirname, '../system/faktoring_system_message.txt'); 
-        const systemMessage = fs.readFileSync(filePath, 'utf8');
+        let formatedArray = [];
 
-        const apiKey = process.env.OPEN_AI_KEY; 
-        const url = 'https://api.openai.com/v1/chat/completions';
+        const smallerStrings = mfgRawData.split('\n');
+        smallerStrings.forEach((line) => 
+        formatedArray.push(convertDataToJSON(line)));
 
-        const response = await axios.post(url, {
-            model: 'gpt-4-1106-preview',
-            messages: [
-                { role: 'system', content: systemMessage },
-                { role: 'user', content: mfgRawData }
-            ],
-            response_format: { type: 'json_object' }
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            timeout: 180000
-        });
-
-        const assistantResponse = response.data.choices[0].message.content;
-        res.status(201).json({ assistantResponse });
+        res.status(201).json(JSON.stringify(formatedArray));
     } catch (error) {
-        if (error.response) {
-            console.error(error.response.data);
-            res.status(500).send("Error with OpenAI response");
-        } else if (error.request) {
-            console.error(error.request);
-            res.status(500).send("No response from OpenAI");
-        } else {
             console.error('Error', error.message);
-            res.status(500).send("Internal Server Error");
+            res.status(500).send("Internal Server Error. Contact administrator at mikolaj.wolny@euvic.com");
         }
-    }
-});
+    }    
+);
+
+function convertDataToJSON(dataString) {
+    // Splitting the string into an array of phrases by spaces. Like this:
+    //|JL231004000027|1|264|26403|0000|jza|23/10/03|23/10/04|eur|108,315.58|
+    //|499,237.34|499,237.34|0.00|Nie|JL|JL231004000027|23j20097|faktoring|
+    const parts = dataString.split(/\s+/);
+    
+    const referencjaKGIndex = 0;
+    const naDzienIndex = 6;
+    const kwotaWWalucieIndex = 9;
+    const kwotaWZłIndex = 10;
+    const korektaIndex = 13;
+
+
+    const referencjaKG = parts[referencjaKGIndex];
+    const naDzien = parts[naDzienIndex];
+    const kwotaWWalucie = parts[kwotaWWalucieIndex];
+    const kwotaWZł = parts[kwotaWZłIndex];
+    const korekta = parts[korektaIndex];
+
+    const jsonObject = {
+        referencjaKG,
+        naDzien,
+        kwotaWWalucie,
+        kwotaWZł,
+        korekta
+    };
+    return jsonObject;
+}
 
 module.exports = router;
