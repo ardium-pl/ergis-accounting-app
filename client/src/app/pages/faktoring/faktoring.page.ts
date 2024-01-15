@@ -1,8 +1,16 @@
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, FinalTableComponent, IconButtonComponent, SectionComponent } from '@components';
-import { FileStorageService, FinalMergerObject, GptService, MergerService } from '@services';
+import {
+    ButtonComponent,
+    ErrorBoxComponent,
+    FileDisplayComponent,
+    FileDropZoneComponent,
+    FinalTableComponent,
+    IconButtonComponent,
+    SectionComponent,
+} from '@components';
+import { FileStorageService, GptService, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
@@ -22,15 +30,10 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         IconButtonComponent,
     ],
     templateUrl: './faktoring.page.html',
-    styleUrl: './faktoring.page.scss'
+    styleUrl: './faktoring.page.scss',
 })
 export class FaktoringPage {
-
-    constructor(
-        public fileStorage: FileStorageService,
-        public gptService: GptService,
-        private mergerService: MergerService,
-    ) { }
+    constructor(public fileStorage: FileStorageService, public gptService: GptService, private mergerService: MergerService) {}
 
     onFileUpload(file: File): void {
         if (file.size > 10 * 1024 * 1024) {
@@ -46,16 +49,20 @@ export class FaktoringPage {
 
     readonly formattedFile = computed(() => {
         const text = this.fileStorage.fileContent();
-        const startPattern = "---------------------------- -------- -------------- --------";
+        if (!text) return '';
+        const startPattern = '---------------------------- -------- -------------- --------';
         const startIndex = text.indexOf(startPattern) + startPattern.length;
-        const endIndex = text.lastIndexOf("faktoring") + "faktoring".length;
-
+        const endIndex = text.lastIndexOf('faktoring') + 'faktoring'.length;
 
         let formatted = text;
-        if (startIndex > startPattern.length - 1 && endIndex > "faktoring".length - 1 && endIndex > startIndex) {
+        if (startIndex > startPattern.length - 1 && endIndex > 'faktoring'.length - 1 && endIndex > startIndex) {
             formatted = formatted.substring(startIndex, endIndex);
         }
-        formatted = formatted.trim().split('\n').map(v => v.trim()).join('\n');
+        formatted = formatted
+            .trim()
+            .split('\n')
+            .map(v => v.trim())
+            .join('\n');
         return formatted;
     });
 
@@ -69,7 +76,7 @@ export class FaktoringPage {
             return ErrorBoxType.Error;
         }
         if (this.mergerService.negativesData().length == 0) {
-            ErrorBoxType.Error
+            ErrorBoxType.Error;
         }
         return ErrorBoxType.Success;
     });
@@ -83,7 +90,7 @@ export class FaktoringPage {
     onGenerateButtonClick(): void {
         this.gptService.fetchGptData(this.formattedFile());
     }
-    
+
     readonly tableData = computed(() => {
         const processedData = this.mergerService.processedData();
         if (!processedData) {
