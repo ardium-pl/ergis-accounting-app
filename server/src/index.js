@@ -4,8 +4,7 @@ import { dirname } from "path";
 import { fileURLToPath } from 'url';
 import { addApiRoutes } from "./api/index.js";
 import { addClientRoutes } from './routes/index.js';
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
