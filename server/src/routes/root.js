@@ -1,4 +1,5 @@
-const path = require("path");
+import path from "path";
+import express from "express";
 
 export function addRootRoute (router) {
     //if we want all possible URLs to point to the main page we need to use both

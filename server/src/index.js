@@ -1,12 +1,16 @@
 import express from "express";
 import cors from "cors";
-import { addApiRoutes } from "./api";
-import { addClientRoutes } from './routes/index';
+import { dirname } from "path";
+import { fileURLToPath } from 'url';
+import { addApiRoutes } from "./api/index.js";
+import { addClientRoutes } from './routes/index.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+global.__dirname = dirname(fileURLToPath(import.meta.url));
 
 app.use(cors());
 app.use(express.json());
@@ -20,4 +24,4 @@ app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
 });
 
-module.exports = app;
+export default app;
