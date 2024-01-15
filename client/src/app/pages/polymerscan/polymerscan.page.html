@@ -2,7 +2,7 @@
     <h1>Polymerscan</h1>
     <div class="sections-wrapper">
         <app-section required header="Dodaj plik PDF">
-            <app-file-drop-zone (upload)="onFileUpload($event)"></app-file-drop-zone>
+            <app-file-drop-zone (upload)="onFileUpload($event)" accept=".pdf"></app-file-drop-zone>
             <app-file-display [file]="fileStorage.file()"></app-file-display>
         </app-section>
     </div>
