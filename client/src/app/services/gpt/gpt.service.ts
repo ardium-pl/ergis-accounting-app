@@ -29,7 +29,7 @@ export class GptService {
   fetchGptData(rawData: string): void {
     console.log('rawData', rawData);
     this.http
-      .post<GptResponse>('/send-mfg-data-for-faktoring', {
+      .post<GptResponse>('/api/mfg', {
         mfgRawData: rawData,
       })
       .subscribe({
