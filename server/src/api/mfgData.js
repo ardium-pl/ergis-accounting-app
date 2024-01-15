@@ -1,10 +1,8 @@
-const express = require("express");
-const fs = require("fs");
-const axios = require("axios");
-const path = require("path");
-const router = express.Router();
+import fs from "fs";
+import axios from "axios";
+import path from "path";
 
-router.post("/send-mfg-data-for-faktoring", async (req, res) => {
+export default async (req, res) => {
     const mfgRawData = req.body.mfgRawData;
 
     if (!mfgRawData) {
@@ -12,10 +10,10 @@ router.post("/send-mfg-data-for-faktoring", async (req, res) => {
     }
 
     try {
-        const filePath = path.join(__dirname, '../system/faktoring_system_message.txt'); 
+        const filePath = path.join(__dirname, '../system/faktoring_system_message.txt');
         const systemMessage = fs.readFileSync(filePath, 'utf8');
 
-        const apiKey = process.env.OPEN_AI_KEY; 
+        const apiKey = process.env.OPEN_AI_KEY;
         const url = 'https://api.openai.com/v1/chat/completions';
 
         const response = await axios.post(url, {
@@ -47,6 +45,4 @@ router.post("/send-mfg-data-for-faktoring", async (req, res) => {
             res.status(500).send("Internal Server Error");
         }
     }
-});
-
-module.exports = router;
+};
