@@ -5,6 +5,7 @@ import { RouterOutlet } from '@angular/router';
 import { FaktoringPage, MainPage } from '@pages';
 import { GptService } from './services/gpt/gpt.service';
 import { MergerService } from './services/merger/merger.service';
+import { PolymerscanService } from './services/polymerscan/polymerscan.service';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +18,7 @@ import { MergerService } from './services/merger/merger.service';
     MainPage,
     FaktoringPage,
   ],
-  providers: [GptService, MergerService],
+  providers: [GptService, MergerService, PolymerscanService],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

@@ -1,26 +1,39 @@
-import { Component } from '@angular/core';
-import { FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
-import { FileStorageService } from '@services';
+import { Component, computed, signal, effect } from '@angular/core';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ButtonComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
+import { FileStorageService, PolymerscanService } from '@services';
 
 @Component({
-  selector: '_polymerscan-page',
-  standalone: true,
-  imports: [SectionComponent, FileDropZoneComponent, FileDisplayComponent],
-  templateUrl: './polymerscan.page.html',
-  styleUrl: './polymerscan.page.scss',
+    selector: '_polymerscan-page',
+    standalone: true,
+    imports: [SectionComponent, FileDropZoneComponent, FileDisplayComponent, ButtonComponent, MatProgressSpinnerModule],
+    templateUrl: './polymerscan.page.html',
+    styleUrl: './polymerscan.page.scss',
 })
 export class PolymerscanPage {
-  constructor(public fileStorage: FileStorageService) {}
+    constructor(public fileStorage: FileStorageService, private polymerscanService: PolymerscanService) {}
 
-  onFileUpload(file: File): void {
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Plik musi być mniejszy niż 10 MB');
-      return;
+    onFileUpload(file: File): void {
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Plik musi być mniejszy niż 10 MB');
+            return;
+        }
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            alert('Plik musi być typu .pdf');
+            return;
+        }
+        console.log('file uploaded');
+        this.fileStorage.setFile(file);
     }
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      alert('Plik musi być typu .pdf');
-      return;
+
+    readonly areResultsLoading = signal(false);
+    readonly isButtonDisabled = computed(() => this.fileStorage.fileType() != 'pdf');
+
+    onGenerateButtonClick(): void {
+        this.polymerscanService.processPdf();
     }
-    this.fileStorage.setFile(file);
-  }
+
+    readonly eff = effect(() => {
+        console.log(this.polymerscanService.jsonResponse());
+    })
 }

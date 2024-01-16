@@ -5,5 +5,12 @@
             <app-file-drop-zone (upload)="onFileUpload($event)" accept=".pdf"></app-file-drop-zone>
             <app-file-display [file]="fileStorage.file()"></app-file-display>
         </app-section>
+        <app-section required header="Generuj dane">
+            <div class="button-container">
+                <app-button [disabled]="isButtonDisabled()"
+                    (click)="onGenerateButtonClick()">Generuj</app-button>
+                @if (areResultsLoading()) {<mat-spinner></mat-spinner>}
+            </div>
+        </app-section>
     </div>
 </main>
