@@ -1,10 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
-import { PDFDocumentProxy, default as pdfjs } from 'pdfjs-dist';
 import { isDefined } from 'simple-bool';
 import { FileStorageService } from '../file-storage/file-storage.service';
 import { PolymerscanMatch } from './polymerscan.types';
-import { GptResponse } from '../gpt/gpt.types';
+import { GptResponse } from '../types';
 
 type _ResponseType = Record<string, unknown>;
 
@@ -38,10 +37,10 @@ export class PolymerscanService {
      * @param pageNumber The number of the page to be processed
      * @returns The content of the page, as string.
      */
-    private async _processPage(pdf: PDFDocumentProxy, pageNumber: number): Promise<string> {
+    private async _processPage(pdf: any, pageNumber: number): Promise<string> {
         const page = await pdf.getPage(pageNumber);
         const textContent = await page.getTextContent();
-        return textContent.items.map(item => (item as any).str).join(' ');
+        return textContent.items.map((item: any) => (item as any).str).join(' ');
     }
 
     /**
@@ -52,7 +51,7 @@ export class PolymerscanService {
      * @param initialContent The initial text content
      * @returns The extracted content of the pages
      */
-    private async _extractAndCombineText(pdf: PDFDocumentProxy, startPageNumber: number, initialContent: string) {
+    private async _extractAndCombineText(pdf: any, startPageNumber: number, initialContent: string) {
         const textArray = [initialContent];
         // start from the next page after the phrase is found
         for (let i = 1; i <= 2 && startPageNumber + i <= pdf.numPages; i++) {
@@ -68,7 +67,7 @@ export class PolymerscanService {
      * @param phrasesRegExp A RegExp used to match the phrase to be searched for
      * @returns An array of objects
      */
-    private async _processPhraseExtraction(pdf: PDFDocumentProxy, phrases: string[]): Promise<PolymerscanMatch[]> {
+    private async _processPhraseExtraction(pdf: any, phrases: string[]): Promise<PolymerscanMatch[]> {
         const results: PolymerscanMatch[] = [];
 
         for (const phrase of phrases) {
@@ -93,23 +92,23 @@ export class PolymerscanService {
         const pdfData = this._fileStorage.fileBuffer();
         const fileType = this._fileStorage.fileType();
         if (!pdfData || fileType != 'pdf') return;
-        const pdfLoadingTask = pdfjs.getDocument(pdfData);
+        // const pdfLoadingTask = pdfjs.getDocument(pdfData);
 
-        const pdf = await pdfLoadingTask.promise;
-        const found = await this._processPhraseExtraction(pdf, this.PHRASES);
+        // const pdf = await pdfLoadingTask.promise;
+        // const found = await this._processPhraseExtraction(pdf, this.PHRASES);
 
-        this.http
-            .post<GptResponse>('/api/polymerscan', {
-                polymerScan: found,
-            })
-            .subscribe({
-                next: v => {
-                    this._response.set(v.data);
-                },
-                error: err => {
-                    alert('Wystąpił błąd w czasie próby skontaktowania się z serwerem AI. Zgłoś ten błąd administratorom!');
-                    console.error('PS001: Cannot connect to polymerscan API', err);
-                },
-            });
+        // this.http
+        //     .post<GptResponse>('/api/polymerscan', {
+        //         polymerScan: found,
+        //     })
+        //     .subscribe({
+        //         next: v => {
+        //             this._response.set(v.data);
+        //         },
+        //         error: err => {
+        //             alert('Wystąpił błąd w czasie próby skontaktowania się z serwerem AI. Zgłoś ten błąd administratorom!');
+        //             console.error('PS001: Cannot connect to polymerscan API', err);
+        //         },
+        //     });
     }
 }

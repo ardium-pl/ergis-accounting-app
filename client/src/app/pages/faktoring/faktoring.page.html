@@ -30,11 +30,9 @@
                     (click)="onGenerateButtonClick()">Generuj</app-button>
                 @if (areResultsLoading()) {<mat-spinner></mat-spinner>}
             </div>
-            <pre class="gpt-response-wrapper"
-                [class.no-data]="!gptService.response()">{{ gptService.response() || "\nTutaj pojawią się dane wygenerowane przez AI." }}</pre>
         </app-section>
         @if (tableData()) {
-        <app-section header="Przejrzyj wyniki">
+        <app-section header="Przejrzyj wyniki" headerId="results">
             <app-final-table [data]="tableData()"></app-final-table>
         </app-section>
         <app-section header="Skopiuj nieużyte pozycje">

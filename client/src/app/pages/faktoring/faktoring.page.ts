@@ -1,6 +1,7 @@
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, effect, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Router } from '@angular/router';
 import {
     ButtonComponent,
     ErrorBoxComponent,
@@ -10,7 +11,7 @@ import {
     IconButtonComponent,
     SectionComponent,
 } from '@components';
-import { FileStorageService, GptService, MergerService } from '@services';
+import { FaktoringService, FileStorageService, FinalMergerObject, MergerObject, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
@@ -33,7 +34,12 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
     styleUrl: './faktoring.page.scss',
 })
 export class FaktoringPage {
-    constructor(public fileStorage: FileStorageService, public gptService: GptService, private mergerService: MergerService) {}
+    constructor(
+        public fileStorage: FileStorageService,
+        public faktoringService: FaktoringService,
+        private mergerService: MergerService,
+        private router: Router
+    ) {}
 
     onFileUpload(file: File): void {
         if (file.size > 10 * 1024 * 1024) {
@@ -87,29 +93,31 @@ export class FaktoringPage {
         this.mergerService.setNegativesData(v);
     }
 
-    onGenerateButtonClick(): void {
-        this.gptService.fetchGptData(this.formattedFile());
+    async onGenerateButtonClick(): Promise<void> {
+        const prnData = this.faktoringService.processFaktoringData(this.formattedFile());
+        if (!prnData) return;
+        const processedData = this.mergerService.processData(prnData);
+
+        setTimeout(() => {
+            this.router.navigate([], { fragment: 'results' });
+        }, 1000);
+
+        if (!processedData) {
+            this.tableData.set(null);
+            this.unusedNegatives.set(NO_UNUSED_NEGATIVES_MESSAGE);
+            return;
+        }
+        const [data, negatives] = processedData;
+        this.tableData.set(data);
+        if (negatives.length == 0) {
+            this.unusedNegatives.set(NO_UNUSED_NEGATIVES_MESSAGE);
+            return;
+        }
+        this.unusedNegatives.set(JSON.stringify(negatives));
     }
 
-    readonly tableData = computed(() => {
-        const processedData = this.mergerService.processedData();
-        if (!processedData) {
-            return null;
-        }
-        const [data] = processedData;
-        return data;
-    });
-    readonly unusedNegatives = computed(() => {
-        const processedData = this.mergerService.processedData();
-        if (!processedData) {
-            return NO_UNUSED_NEGATIVES_MESSAGE;
-        }
-        const [_, negatives] = processedData;
-        if (negatives.length == 0) {
-            return NO_UNUSED_NEGATIVES_MESSAGE;
-        }
-        return JSON.stringify(negatives);
-    });
+    readonly tableData = signal<FinalMergerObject[] | null>(null);
+    readonly unusedNegatives = signal<string>(NO_UNUSED_NEGATIVES_MESSAGE);
     readonly hasAnyUnusedNegatives = computed(() => {
         return this.unusedNegatives() != NO_UNUSED_NEGATIVES_MESSAGE;
     });

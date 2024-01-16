@@ -12,17 +12,16 @@ export class FileStorageService {
     fileType = signal<string | null>(null);
 
   setFile(file: File, readAs: 'text' | 'binary' = 'text'): void {
-    //TODO implement readAs
     this.file.set(file);
 
     const reader = new FileReader();
     reader.onload = e => {
       switch (readAs) {
         case 'binary':
-          this.fileContent.set(e.target?.result as string);
+          this.fileBuffer.set(e.target?.result as ArrayBuffer);
           break;
         default:
-          this.fileBuffer.set(e.target?.result as ArrayBuffer);
+          this.fileContent.set(e.target?.result as string);
           break;
       }
     };
