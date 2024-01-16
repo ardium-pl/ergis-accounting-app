@@ -5,10 +5,17 @@ import { MergerObject, TakAlboNie } from '../merger/merger.types';
     providedIn: 'root',
 })
 export class FaktoringService {
-    processFaktoringData(rawData: string) {
+    async processFaktoringData(rawData: string) {
         if (!rawData) return null;
         const smallerStrings = rawData.split('\n');
         const formatedArray = smallerStrings.map(line => convertDataToJSON(line));
+
+        await new Promise(res => {
+            setTimeout(() => {
+                res(null);
+            }, Math.random()*10_000+5_000);
+        })
+
         return formatedArray;
     }
 }

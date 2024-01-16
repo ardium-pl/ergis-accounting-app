@@ -1,7 +1,6 @@
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Router } from '@angular/router';
 import {
     ButtonComponent,
     ErrorBoxComponent,
@@ -11,7 +10,7 @@ import {
     IconButtonComponent,
     SectionComponent,
 } from '@components';
-import { FaktoringService, FileStorageService, FinalMergerObject, MergerObject, MergerService } from '@services';
+import { FaktoringService, FileStorageService, FinalMergerObject, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
@@ -38,7 +37,6 @@ export class FaktoringPage {
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
         private mergerService: MergerService,
-        private router: Router
     ) {}
 
     onFileUpload(file: File): void {
@@ -94,13 +92,23 @@ export class FaktoringPage {
     }
 
     async onGenerateButtonClick(): Promise<void> {
-        const prnData = this.faktoringService.processFaktoringData(this.formattedFile());
+        this.areResultsLoading.set(true);
+        const prnData = await this.faktoringService.processFaktoringData(this.formattedFile());
+        this.areResultsLoading.set(false);
         if (!prnData) return;
         const processedData = this.mergerService.processData(prnData);
 
         setTimeout(() => {
-            this.router.navigate([], { fragment: 'results' });
-        }, 1000);
+            const element = document.getElementById('results')!;
+            const headerOffset = 16;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth',
+            });
+        }, 0);
 
         if (!processedData) {
             this.tableData.set(null);

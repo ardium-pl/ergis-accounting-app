@@ -32,6 +32,7 @@ textarea {
 .unuseds-wrapper {
     white-space: wrap;
     text-align: justify;
+    word-wrap: break-word;
 
     >app-icon-button {
         float: right;

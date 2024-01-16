@@ -26,7 +26,7 @@
         </app-section>
         <app-section header="Generuj rozliczenie kursów">
             <div class="button-container">
-                <app-button [disabled]="errorBoxState() != 'success'"
+                <app-button [disabled]="errorBoxState() != 'success' || !formattedFile()"
                     (click)="onGenerateButtonClick()">Generuj</app-button>
                 @if (areResultsLoading()) {<mat-spinner></mat-spinner>}
             </div>
