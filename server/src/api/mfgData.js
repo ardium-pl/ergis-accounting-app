@@ -1,6 +1,4 @@
-import fs from "fs";
-import axios from "axios";
-import path from "path";
+
 
 export default async (req, res) => {
     const { mfgRawData } = req.body;
@@ -18,7 +16,7 @@ export default async (req, res) => {
         
         var formatedArray = smallerStrings.map(line => convertDataToJSON(line));
 
-        res.status(201).json(JSON.stringify(formatedArray));
+        res.status(200).json(JSON.stringify(formatedArray));
     } catch (error) {
         console.error('Error', error.message);
         res.status(500).send("Internal Server Error. Contact administrator at mikolaj.wolny@euvic.com");
