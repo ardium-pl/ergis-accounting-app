@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Component, computed, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -28,6 +29,7 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         HttpClientModule,
         FinalTableComponent,
         IconButtonComponent,
+        DecimalPipe,
     ],
     providers: [FileSaverService],
     templateUrl: './faktoring.page.html',
@@ -119,19 +121,23 @@ export class FaktoringPage {
         if (!processedData) {
             this.tableData.set(null);
             this.unusedNegatives.set(NO_UNUSED_NEGATIVES_MESSAGE);
+            this.unusedNegativesCount.set(null);
             return;
         }
         const [data, negatives] = processedData;
         this.tableData.set(data);
         if (negatives.length == 0) {
             this.unusedNegatives.set(NO_UNUSED_NEGATIVES_MESSAGE);
+            this.unusedNegativesCount.set(null);
             return;
         }
         this.unusedNegatives.set(JSON.stringify(negatives));
+        this.unusedNegativesCount.set(negatives.length);
     }
 
     readonly tableData = signal<FinalMergerObject[] | null>(null);
     readonly unusedNegatives = signal<string>(NO_UNUSED_NEGATIVES_MESSAGE);
+    readonly unusedNegativesCount = signal<number | null>(null);
     readonly hasAnyUnusedNegatives = computed(() => {
         return this.unusedNegatives() != NO_UNUSED_NEGATIVES_MESSAGE;
     });

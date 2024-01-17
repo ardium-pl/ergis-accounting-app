@@ -36,13 +36,14 @@
             <app-final-table [data]="tableData()"></app-final-table>
         </app-section>
         <app-section header="Pobierz nieużyte pozycje">
-            @if (unusedNegatives()) {
+            @if (hasAnyUnusedNegatives()) {
                 <app-button (click)="downloadUnusedNegatives()">
                     <span class="upload-icon material-symbols-outlined">
                         download
                     </span>
                     Pobierz
                 </app-button>
+                <p class="unused-count">Nieużyte elementy: <strong>{{ unusedNegativesCount() | number }}</strong></p>
             }
         </app-section>
         }
