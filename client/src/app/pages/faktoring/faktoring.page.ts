@@ -92,6 +92,10 @@ export class FaktoringPage {
         this.wasNegativesTouched.set(true);
         this.mergerService.setNegativesData(v);
     }
+    onNegativeValuesPaste(event: ClipboardEvent): void {
+        const v = event.clipboardData!.getData('Text');
+        this.onNegativeValuesBlur(v);
+    }
 
     async onGenerateButtonClick(): Promise<void> {
         this.areResultsLoading.set(true);

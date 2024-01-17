@@ -9,7 +9,7 @@
             <pre class="file-content-wrapper">{{ formattedFile() }}</pre>
         </app-section>
         <app-section required header="Dodaj dane o kwotach ujemnych">
-            <textarea rows="7" #negatives (blur)="onNegativeValuesBlur(negatives.value)"></textarea>
+            <textarea rows="7" #negatives (blur)="onNegativeValuesBlur(negatives.value)" (paste)="onNegativeValuesPaste($event)"></textarea>
             <app-error-box [type]="errorBoxState()">
                 @if (errorBoxState() == 'info') {
                 Tutaj wprowadź dane o kwotach ujemnych.
