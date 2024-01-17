@@ -10,7 +10,7 @@ import {
     IconButtonComponent,
     SectionComponent,
 } from '@components';
-import { FaktoringService, FileStorageService, FinalMergerObject, MergerService } from '@services';
+import { FaktoringService, FileSaverSaveMethod, FileSaverService, FileStorageService, FinalMergerObject, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
@@ -29,6 +29,7 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         FinalTableComponent,
         IconButtonComponent,
     ],
+    providers: [FileSaverService],
     templateUrl: './faktoring.page.html',
     styleUrl: './faktoring.page.scss',
 })
@@ -37,6 +38,7 @@ export class FaktoringPage {
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
         private mergerService: MergerService,
+        private fileSaver: FileSaverService
     ) {}
 
     onFileUpload(file: File): void {
@@ -130,7 +132,18 @@ export class FaktoringPage {
         return this.unusedNegatives() != NO_UNUSED_NEGATIVES_MESSAGE;
     });
 
-    copyUnusedNegatives(): void {
-        navigator.clipboard.writeText(this.unusedNegatives());
+    downloadUnusedNegatives(): void {
+        if (!this.hasAnyUnusedNegatives()) return;
+
+        this.fileSaver.saveAs(this.unusedNegatives(), {
+            fileName: 'nieużyte.txt',
+            method: FileSaverSaveMethod.PreferFileSystem,
+            types: [
+                {
+                    description: 'Plik tekstowy',
+                    accept: { 'text/plain': ['.txt'] },
+                },
+            ],
+        });
     }
 }
