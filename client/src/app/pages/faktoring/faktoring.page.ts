@@ -153,6 +153,10 @@ export class FaktoringPage {
                     description: 'Plik tekstowy',
                     accept: { 'text/plain': ['.txt'] },
                 },
+                {
+                    description: 'Plik JSON',
+                    accept: { 'application/json': ['.json', '.jsonc'] },
+                },
             ],
         });
     }
