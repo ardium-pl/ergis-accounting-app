@@ -2,6 +2,7 @@ import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Component, computed, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
 import {
     ButtonComponent,
     ErrorBoxComponent,
@@ -11,7 +12,7 @@ import {
     IconButtonComponent,
     SectionComponent,
 } from '@components';
-import { FaktoringService, FileSaverSaveMethod, FileSaverService, FileStorageService, FinalMergerObject, MergerService } from '@services';
+import { FaktoringService, FileStorageService, FinalMergerObject, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
