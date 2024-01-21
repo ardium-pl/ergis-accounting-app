@@ -134,3 +134,13 @@ main {
     flex-direction: column;
     align-items: center;
 }
+
+a[href], a[routerLink], .link {
+    color: rgb(0, 102, 204);
+    color: -webkit-link;
+    text-decoration: underline;
+
+    &.disabled {
+        opacity: 50%;
+    }
+}
