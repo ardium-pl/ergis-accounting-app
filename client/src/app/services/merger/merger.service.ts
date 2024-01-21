@@ -22,11 +22,12 @@ export class MergerService {
         this._negativesData.set(data);
     }
 
-    public processData(positives: MergerObject[]) {
-        if (!positives) return null;
+    public processData(addedPositives: MergerObject[], addedNegatives: MergerObject[]) {
+        if (!addedPositives) return null;
         try {
-            const negatives = JSON.parse(this.negativesData()) as MergerObject[];
-            return this._processData(positives ?? [], negatives);
+            const pastNegatives = JSON.parse(this.negativesData()) ?? [] as MergerObject[];
+            const negatives = [...pastNegatives, ...(addedNegatives ?? [])];
+            return this._processData(addedPositives ?? [], negatives);
         } catch (err) {
             return null;
         }
