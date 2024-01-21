@@ -105,7 +105,8 @@ export class FaktoringPage {
         const prnData = await this.faktoringService.processFaktoringData(this.formattedFile());
         this.areResultsLoading.set(false);
         if (!prnData) return;
-        const processedData = this.mergerService.processData(prnData);
+        const { positives: addedPositives, negatives: addedNegatives } = prnData;
+        const processedData = this.mergerService.processData(addedPositives, addedNegatives);
 
         setTimeout(() => {
             const element = document.getElementById('results')!;
