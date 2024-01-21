@@ -1,70 +1,48 @@
-const TakAlboNie = {
-    Tak: 'Tak',
-    Nie: 'Nie',
-} as const;
-export type TakAlboNie = typeof TakAlboNie[keyof typeof TakAlboNie];
-
-type MergerObject = {
-    referencjaKG: string;
-    naDzien: string;
-    kwotaWWalucie: number;
-    kwotaWZł: number;
-    korekta: TakAlboNie;
-}
+import { MergerObject, TakAlboNie } from '../merger/merger.types';
 
 type MergerObjectArray = {
-    positives : Array<MergerObject>;
-    negatives : Array<MergerObject>;
-    corrections : Array<MergerObject>;
-}
+    positives: Array<MergerObject>;
+    negatives: Array<MergerObject>;
+    corrections: Array<MergerObject>;
+};
 
 export class FaktoringService {
-    async processFaktoringData(rawData: string) { 
+    async processFaktoringData(rawData: string): Promise<MergerObjectArray | null> {
         if (!rawData) return null;
 
-        let positivesArray:MergerObject[] = [];
-        let negativesArray:MergerObject[] = [];
-        let correctionsArray:MergerObject[] = [];
+        const positivesArray: MergerObject[] = [];
+        const negativesArray: MergerObject[] = [];
+        const correctionsArray: MergerObject[] = [];
 
-        const smallerStrings = rawData.split('\n');
+        const lines = rawData.split('\n');
 
-        smallerStrings.map(line => {
-           let jsonObject= convertDataToJSON(line);
+        for (let i = 0; i < lines.length; i++) {
+            const jsonObject = convertDataToJSON(lines[i]);
 
-           if(jsonObject.korekta == 'Tak'){
-            correctionsArray.push(jsonObject);
-           }
-           else{
-                if(jsonObject.kwotaWZł > 0)
-                {
+            if (jsonObject.korekta == 'Tak') {
+                correctionsArray.push(jsonObject);
+                continue;
+            }
+            if (jsonObject.kwotaWZł > 0) {
                 negativesArray.push(jsonObject);
-                }
-                else if(jsonObject.kwotaWZł < 0)
-                {
+                continue;
+            }
+            if (jsonObject.kwotaWZł < 0) {
                 positivesArray.push(jsonObject);
-                }
-                else {
-                console.log("OBJECT KWOTAWZŁ: " + jsonObject.kwotaWZł);
-                console.log("OBJECT KWOTAWZŁ TYPE : " + typeof jsonObject.kwotaWZł);
-    
-                console.error("Invalid data type");
-                return null;
-                }
-           } 
-        });
+                continue;
+            }
+            console.error(`Invalid data type of "kwotaWZł" at index ${i}: expected type 'number', got "${jsonObject.kwotaWZł}" (type "${typeof jsonObject.kwotaWZł}")`);
+        }
 
-        let mergerObjectArray: MergerObjectArray = {
+        return {
             positives: positivesArray,
             negatives: negativesArray,
             corrections: correctionsArray,
         };
-
-        return mergerObjectArray; 
     }
 }
 
-
-   function convertDataToJSON(data: string): MergerObject {
+function convertDataToJSON(data: string): MergerObject {
     // Splitting the string into an array of phrases by spaces. Like this:
     //|JL231004000027|1|264|26403|0000|jza|23/10/03|23/10/04|eur|108,315.58|
     //|499,237.34|499,237.34|0.00|Nie|JL|JL231004000027|23j20097|faktoring|
@@ -74,7 +52,8 @@ export class FaktoringService {
     const naDzien = parts[6];
     const kwotaWWalucie = Number(parts[9]?.replace(',', '') ?? 0);
     const kwotaWZł = Number(parts[10]?.replace(',', '') ?? 0);
-    const korekta = parts[13] as TakAlboNie; // removed .toLower because it was't compatable with TakAlboNie type
+    // make the first letter uppercase + make all other letters lowercase
+    const korekta = (parts[13].charAt(0).toUpperCase() + parts[13].slice(1).toLowerCase()) as TakAlboNie;
 
     const jsonObject = {
         referencjaKG,
@@ -85,4 +64,3 @@ export class FaktoringService {
     };
     return jsonObject;
 }
-
