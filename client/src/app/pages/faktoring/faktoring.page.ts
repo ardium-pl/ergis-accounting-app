@@ -41,7 +41,7 @@ export class FaktoringPage {
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
         private mergerService: MergerService,
-        private fileSaver: FileSaverService
+        private fileSystem: FileSaverService
     ) {}
 
     onFileUpload(file: File): void {
@@ -146,7 +146,7 @@ export class FaktoringPage {
     downloadUnusedNegatives(): void {
         if (!this.hasAnyUnusedNegatives()) return;
 
-        this.fileSaver.saveAs(this.unusedNegatives(), {
+        this.fileSystem.saveAs(this.unusedNegatives(), {
             fileName: 'nieużyte.txt',
             method: FileSaverSaveMethod.PreferFileSystem,
             types: [
