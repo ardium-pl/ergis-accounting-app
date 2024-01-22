@@ -23,11 +23,11 @@ export class FaktoringService {
                 correctionsArray.push(jsonObject);
                 continue;
             }
-            if (jsonObject.kwotaWZł > 0) {
+            if (jsonObject.kwotaWZł < 0) {
                 negativesArray.push(jsonObject);
                 continue;
             }
-            if (jsonObject.kwotaWZł < 0) {
+            if (jsonObject.kwotaWZł > 0) {
                 positivesArray.push(jsonObject);
                 continue;
             }
