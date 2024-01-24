@@ -30,8 +30,18 @@ export class PolymerscanPage {
     readonly isButtonDisabled = computed(() => this.fileStorage.fileType() != 'pdf');
 
     onGenerateButtonClick(): void {
-        this.polymerscanService.processPdf();
-    }
+        const pdfArrayBuffer = this.fileStorage.fileBuffer(); // Assuming this returns an ArrayBuffer
+        if (pdfArrayBuffer) {
+            const pdfBuffer = Buffer.from(pdfArrayBuffer);
+            this.polymerscanService.processPhraseExtractionFromBuffer(pdfBuffer, ['Your', 'Phrases'])
+                .then(matches => {
+                    // Handle the matches
+                })
+                .catch(error => {
+                    // Handle error
+                });
+        }
+      }
 
     readonly eff = effect(() => {
         console.log(this.polymerscanService.jsonResponse());
