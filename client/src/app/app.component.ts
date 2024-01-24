@@ -6,7 +6,7 @@ import { RouterOutlet } from '@angular/router';
 import { FaktoringPage, MainPage } from '@pages';
 import { MergerService } from './services/merger/merger.service';
 import { PolymerscanService } from './services/polymerscan/polymerscan.service';
-import { FaktoringService } from './services/faktoring/faktoring.service';
+import {FaktoringService} from './services/faktoring/faktoring.service';
 
 @Component({
     selector: 'app-root',
@@ -19,7 +19,7 @@ import { FaktoringService } from './services/faktoring/faktoring.service';
         MainPage,
         FaktoringPage,
     ],
-    providers: [MergerService, PolymerscanService, FaktoringService, { provide: LOCALE_ID, useValue: 'pl-PL' }],
+    providers: [MergerService, PolymerscanService, FaktoringService,{ provide: LOCALE_ID, useValue: 'pl-PL' }],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
 })
