@@ -2,8 +2,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { Component, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, FinalTableComponent, IconButtonComponent, SectionComponent } from '@components';
-import { FileStorageService, FinalMergerObject, GptService, MergerService } from '@services';
+import { FileStorageService, FinalMergerObject, GptService, MergerService, PrnObject } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
+import { PrnReaderService } from 'src/app/services/prn-reader/prn-reader.service';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
 
@@ -30,6 +31,7 @@ export class MainPage {
         public fileStorage: FileStorageService,
         public gptService: GptService,
         private mergerService: MergerService,
+        private prnReader: PrnReaderService,
     ) { }
 
     onFileUpload(file: File): void {
@@ -44,19 +46,13 @@ export class MainPage {
         this.fileStorage.setFile(file);
     }
 
-    readonly formattedFile = computed(() => {
-        const text = this.fileStorage.fileContent();
-        const startPattern = "---------------------------- -------- -------------- --------";
-        const startIndex = text.indexOf(startPattern) + startPattern.length;
-        const endIndex = text.lastIndexOf("faktoring") + "faktoring".length;
-
-
-        let formatted = text;
-        if (startIndex > startPattern.length - 1 && endIndex > "faktoring".length - 1 && endIndex > startIndex) {
-            formatted = formatted.substring(startIndex, endIndex);
-        }
-        formatted = formatted.trim().split('\n').map(v => v.trim()).join('\n');
-        return formatted;
+    readonly formattedFile = computed<PrnObject[] | null>(() => {
+        const content = this.fileStorage.fileContent();
+        if (!content) return null;
+        return this.prnReader.readPrn(content);
+    });
+    readonly foo = effect(() => {
+        console.log(JSON.stringify(this.formattedFile()?.[0], null, 4));
     });
 
     results = true;
@@ -81,7 +77,7 @@ export class MainPage {
     }
 
     onGenerateButtonClick(): void {
-        this.gptService.fetchGptData(this.formattedFile());
+        // this.gptService.fetchGptData(this.formattedFile());
     }
     
     readonly tableData = computed(() => {
@@ -110,4 +106,35 @@ export class MainPage {
     copyUnusedNegatives(): void {
         navigator.clipboard.writeText(this.unusedNegatives());
     }
+}
+
+
+const rezultat = {
+    "Referencja KG": "JL231130jza057",
+    "Lp": "4",
+    "Konto": "141",
+    "Subkonto": "14130",
+    "MPK": "0000",
+    "ID": "jza",
+    "Na dzień": "23/11/30",
+    "Data wpr": "23/12/05",
+    "Wal": "PLN",
+    "Kwota w walucie": "0.00",
+    "Kwota": "2,871.57",
+    "WN": "2,871.57",
+    "MA": "0.00",
+    "Kor.": "Nie",
+    "TT": "",
+    "Dokument": "JL231130jza057",
+    "Numer indeksu": "",
+    "ZS/ZP": "",
+    "Data pod": "",
+    "Paczka": "",
+    "Opis": "Wycen.WB 11/2023",
+    "Adres": "",
+    "Ko": "",
+    "Sort Nazwa": "",
+    "Projekt": "",
+    "Zlec robocze": "",
+    "Magazyn": ""
 }
