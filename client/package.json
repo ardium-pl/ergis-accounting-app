@@ -21,6 +21,7 @@
     "@angular/platform-browser-dynamic": "^17.0.8",
     "@angular/router": "^17.0.8",
     "@ardium-ui/devkit": "^1.1.0",
+    "axios": "^1.6.7",
     "dotenv": "^16.3.1",
     "pdfjs-dist": "^4.0.379",
     "pdfreader": "^3.0.2",

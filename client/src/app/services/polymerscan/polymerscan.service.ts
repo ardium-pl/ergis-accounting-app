@@ -5,6 +5,7 @@ import { FileStorageService } from '../file-storage/file-storage.service';
 import { PolymerscanMatch } from './polymerscan.types';
 import { GptResponse } from '../types';
 import { PdfReader } from "pdfreader";
+import { axios } from 'axios';
 
 type _ResponseType = Record<string, unknown>;
 
@@ -68,6 +69,16 @@ export class PolymerscanService {
         });
     }
 
-
-    // TODO: build a server API call to contact chat gpt
+    async polymerScanGPTApiCall(polimerScanData: PolymerscanMatch[]): Promise<any> {
+        try {
+            const response = await axios.post('https://ardium.pl/api/polymerscan', {
+                polymerScan: polimerScanData
+            });
+    
+            return response.data;
+        } catch (error) {
+            console.error('Error in polymerScanGPTApiCall:', error);
+            throw error;
+        }
+    }
 }

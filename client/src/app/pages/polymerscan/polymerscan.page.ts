@@ -35,7 +35,13 @@ export class PolymerscanPage {
             const pdfBuffer = Buffer.from(pdfArrayBuffer);
             this.polymerscanService.processPhraseExtractionFromBuffer(pdfBuffer, ['Your', 'Phrases'])
                 .then(matches => {
-                    // Handle the matches
+                    this.polymerscanService.polymerScanGPTApiCall(matches)
+                    .then(gptResponse =>{
+                        //TODO: ADD DISPLAY HERE
+                    })
+                    .catch(error =>{
+                        console.error(error);
+                    })
                 })
                 .catch(error => {
                     // Handle error
