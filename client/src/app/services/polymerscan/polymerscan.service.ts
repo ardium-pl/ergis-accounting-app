@@ -1,11 +1,8 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, signal } from '@angular/core';
-import { isDefined } from 'simple-bool';
+import { HttpClient, HttpEventType } from '@angular/common/http';
+import { Injectable, computed, effect, signal } from '@angular/core';
 import { FileStorageService } from '../file-storage/file-storage.service';
 import { PolymerscanMatch } from './polymerscan.types';
-import { GptResponse } from '../types';
-import { PdfReader } from "pdfreader";
-import { axios } from 'axios';
+import { catchError, finalize, retry, tap } from 'rxjs';
 
 type _ResponseType = Record<string, unknown>;
 
@@ -13,9 +10,17 @@ type _ResponseType = Record<string, unknown>;
     providedIn: 'root',
 })
 export class PolymerscanService {
-    constructor(private _fileStorage: FileStorageService, private http: HttpClient) {}
+    constructor(private _fileStorage: FileStorageService, private http: HttpClient) {
+        effect(() => {
+            console.log('isPending', this.isPending(), this.progress());
+        });
+    }
 
-    private readonly PHRASES = ['European LDPE', 'European polypropylene'];
+    private readonly _isPending = signal<boolean>(false);
+    public readonly isPending = computed(() => this._isPending());
+
+    private readonly _progress = signal<number>(0);
+    public readonly progress = computed(() => this._progress());
 
     private readonly _response = signal<string | null>(null);
     public readonly response = computed(() => this._response());
@@ -33,52 +38,33 @@ export class PolymerscanService {
         }
     });
 
-    async processPhraseExtractionFromBuffer(pdfBuffer: Buffer, phrases: string[]): Promise<PolymerscanMatch[]> {
-        return new Promise((resolve, reject) => {
-            let results: PolymerscanMatch[] = [];
-            let currentPageText = "";
-            let previousPageText = "";
-            const remainingPhrases = new Set(phrases);
+    callApi(): void {
+        const file = this._fileStorage.file();
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('files', file);
 
-            new PdfReader(null).parseBuffer(pdfBuffer, (err, item) => { 
-                if (err) {
-                    reject(err);
-                } else if (!item) {
-                    // End of buffer
-                    resolve(results);
-                } else if (item.page) {
-                    // Handle page processing as in the original method
-                    remainingPhrases.forEach(phrase => {
-                        const indexInPrevPage = previousPageText.indexOf(phrase);
-                        if (indexInPrevPage !== -1) {
-                            const trimmedPrevPageText = previousPageText.substring(indexInPrevPage);
-                            results.push({
-                                searchedPhrase: phrase, 
-                                textContent: trimmedPrevPageText + "\n\n--- Next Page ---\n\n" + currentPageText
-                            });
-                            remainingPhrases.delete(phrase);
-                        }
-                    });
-
-                    previousPageText = currentPageText;
-                    currentPageText = "";
-                } else if (item.text) {
-                    currentPageText += item.text + " ";
+        this._isPending.set(true);
+        this.http
+            .post('/api/polymerscan', formData, {
+                reportProgress: true,
+                observe: 'events',
+                headers: {
+                    // 'Content-Type': 'multipart/form-data',
+                },
+            })
+            .subscribe(event => {
+                if (event.type == HttpEventType.UploadProgress) {
+                    const progress = 100 * (event.loaded / event.total!);
+                    this._progress.set(progress);
+                }
+                if (event.type == HttpEventType.Response) {
+                    console.log(event.body);
                 }
             });
-        });
     }
 
-    async polymerScanGPTApiCall(polimerScanData: PolymerscanMatch[]): Promise<any> {
-        try {
-            const response = await axios.post('https://ardium.pl/api/polymerscan', {
-                polymerScan: polimerScanData
-            });
-    
-            return response.data;
-        } catch (error) {
-            console.error('Error in polymerScanGPTApiCall:', error);
-            throw error;
-        }
+    onEnd() {
+        console.log('end');
     }
 }

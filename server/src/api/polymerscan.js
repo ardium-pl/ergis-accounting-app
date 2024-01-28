@@ -3,7 +3,54 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { LLMChain } from "langchain/chains";
 
 export default async (req, res) => {
-    const polymerScanRawData = req.body.polymerScan;
+    const pdfFile = req.files[0];
+
+    const pdfBuffer = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(pdfFile);
+        reader.onload = e => resolve(e.target.result);
+    });
+
+    // ======================================================
+    // create polymerscanRawData here
+    // ======================================================
+
+    // private readonly PHRASES = ['European LDPE', 'European polypropylene'];
+    // async processPhraseExtractionFromBuffer(pdfBuffer: Buffer, phrases: string[]): Promise < PolymerscanMatch[] > {
+    //     return new Promise((resolve, reject) => {
+    //         let results: PolymerscanMatch[] = [];
+    //         let currentPageText = '';
+    //         let previousPageText = '';
+    //         const remainingPhrases = new Set(phrases);
+
+    //         new PdfReader(null).parseBuffer(pdfBuffer, (err, item) => {
+    //             if (err) {
+    //                 reject(err);
+    //             } else if (!item) {
+    //                 // End of buffer
+    //                 resolve(results);
+    //             } else if (item.page) {
+    //                 // Handle page processing as in the original method
+    //                 remainingPhrases.forEach(phrase => {
+    //                     const indexInPrevPage = previousPageText.indexOf(phrase);
+    //                     if (indexInPrevPage !== -1) {
+    //                         const trimmedPrevPageText = previousPageText.substring(indexInPrevPage);
+    //                         results.push({
+    //                             searchedPhrase: phrase,
+    //                             textContent: trimmedPrevPageText + '\n\n--- Next Page ---\n\n' + currentPageText,
+    //                         });
+    //                         remainingPhrases.delete(phrase);
+    //                     }
+    //                 });
+
+    //                 previousPageText = currentPageText;
+    //                 currentPageText = '';
+    //             } else if (item.text) {
+    //                 currentPageText += item.text + ' ';
+    //             }
+    //         });
+    //     });
+    // }
 
     if (!polymerScanRawData) {
         return res.status(400).send("Missing polymerScan data");

@@ -22,7 +22,6 @@ export class PolymerscanPage {
             alert('Plik musi być typu .pdf');
             return;
         }
-        console.log('file uploaded');
         this.fileStorage.setFile(file);
     }
 
@@ -30,26 +29,10 @@ export class PolymerscanPage {
     readonly isButtonDisabled = computed(() => this.fileStorage.fileType() != 'pdf');
 
     onGenerateButtonClick(): void {
-        const pdfArrayBuffer = this.fileStorage.fileBuffer(); // Assuming this returns an ArrayBuffer
-        if (pdfArrayBuffer) {
-            const pdfBuffer = Buffer.from(pdfArrayBuffer);
-            this.polymerscanService.processPhraseExtractionFromBuffer(pdfBuffer, ['Your', 'Phrases'])
-                .then(matches => {
-                    this.polymerscanService.polymerScanGPTApiCall(matches)
-                    .then(gptResponse =>{
-                        //TODO: ADD DISPLAY HERE
-                    })
-                    .catch(error =>{
-                        console.error(error);
-                    })
-                })
-                .catch(error => {
-                    // Handle error
-                });
-        }
-      }
+        this.polymerscanService.callApi();
+    }
 
     readonly eff = effect(() => {
         console.log(this.polymerscanService.jsonResponse());
-    })
+    });
 }
