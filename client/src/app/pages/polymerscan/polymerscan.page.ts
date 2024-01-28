@@ -1,4 +1,5 @@
-import { Component, computed, signal, effect } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { Component, computed, effect } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
 import { FileStorageService, PolymerscanService } from '@services';
@@ -6,7 +7,7 @@ import { FileStorageService, PolymerscanService } from '@services';
 @Component({
     selector: '_polymerscan-page',
     standalone: true,
-    imports: [SectionComponent, FileDropZoneComponent, FileDisplayComponent, ButtonComponent, MatProgressSpinnerModule],
+    imports: [SectionComponent, FileDropZoneComponent, FileDisplayComponent, ButtonComponent, MatProgressSpinnerModule, DecimalPipe],
     templateUrl: './polymerscan.page.html',
     styleUrl: './polymerscan.page.scss',
 })
@@ -25,14 +26,11 @@ export class PolymerscanPage {
         this.fileStorage.setFile(file);
     }
 
-    readonly areResultsLoading = signal(false);
+    readonly areResultsLoading = computed(() => this.polymerscanService.isPending());
+    readonly uploadProgress = computed(() => this.polymerscanService.progress());
     readonly isButtonDisabled = computed(() => this.fileStorage.fileType() != 'pdf');
 
     onGenerateButtonClick(): void {
         this.polymerscanService.callApi();
     }
-
-    readonly eff = effect(() => {
-        console.log(this.polymerscanService.jsonResponse());
-    });
 }

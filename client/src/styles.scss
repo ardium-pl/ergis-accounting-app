@@ -144,3 +144,7 @@ a[href], a[routerLink], .link {
         opacity: 50%;
     }
 }
+
+mat-spinner {
+    --mdc-circular-progress-active-indicator-color: var(--main);
+}

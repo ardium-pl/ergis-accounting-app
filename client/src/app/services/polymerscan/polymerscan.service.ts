@@ -2,7 +2,7 @@ import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Injectable, computed, effect, signal } from '@angular/core';
 import { FileStorageService } from '../file-storage/file-storage.service';
 import { PolymerscanMatch } from './polymerscan.types';
-import { catchError, finalize, retry, tap } from 'rxjs';
+import { Subscription, catchError, finalize, retry, tap } from 'rxjs';
 
 type _ResponseType = Record<string, unknown>;
 
@@ -38,6 +38,7 @@ export class PolymerscanService {
         }
     });
 
+    private sub?: Subscription;
     callApi(): void {
         const file = this._fileStorage.file();
         if (!file) return;
@@ -45,23 +46,34 @@ export class PolymerscanService {
         formData.append('files', file);
 
         this._isPending.set(true);
-        this.http
+        this.sub = this.http
             .post('/api/polymerscan', formData, {
                 reportProgress: true,
                 observe: 'events',
-                headers: {
-                    // 'Content-Type': 'multipart/form-data',
-                },
             })
+            .pipe(
+                catchError((err, caught) => {
+                    console.error('Polymerscan API error: ', err);
+                    this.sub?.unsubscribe();
+                    this._resetSignals();
+                    return caught;
+                })
+            )
             .subscribe(event => {
                 if (event.type == HttpEventType.UploadProgress) {
                     const progress = 100 * (event.loaded / event.total!);
                     this._progress.set(progress);
                 }
                 if (event.type == HttpEventType.Response) {
+                    this._resetSignals();
                     console.log(event.body);
                 }
             });
+    }
+
+    private _resetSignals() {
+        this._isPending.set(false);
+        this._progress.set(0);
     }
 
     onEnd() {

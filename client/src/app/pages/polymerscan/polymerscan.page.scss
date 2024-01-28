@@ -1,1 +1,15 @@
 
+
+.button-container {
+    position: relative;
+}
+
+mat-spinner {
+    position: absolute;
+    left: calc(100% + 1rem);
+    top: 0;
+}
+
+p {
+    padding-top: 1rem;
+}
