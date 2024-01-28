@@ -1,15 +1,12 @@
 import { OpenAI } from "openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { LLMChain } from "langchain/chains";
+import fs from 'fs';
 
 export default async (req, res) => {
     const pdfFile = req.files[0];
 
-    const pdfBuffer = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(pdfFile);
-        reader.onload = e => resolve(e.target.result);
-    });
+    const pdfBuffer = fs.readFileSync(pdfFile.path);
 
     // ======================================================
     // create polymerscanRawData here
