@@ -6,7 +6,7 @@
             <app-file-display [file]="fileStorage.file()"></app-file-display>
         </app-section>
         <app-section header="Przejrzyj podgląd pliku">
-            <pre class="file-content-wrapper">{{ formattedFile() }}</pre>
+            <pre class="file-content-wrapper">{{ formattedFile()?.asString }}</pre>
         </app-section>
         <app-section required header="Dodaj dane o kwotach ujemnych">
             <textarea rows="7" #negatives (blur)="onNegativeValuesBlur(negatives.value)"></textarea>

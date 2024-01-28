@@ -1,12 +1,17 @@
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
+import { Component, computed, effect, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, FinalTableComponent, IconButtonComponent, SectionComponent } from '@components';
-import { FileStorageService, FinalMergerObject, GptService, MergerService, PrnObject } from '@services';
+import { FileStorageService, GptService, MergerService, PrnObject } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 import { PrnReaderService } from 'src/app/services/prn-reader/prn-reader.service';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
+
+type FormattedFile = {
+    asString: string;
+    objects: PrnObject[];
+} | null;
 
 @Component({
     selector: 'app-main',
@@ -46,13 +51,17 @@ export class MainPage {
         this.fileStorage.setFile(file);
     }
 
-    readonly formattedFile = computed<PrnObject[] | null>(() => {
+    readonly formattedFile = computed<FormattedFile>(() => {
         const content = this.fileStorage.fileContent();
         if (!content) return null;
-        return this.prnReader.readPrn(content);
+        const data = this.prnReader.readPrn(content);
+        return {
+            objects: data[0],
+            asString: data[1],
+        }
     });
     readonly foo = effect(() => {
-        console.log(JSON.stringify(this.formattedFile()?.[0], null, 4));
+        console.log(JSON.stringify(this.formattedFile()?.objects[0], null, 4));
     });
 
     results = true;

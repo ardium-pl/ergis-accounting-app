@@ -7,11 +7,10 @@ import { PrnObject } from './prn-reader.types';
 export class PrnReaderService {
     constructor() {}
 
-    readPrn(data: string): any {
+    readPrn(data: string): [PrnObject[], string] {
         const lines = this._filterOnlyDataRows(data);
         const noHeaders = this._filterOutHeadersAndReverse(lines);
-        const objects = this._linesToPrnObjects(noHeaders);
-        return objects;
+        return this._linesToPrnObjects(noHeaders);
     }
 
     private _filterOnlyDataRows(data: string): string[] {
@@ -23,50 +22,68 @@ export class PrnReaderService {
     }
     private _filterOutHeadersAndReverse(lines: string[]): string[] {
         let wasLastLineHeaderDivider = false;
-        return [...lines]
-            .reverse()
-            .filter((line, i) => {
-                if (i >= lines.length - 1 - 2) return true;
-                if (/^-+/.test(line)) {
-                    wasLastLineHeaderDivider = true;
-                    return false;
-                }
-                if (wasLastLineHeaderDivider) {
-                    wasLastLineHeaderDivider = false;
-                    return false;
-                }
-                return true;
-            });
+        return [...lines].reverse().filter((line, i) => {
+            if (i >= lines.length - 1 - 2) return true;
+            if (/^-+/.test(line)) {
+                wasLastLineHeaderDivider = true;
+                return false;
+            }
+            if (wasLastLineHeaderDivider) {
+                wasLastLineHeaderDivider = false;
+                return false;
+            }
+            return true;
+        });
     }
-    private _linesToPrnObjects(lines: string[]): PrnObject[] {
+    private _linesToPrnObjects(lines: string[]): [PrnObject[], string] {
         const headersLine = lines.pop()!;
-        const widths = lines.pop()!.split(/\s/).map(v => v.length);
-        const headers = this._splitSingleLine(headersLine, widths);
+        const widths = lines
+            .pop()!
+            .split(/\s/)
+            .map((v) => v.length);
+        const headers = this._splitSingleLine(headersLine, widths).map((v) =>
+            this._mapHeaderName(v)
+        );
 
-        const splitLines = lines.map(line => this._splitSingleLine(line, widths));
-        
-        const objects = splitLines.map(line => {
-            const resultObject: PrnObject = {}
-            
+        const unreversedLines = [...lines].reverse();
+
+        const splitLines = unreversedLines.map((line) =>
+            this._splitSingleLine(line, widths)
+        );
+
+        const objects = splitLines.map((line) => {
+            const resultObject: PrnObject = {};
+
             for (let i = 0; i < line.length; i++) {
                 const header = headers[i];
                 const data = line[i];
                 resultObject[header] = data;
             }
             return resultObject;
-        })
-        
-        return objects;
+        });
+
+        const contentAsString = unreversedLines.join('\n');
+
+        return [objects, contentAsString];
     }
     private _splitSingleLine(line: string, widths: number[]): string[] {
         const items: string[] = [];
 
         let cumulativeWidth = 0;
         for (const width of widths) {
-            items.push(line.substring(cumulativeWidth, cumulativeWidth + width).trim());
+            items.push(
+                line.substring(cumulativeWidth, cumulativeWidth + width).trim()
+            );
             cumulativeWidth += width + 1;
         }
 
         return items;
+    }
+    private _mapHeaderName(name: string): string {
+        return name
+            .split(' ')
+            .map((v) => v.charAt(0).toUpperCase() + v.slice(1))
+            .join('')
+            .replace(/[^a-ząćęłńóśżź_]/gi, '');
     }
 }
