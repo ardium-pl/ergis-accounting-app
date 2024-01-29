@@ -1,20 +1,15 @@
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Injectable, computed, effect, signal } from '@angular/core';
+import { Subscription, catchError } from 'rxjs';
 import { FileStorageService } from '../file-storage/file-storage.service';
-import { PolymerscanMatch } from './polymerscan.types';
-import { Subscription, catchError, finalize, retry, tap } from 'rxjs';
 
-type _ResponseType = Record<string, unknown>;
+type _ResponseType = { success: false, error: string; } | { success: true, response: string; };
 
 @Injectable({
     providedIn: 'root',
 })
 export class PolymerscanService {
-    constructor(private _fileStorage: FileStorageService, private http: HttpClient) {
-        effect(() => {
-            console.log('isPending', this.isPending(), this.progress());
-        });
-    }
+    constructor(private _fileStorage: FileStorageService, private http: HttpClient) {}
 
     private readonly _isPending = signal<boolean>(false);
     public readonly isPending = computed(() => this._isPending());
@@ -22,21 +17,8 @@ export class PolymerscanService {
     private readonly _progress = signal<number>(0);
     public readonly progress = computed(() => this._progress());
 
-    private readonly _response = signal<string | null>(null);
+    private readonly _response = signal<_ResponseType | null>(null);
     public readonly response = computed(() => this._response());
-    public readonly jsonResponse = computed(() => {
-        const rsp = this._response();
-        if (!rsp) return null;
-        try {
-            const json = JSON.parse(rsp) as _ResponseType;
-            console.log(json);
-            return json;
-        } catch (err) {
-            alert('Wystąpił błąd w czasie próby odczytania danych pozyskanych od AI. Zgłoś ten błąd administratorom!');
-            console.error('PS002: Cannot parse polymerscan API output', err);
-            return null;
-        }
-    });
 
     private sub?: Subscription;
     callApi(): void {
@@ -66,7 +48,7 @@ export class PolymerscanService {
                 }
                 if (event.type == HttpEventType.Response) {
                     this._resetSignals();
-                    console.log(event.body);
+                    this._response.set(event.body as _ResponseType);
                 }
             });
     }

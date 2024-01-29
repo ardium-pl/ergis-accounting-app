@@ -43,7 +43,7 @@ export default async (req, res) => {
         });
     });
 
-    if (!polymerScanRawData) {
+    if (!polymerScanRawData || polymerScanRawData.length < 2) {
         return res.status(400).send({ success: false, error: 'NO_DATA_ERR' });
     }
 
@@ -61,11 +61,15 @@ export default async (req, res) => {
              about the European LDPE market and the European polypropylene market.Please format your answer in Polish. Report: ${polymerScan}`
         }];
 
+        const startDate = new Date();
+
         const chatCompletion = await openai.chat.completions.create({
             model: 'gpt-4-0125-preview',
             messages: messages,
             temperature: 0.2
         });
+
+        console.info(`Polymerscan OpenAI request successful. Completed it ${Date.now() - startDate.valueOf()}ms`)
 
         if (chatCompletion && chatCompletion.choices && chatCompletion.choices.length > 0) {
             const responseMessages = chatCompletion.choices[0].message;

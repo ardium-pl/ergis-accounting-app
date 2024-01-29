@@ -127,7 +127,7 @@ span.material-symbols-outlined {
 
 main {
     width: max-content;
-    max-width: 100%;
+    max-width: 95%;
     min-width: 25rem;
     margin: 0 auto;
     display: flex;
@@ -147,4 +147,21 @@ a[href], a[routerLink], .link {
 
 mat-spinner {
     --mdc-circular-progress-active-indicator-color: var(--main);
+}
+
+//! markdown
+markdown {
+    text-align: justify;
+
+    p, ul {
+        padding: 0.33rem;
+    }
+    li {
+        padding: 0.05rem;
+    }
+    h2 {
+        padding: 0.33rem;
+        margin: 0;
+        height: unset;
+    }
 }
