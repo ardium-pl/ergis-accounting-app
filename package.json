@@ -10,5 +10,8 @@
         "server": "cd server && nodemon",
         "dev": "concurrently --kill-others \"npm run watch\" \"npm run server\""
     },
-    "license": "MIT"
+    "license": "MIT",
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
 }
