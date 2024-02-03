@@ -106,7 +106,7 @@ export class FaktoringPage {
         this.areResultsLoading.set(false);
         if (!prnData) return;
         const { positives: addedPositives, negatives: addedNegatives } = prnData;
-        const processedData = this.mergerService.processData(addedPositives, addedNegatives,"negativeAsBase"); // Tutaj trzeba dodać zmienną z dropdownu
+        const processedData = this.mergerService.processData(addedPositives, addedNegatives,"negativeAsBase"); //TODO add dropdown value here
 
         setTimeout(() => {
             const element = document.getElementById('results')!;

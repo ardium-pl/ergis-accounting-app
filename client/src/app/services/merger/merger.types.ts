@@ -20,7 +20,14 @@ export type FinalMergerObject = {
 }
 
 export const FaktoringMode = {
-    positiveAsBase: "positiveAsBase",
-    negativeAsBase: "negativeAsBase"
+    Positive: "positiveAsBase",
+    Negative: "negativeAsBase"
 } as const
 export type FaktoringMode = typeof FaktoringMode[keyof typeof FaktoringMode];
+
+export const LeftoversFlag = {
+    Positive: 'positive',
+    Negative: 'negative',
+    NoneLeft: 'none-left',
+} as const;
+export type LeftoversFlag = typeof LeftoversFlag[keyof typeof LeftoversFlag];

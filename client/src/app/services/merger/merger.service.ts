@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { FinalMergerObject, MergerObject, FaktoringMode } from './merger.types';
+import { FinalMergerObject, MergerObject, FaktoringMode, LeftoversFlag } from './merger.types';
 
 @Injectable({
     providedIn: 'root',
@@ -25,85 +25,77 @@ export class MergerService {
     public processData(addedPositives: MergerObject[], addedNegatives: MergerObject[], faktoringMode: FaktoringMode) {
         if (!addedPositives) return null;
         try {
-            const pastEntries = JSON.parse(this.negativesData()) ?? [] as MergerObject[];
+            const pastEntries = JSON.parse(this.negativesData()) ?? ([] as MergerObject[]);
 
-            let negatives:MergerObject[] = [];
-            let positives:MergerObject[] = [];
-
-            if(pastEntries[0].kwotaWWalucie < 0){
-                negatives = [...pastEntries, ...(addedNegatives ?? [])];
-                positives = addedPositives;
-
+            if (pastEntries[0].kwotaWWalucie < 0) {
+                return this._processData([...pastEntries, ...addedNegatives], addedPositives, faktoringMode);
             }
-            else if(pastEntries[0].kwotaWWalucie > 0){
-                negatives = addedNegatives;
-                positives  = [...pastEntries, ...(addedPositives ?? [])];
-            }
-
-            return this._processData(addedPositives ?? [], negatives, faktoringMode);
+            return this._processData(addedNegatives, [...pastEntries, ...addedPositives], faktoringMode);
         } catch (err) {
             return null;
         }
     }
 
-    private _processData(positives: MergerObject[], negatives: MergerObject[], faktoringMode: FaktoringMode): [FinalMergerObject[], MergerObject[]] {
+    private _processData(
+        positives: MergerObject[],
+        negatives: MergerObject[],
+        faktoringMode: FaktoringMode
+    ): [FinalMergerObject[], MergerObject[]] {
         if (negatives.length == 0) return [[], []];
+        // make negative entries positive for easier logic
         negatives = negatives.map(v => ({
             ...v,
             kwotaWWalucie: -v.kwotaWWalucie,
             kwotaWZł: -v.kwotaWZł,
         }));
 
-        let positiveObject: MergerObject = positives.shift()!;
-        let negativeObject: MergerObject = negatives.shift()!;
+        let positiveObject = positives.shift()!;
+        let negativeObject = negatives.shift()!;
 
-        let positiveAmount: number = positiveObject?.kwotaWWalucie;
-        let negativeAmount: number = negativeObject.kwotaWWalucie;
+        let positiveAmount = positiveObject?.kwotaWWalucie;
+        let negativeAmount = negativeObject.kwotaWWalucie;
 
         if (positives.length == 0) {
             const negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
-            negatives = this._retrieveUnusedElement(negativeAmount, negatives, negativeExchangeRate,negativeObject.referencjaKG,negativeObject.naDzien);
+            negatives = this._retrieveUnusedElement(
+                negativeAmount,
+                negatives,
+                negativeExchangeRate,
+                negativeObject.referencjaKG,
+                negativeObject.naDzien
+            );
             return [[], negatives];
         }
 
         const allCurrencyCorrections: FinalMergerObject[] = [];
-        let leftOversFlag:string = "nothingLeft";
-
+        let leftoversFlag: LeftoversFlag = LeftoversFlag.NoneLeft;
 
         while ((positives.length > 0 || !isNaN(positiveAmount)) && negatives.length > 0) {
             const negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
             const positiveExchangeRate = positiveObject.kwotaWZł / positiveObject.kwotaWWalucie;
 
-            
-            let referencjaKG;
-            if(faktoringMode == "positiveAsBase"){
-                referencjaKG = positiveObject.referencjaKG; 
-            }
-            else if(faktoringMode == "negativeAsBase"){
-                referencjaKG = negativeObject.referencjaKG; 
-            }
-            else break;
-
+            // get the valid correction amount
             let correctionAmount: number;
             if (positiveAmount > negativeAmount) {
+                // negative is the valid correction amount - remove one entry and subtract from the positive total
                 correctionAmount = negativeAmount;
                 positiveAmount -= negativeAmount;
 
                 negativeObject = negatives.shift()!;
                 negativeAmount = negativeObject?.kwotaWWalucie ?? NaN;
 
-                leftOversFlag = "positive";
-            }
-            else if (positiveAmount < negativeAmount) {
+                leftoversFlag = LeftoversFlag.Positive;
+            } else if (positiveAmount < negativeAmount) {
+                // positive is the valid correction amount - remove one entry and subtract from the negative total
                 correctionAmount = positiveAmount;
                 negativeAmount -= positiveAmount;
 
                 positiveObject = positives.shift()!;
                 positiveAmount = positiveObject?.kwotaWWalucie ?? NaN;
 
-                leftOversFlag = "negative";
-            }
-            else if (positiveAmount == negativeAmount){
+                leftoversFlag = LeftoversFlag.Negative;
+            } else {
+                // both types are the valid correction amounts - remove one entry from both and set new totals
                 correctionAmount = positiveAmount;
 
                 positiveObject = positives.shift()!;
@@ -112,48 +104,64 @@ export class MergerService {
                 negativeObject = negatives.shift()!;
                 negativeAmount = negativeObject?.kwotaWWalucie ?? NaN;
 
-                leftOversFlag = "nothingLeft";
+                leftoversFlag = LeftoversFlag.NoneLeft;
             }
-            const currencyCorrection = correctionAmount! * (negativeExchangeRate - positiveExchangeRate);
+            const currencyCorrection = correctionAmount * (negativeExchangeRate - positiveExchangeRate);
 
             allCurrencyCorrections.push({
-                referencjaKG,
+                referencjaKG: faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG,
                 currencyCorrection,
             });
         }
 
-        if(leftOversFlag == "negative"){
-
+        // determine which type of objects to return
+        if (leftoversFlag == LeftoversFlag.Negative) {
+            // make all negative entries negative again
             negatives = negatives.map(v => ({
                 ...v,
                 kwotaWWalucie: -v.kwotaWWalucie,
                 kwotaWZł: -v.kwotaWZł,
             }));
-    
+
             const negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
-            negatives = this._retrieveUnusedElement(-negativeAmount, negatives, negativeExchangeRate,negativeObject.referencjaKG,negativeObject.naDzien);
-    
+            negatives = this._retrieveUnusedElement(
+                -negativeAmount,
+                negatives,
+                negativeExchangeRate,
+                negativeObject.referencjaKG,
+                negativeObject.naDzien
+            );
+
             return [allCurrencyCorrections, negatives];
         }
-        else if(leftOversFlag == "positive"){
+        if (leftoversFlag == LeftoversFlag.Positive) {
             const positiveExchangeRate = positiveObject.kwotaWZł / positiveObject.kwotaWWalucie;
-            positives = this._retrieveUnusedElement(positiveAmount, positives, positiveExchangeRate, positiveObject.referencjaKG, positiveObject.naDzien);
+            positives = this._retrieveUnusedElement(
+                positiveAmount,
+                positives,
+                positiveExchangeRate,
+                positiveObject.referencjaKG,
+                positiveObject.naDzien
+            );
 
             return [allCurrencyCorrections, positives];
-            
         }
-        else{
-            return [allCurrencyCorrections, []];
-
-        };
+        return [allCurrencyCorrections, []];
     }
 
-    private _retrieveUnusedElement(currencyAmount: number, leftoverArray: MergerObject[], exchangeRate: number, referencjaKG: string, date: string) { // TODO: dodać możliwość oddawania nie wykorzystanych plusów
+    private _retrieveUnusedElement(
+        currencyAmount: number,
+        leftoverArray: MergerObject[],
+        exchangeRate: number,
+        referencjaKG: string,
+        date: string
+    ) {
+        // TODO: dodać możliwość oddawania nie wykorzystanych plusów
         const kwotaWZł = exchangeRate * currencyAmount;
 
         leftoverArray.unshift({
-            referencjaKG: referencjaKG, 
-            naDzien: date, 
+            referencjaKG: referencjaKG,
+            naDzien: date,
             kwotaWWalucie: currencyAmount,
             kwotaWZł,
             korekta: 'Nie',
