@@ -4,6 +4,7 @@
         <app-section required header="Dodaj plik PRN">
             <app-file-drop-zone (upload)="onFileUpload($event)" accept=".prn"></app-file-drop-zone>
             <app-file-display [file]="fileStorage.file()"></app-file-display>
+            <app-select [options]="FAKTORING_MODE_OPTIONS" label="Podstawa rozliczenia" [(value)]="faktoringMode" />
         </app-section>
         <app-section header="Przejrzyj podgląd pliku">
             <pre class="file-content-wrapper">{{ formattedFile() }}</pre>

@@ -11,8 +11,9 @@ import {
     FinalTableComponent,
     IconButtonComponent,
     SectionComponent,
+    SelectComponent,
 } from '@components';
-import { FaktoringService, FileStorageService, FinalMergerObject, MergerService } from '@services';
+import { FaktoringMode, FaktoringService, FileStorageService, FinalMergerObject, MergerService } from '@services';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
@@ -31,6 +32,7 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         FinalTableComponent,
         IconButtonComponent,
         DecimalPipe,
+        SelectComponent,
     ],
     providers: [FileSaverService],
     templateUrl: './faktoring.page.html',
@@ -43,6 +45,15 @@ export class FaktoringPage {
         private mergerService: MergerService,
         private fileSystem: FileSaverService
     ) {}
+
+    readonly FAKTORING_MODE_OPTIONS = [
+        { value: FaktoringMode.Negative, label: 'Kwoty ujemne' },
+        { value: FaktoringMode.Positive, label: 'Kwoty dodatnie' },
+    ];
+
+    faktoringMode: string = FaktoringMode.Positive;
+
+    log(...args: any[]){ console.log(...args) }
 
     onFileUpload(file: File): void {
         if (file.size > 10 * 1024 * 1024) {
@@ -106,7 +117,7 @@ export class FaktoringPage {
         this.areResultsLoading.set(false);
         if (!prnData) return;
         const { positives: addedPositives, negatives: addedNegatives } = prnData;
-        const processedData = this.mergerService.processData(addedPositives, addedNegatives,"negativeAsBase"); //TODO add dropdown value here
+        const processedData = this.mergerService.processData(addedPositives, addedNegatives, this.faktoringMode as FaktoringMode);
 
         setTimeout(() => {
             const element = document.getElementById('results')!;

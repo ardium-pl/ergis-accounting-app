@@ -1,0 +1,17 @@
+<app-_form-field
+    [label]="label"
+    [htmlFor]="htmlId"
+    [hasError]="hasError()"
+    [helperText]="helperText"
+>
+    <select
+        [name]="htmlId"
+        [id]="htmlId"
+        [value]="value"
+        (change)="emitValue($event)"
+    >
+        @for (opt of options; track $index) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+        }
+    </select>
+</app-_form-field>

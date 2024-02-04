@@ -30,7 +30,10 @@ export class MergerService {
             if (pastEntries[0].kwotaWWalucie < 0) {
                 return this._processData([...pastEntries, ...addedNegatives], addedPositives, faktoringMode);
             }
-            return this._processData(addedNegatives, [...pastEntries, ...addedPositives], faktoringMode);
+            if (pastEntries[0].kwotaWWalucie > 0) {
+                return this._processData(addedNegatives, [...pastEntries, ...addedPositives], faktoringMode);
+            }
+            throw new Error(`Kwota w walucie musi być różna od zero.`);
         } catch (err) {
             return null;
         }
