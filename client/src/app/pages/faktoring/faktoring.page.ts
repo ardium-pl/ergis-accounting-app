@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
 import {
@@ -45,7 +45,7 @@ export class FaktoringPage {
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
         private fileSystem: FileSaverService,
-        private prnReader: PrnReaderService,
+        private prnReader: PrnReaderService
     ) {}
 
     private readonly pastData = new JsonDataStore<FaktoringObject>(v => {
