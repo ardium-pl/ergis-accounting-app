@@ -6,7 +6,6 @@ export type FaktoringObject = {
     naDzien: string;
     kwotaWWalucie: number;
     kwotaWZl: number;
-    kwotaWZł?: number; //for backwards compatibility
     korekta: boolean;
 }
 

@@ -1,15 +1,16 @@
-import { Injectable, computed, signal } from "@angular/core";
+import { computed, signal } from "@angular/core";
 
 
-@Injectable({
-    providedIn: 'root',
-})
-export class JsonDataService<T extends Record<string, any>> {
+export class JsonDataStore<T extends Record<string, any>> {
+
+    constructor(public transformerFn?: (v: Record<string, any>) => T) {}
+
     private readonly _rawData = signal<string>('');
     private readonly _jsonData = computed<T[]>(() => {
         try {
-            const json = JSON.parse(this._rawData());
-            return json;
+            const json = JSON.parse(this._rawData()) as T[];
+            const transformed = this.transformerFn ? json.map(this.transformerFn) : json;
+            return transformed;
         } catch (err) {
             return [];
         }

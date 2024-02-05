@@ -1,13 +1,11 @@
-import { LOCALE_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, LOCALE_ID } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FaktoringPage, MainPage } from '@pages';
-import { PolymerscanService } from './services/polymerscan/polymerscan.service';
-import { FaktoringService } from './services/faktoring/faktoring.service';
-import { JsonDataService } from './services/json-data/json-data.service';
 import { PolymerscanPage } from './pages/polymerscan/polymerscan.page';
+import { FaktoringService } from './services/faktoring/faktoring.service';
+import { PolymerscanService } from './services/polymerscan/polymerscan.service';
 
 @Component({
     selector: 'app-root',
@@ -21,7 +19,7 @@ import { PolymerscanPage } from './pages/polymerscan/polymerscan.page';
         FaktoringPage,
         PolymerscanPage,
     ],
-    providers: [PolymerscanService, FaktoringService, JsonDataService, { provide: LOCALE_ID, useValue: 'pl-PL' }],
+    providers: [PolymerscanService, FaktoringService, { provide: LOCALE_ID, useValue: 'pl-PL' }],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
 })

@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, effect, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
 import {
@@ -13,10 +13,10 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringMode, FaktoringObject, FaktoringService, FileStorageService, FinalFaktoringObject } from '@services';
-import { randomBetween, sleep } from '@utils';
+import { FaktoringMode, FaktoringObject, FaktoringService, FileStorageService, FinalFaktoringObject, PrnReaderService } from '@services';
+import { parseYesNo, randomBetween, sleep } from '@utils';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
-import { JsonDataService } from 'src/app/services/json-data/json-data.service';
+import { JsonDataStore } from 'src/app/utils/json-data-store';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
 
@@ -45,14 +45,23 @@ export class FaktoringPage {
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
         private fileSystem: FileSaverService,
-        private pastData: JsonDataService<FaktoringObject> //TODO map past data in the service, allow for backwards compat
+        private prnReader: PrnReaderService,
     ) {}
+
+    private readonly pastData = new JsonDataStore<FaktoringObject>(v => {
+        return {
+            referencjaKG: v['referencjaKG'],
+            naDzien: v['naDzien'],
+            kwotaWWalucie: v['kwotaWWalucie'],
+            kwotaWZl: v['kwotaWZł'] ?? v['kwotaWZl'],
+            korekta: parseYesNo(v['korekta']),
+        };
+    });
 
     readonly FAKTORING_MODE_OPTIONS = [
         { value: FaktoringMode.Negative, label: 'Kwoty ujemne' },
         { value: FaktoringMode.Positive, label: 'Kwoty dodatnie' },
     ];
-
     faktoringMode: string = FaktoringMode.Negative;
 
     onFileUpload(file: File): void {
@@ -68,25 +77,9 @@ export class FaktoringPage {
     }
 
     readonly formattedFile = computed(() => {
-        const text = this.fileStorage.fileContent();
-        if (!text) return '';
-        const startPattern = '---------------------------- -------- -------------- --------';
-        const startIndex = text.indexOf(startPattern) + startPattern.length;
-        const endIndex = text.lastIndexOf('faktoring') + 'faktoring'.length;
-
-        let formatted = text;
-        if (startIndex > startPattern.length - 1 && endIndex > 'faktoring'.length - 1 && endIndex > startIndex) {
-            formatted = formatted.substring(startIndex, endIndex);
-        }
-        formatted = formatted
-            .trim()
-            .split('\n')
-            .map(v => v.trim())
-            .join('\n');
-        return formatted;
+        return this.prnReader.getPrnDataString(this.fileStorage.fileContent());
     });
 
-    results = true;
     readonly areResultsLoading = signal(false);
 
     readonly wasPastDataTouched = signal(false);
@@ -116,11 +109,7 @@ export class FaktoringPage {
         this.areResultsLoading.set(true);
         // sleep for a short while so that if an error is thrown, the results aren't immediate
         await sleep(500);
-        const processedData = this.faktoringService.processData(
-            prnContent,
-            this.pastData.data(),
-            this.faktoringMode as FaktoringMode
-        );
+        const processedData = this.faktoringService.processData(prnContent, this.pastData.data(), this.faktoringMode as FaktoringMode);
         // sleep a short random amount of time to give the illusion of a complex algorithm creating the results
         await sleep(randomBetween(4e3, 8e3));
         this.areResultsLoading.set(false);

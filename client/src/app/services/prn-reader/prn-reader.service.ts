@@ -12,11 +12,11 @@ export class PrnReaderService {
         const noHeaders = this._filterOutHeadersAndReverse(lines);
         return this._linesToPrnObjects(noHeaders);
     }
-    getPrnDataString(data: string): string {
+    getPrnDataString(data: string | null): string {
+        if (!data) return "";
         const lines = this._filterOnlyDataRows(data);
         const noHeaders = this._filterOutHeadersAndReverse(lines);
-        noHeaders.reverse();
-        return noHeaders.join('\n');
+        return noHeaders.reverse().join('\n');
     }
     private _filterOnlyDataRows(data: string): string[] {
         const lines = data.split('\n');

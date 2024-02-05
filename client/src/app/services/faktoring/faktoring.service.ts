@@ -17,9 +17,6 @@ export class FaktoringService {
         if (pastEntries.some(v => v.kwotaWWalucie == 0)) {
             throw new Error(`Kwota w walucie musi być różna od zero.`);
         }
-        console.log(pastEntries.slice(0, 5));
-        // map past entries for backwards compatibility
-        pastEntries = pastEntries.map(v => ({ ...v, kwotaWZl: v.kwotaWZl ?? v.kwotaWZł ?? 0 }))
 
         const positives: FaktoringObject[] = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
         const negatives: FaktoringObject[] = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];
