@@ -1,0 +1,47 @@
+button {
+    background: transparent;
+    cursor: pointer;
+    height: 2.25rem;
+    width: 2.25rem;
+    border: none;
+    border-radius: 9999px;
+    color: inherit;
+    font-size: 1rem;
+    user-select: none;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+
+    .focus-overlay {
+        background-color: black;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity 0.15s ease-in-out;
+        pointer-events: none;
+    }
+    &:hover .focus-overlay {
+        opacity: 4%;
+    }
+    &:active .focus-overlay {
+        opacity: 12%;
+    }
+    &:active .focus-overlay {
+        opacity: 10%;
+    }
+
+    &[disabled] {
+        opacity: 50%;
+
+        .focus-overlay {
+            opacity: 8%;
+        }
+    }
+}

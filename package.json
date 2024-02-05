@@ -5,7 +5,13 @@
     "author": "",
     "scripts": {
         "start": "npm run build && cd server && npm install && node src/index.js",
-        "build": "cd client && npm install && npm run build"
+        "build": "cd client && npm install && npm run build",
+        "watch": "cd client && npm run watch",
+        "server": "cd server && nodemon",
+        "dev": "concurrently --kill-others \"npm run watch\" \"npm run server\""
     },
-    "license": "MIT"
+    "license": "MIT",
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
 }
