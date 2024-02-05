@@ -2,11 +2,12 @@ import { Component, Input, signal, Output, EventEmitter } from '@angular/core';
 import { SelectOption } from './select.types';
 import { FormFieldComponent } from '../_internal/form-field/form-field.component';
 import { coerceBooleanProperty } from '@ardium-ui/devkit';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-select',
     standalone: true,
-    imports: [FormFieldComponent],
+    imports: [FormFieldComponent, FormsModule],
     templateUrl: './select.component.html',
     styleUrl: './select.component.scss',
 })
@@ -23,8 +24,8 @@ export class SelectComponent {
     @Input() value?: string;
     @Output() valueChange = new EventEmitter<string>();
 
-    emitValue(e: Event): void {
-        this.valueChange.emit((e.target as HTMLSelectElement).value);
+    emitValue(v: string): void {
+        this.valueChange.emit(v);
     }
 
     @Input() label?: string;

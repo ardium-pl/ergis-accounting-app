@@ -5,10 +5,11 @@
     [helperText]="helperText"
 >
     <select
-        [name]="htmlId"
+        #select
+        [name]="htmlId ?? ''"
         [id]="htmlId"
-        [value]="value"
-        (change)="emitValue($event)"
+        [(ngModel)]="value"
+        (ngModelChange)="valueChange.emit($event)"
     >
         @for (opt of options; track $index) {
             <option [value]="opt.value">{{ opt.label }}</option>

@@ -53,11 +53,7 @@ export class FaktoringPage {
         { value: FaktoringMode.Positive, label: 'Kwoty dodatnie' },
     ];
 
-    faktoringMode: string = FaktoringMode.Positive;
-
-    log(...args: any[]) {
-        console.log(...args);
-    }
+    faktoringMode: string = FaktoringMode.Negative;
 
     onFileUpload(file: File): void {
         if (file.size > 10 * 1024 * 1024) {
