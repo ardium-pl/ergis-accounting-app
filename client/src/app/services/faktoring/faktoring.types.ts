@@ -5,7 +5,8 @@ export type FaktoringObject = {
     referencjaKG: string;
     naDzien: string;
     kwotaWWalucie: number;
-    kwotaWZł: number;
+    kwotaWZl: number;
+    kwotaWZł?: number; //for backwards compatibility
     korekta: boolean;
 }
 

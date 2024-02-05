@@ -17,6 +17,9 @@ export class FaktoringService {
         if (pastEntries.some(v => v.kwotaWWalucie == 0)) {
             throw new Error(`Kwota w walucie musi być różna od zero.`);
         }
+        console.log(pastEntries.slice(0, 5));
+        // map past entries for backwards compatibility
+        pastEntries = pastEntries.map(v => ({ ...v, kwotaWZl: v.kwotaWZl ?? v.kwotaWZł ?? 0 }))
 
         const positives: FaktoringObject[] = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
         const negatives: FaktoringObject[] = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];
@@ -25,11 +28,11 @@ export class FaktoringService {
         for (const obj of rawPrnObjects) {
             const mappedObj = this._mapRawPrnObject(obj);
             if (mappedObj.korekta) continue;
-            if (mappedObj.kwotaWZł < 0) {
+            if (mappedObj.kwotaWZl < 0) {
                 negatives.push(mappedObj);
                 continue;
             }
-            if (mappedObj.kwotaWZł > 0) {
+            if (mappedObj.kwotaWZl > 0) {
                 positives.push(mappedObj);
                 continue;
             }
@@ -52,7 +55,7 @@ export class FaktoringService {
             referencjaKG: rawObject['ReferencjaKG'],
             naDzien: rawObject['NaDzień'],
             kwotaWWalucie: parseNumber(rawObject['KwotaWWalucie']),
-            kwotaWZł: parseNumber(rawObject['Kwota']),
+            kwotaWZl: parseNumber(rawObject['Kwota']),
             korekta: parseYesNo(rawObject['Kor']),
         };
     }
@@ -67,7 +70,7 @@ export class FaktoringService {
         negatives = negatives.map(v => ({
             ...v,
             kwotaWWalucie: -v.kwotaWWalucie,
-            kwotaWZł: -v.kwotaWZł,
+            kwotaWZl: -v.kwotaWZl,
         }));
 
         // get the first
@@ -78,7 +81,7 @@ export class FaktoringService {
         let negativeAmount = negativeObject.kwotaWWalucie;
 
         if (positives.length == 0) {
-            const negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
+            const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
             negatives = this._retrieveUnusedElement(
                 negativeAmount,
                 negatives,
@@ -93,8 +96,8 @@ export class FaktoringService {
         let leftoversFlag: LeftoversFlag = LeftoversFlag.NoneLeft;
 
         while ((positives.length > 0 || !isNaN(positiveAmount)) && negatives.length > 0) {
-            const negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
-            const positiveExchangeRate = positiveObject.kwotaWZł / positiveObject.kwotaWWalucie;
+            const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
+            const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
 
             const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG;
 
@@ -108,8 +111,6 @@ export class FaktoringService {
                 negativeObject = negatives.shift()!;
                 negativeAmount = negativeObject?.kwotaWWalucie ?? NaN;
 
-                console.log('%cremoving a negative', 'color:#a00', negatives.length, positiveAmount);
-
                 leftoversFlag = LeftoversFlag.Positive;
             } else if (positiveAmount < negativeAmount) {
                 // positive is the valid correction amount - remove one entry and subtract from the negative total
@@ -118,8 +119,6 @@ export class FaktoringService {
 
                 positiveObject = positives.shift()!;
                 positiveAmount = positiveObject?.kwotaWWalucie ?? NaN;
-
-                console.log('%cremoving a positive', 'color:#0a0', positives.length, negativeAmount);
 
                 leftoversFlag = LeftoversFlag.Negative;
             } else {
@@ -131,8 +130,6 @@ export class FaktoringService {
 
                 negativeObject = negatives.shift()!;
                 negativeAmount = negativeObject?.kwotaWWalucie ?? NaN;
-
-                console.log('%cremoving both', 'color:#00a', positives.length, negatives.length);
 
                 leftoversFlag = LeftoversFlag.NoneLeft;
             }
@@ -150,10 +147,10 @@ export class FaktoringService {
             negatives = negatives.map(v => ({
                 ...v,
                 kwotaWWalucie: -v.kwotaWWalucie,
-                kwotaWZł: -v.kwotaWZł,
+                kwotaWZl: -v.kwotaWZl,
             }));
 
-            const negativeExchangeRate = negativeObject.kwotaWZł / negativeObject.kwotaWWalucie;
+            const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
             negatives = this._retrieveUnusedElement(
                 -negativeAmount,
                 negatives,
@@ -165,7 +162,7 @@ export class FaktoringService {
             return [allCurrencyCorrections, negatives];
         }
         if (leftoversFlag == LeftoversFlag.Positive) {
-            const positiveExchangeRate = positiveObject.kwotaWZł / positiveObject.kwotaWWalucie;
+            const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
             positives = this._retrieveUnusedElement(
                 positiveAmount,
                 positives,
@@ -187,13 +184,13 @@ export class FaktoringService {
         date: string
     ) {
         // TODO: dodać możliwość oddawania nie wykorzystanych plusów
-        const kwotaWZł = exchangeRate * currencyAmount;
+        const kwotaWZl = exchangeRate * currencyAmount;
 
         leftoverArray.unshift({
             referencjaKG: referencjaKG,
             naDzien: date,
             kwotaWWalucie: currencyAmount,
-            kwotaWZł,
+            kwotaWZl: kwotaWZl,
             korekta: false,
         });
         return leftoverArray;
