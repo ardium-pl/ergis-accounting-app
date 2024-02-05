@@ -181,14 +181,14 @@ export class FaktoringService {
         leftoverArray: FaktoringObject[],
         exchangeRate: number,
         referencjaKG: string,
-        date: string
+        naDzien: string
     ) {
         // TODO: dodać możliwość oddawania nie wykorzystanych plusów
         const kwotaWZl = exchangeRate * currencyAmount;
 
         leftoverArray.unshift({
-            referencjaKG: referencjaKG,
-            naDzien: date,
+            referencjaKG,
+            naDzien,
             kwotaWWalucie: currencyAmount,
             kwotaWZl: kwotaWZl,
             korekta: false,

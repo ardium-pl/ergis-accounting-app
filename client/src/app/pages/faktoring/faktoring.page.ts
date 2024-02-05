@@ -45,7 +45,7 @@ export class FaktoringPage {
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
         private fileSystem: FileSaverService,
-        private pastData: JsonDataService<FaktoringObject>
+        private pastData: JsonDataService<FaktoringObject> //TODO map past data in the service, allow for backwards compat
     ) {}
 
     readonly FAKTORING_MODE_OPTIONS = [
@@ -141,35 +141,35 @@ export class FaktoringPage {
         // notify the user there is no data generated
         if (!processedData) {
             this.tableData.set(null);
-            this.unusedNegatives.set(NO_UNUSED_NEGATIVES_MESSAGE);
-            this.unusedNegativesCount.set(null);
+            this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
+            this.leftoversCount.set(null);
             return;
         }
         // now there is some data, split it into the table portion and unused entries portion
-        const [data, negatives] = processedData;
+        const [data, leftovers] = processedData;
         this.tableData.set(data);
         // if there are no unused entries, display the appropriate message
-        if (negatives.length == 0) {
-            this.unusedNegatives.set(NO_UNUSED_NEGATIVES_MESSAGE);
-            this.unusedNegativesCount.set(null);
+        if (leftovers.length == 0) {
+            this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
+            this.leftoversCount.set(null);
             return;
         }
         // there are some unused entries - allow for them to be downloaded
-        this.unusedNegatives.set(JSON.stringify(negatives));
-        this.unusedNegativesCount.set(negatives.length);
+        this.leftovers.set(JSON.stringify(leftovers));
+        this.leftoversCount.set(leftovers.length);
     }
 
     readonly tableData = signal<FinalFaktoringObject[] | null>(null);
-    readonly unusedNegatives = signal<string>(NO_UNUSED_NEGATIVES_MESSAGE);
-    readonly unusedNegativesCount = signal<number | null>(null);
-    readonly hasAnyUnusedNegatives = computed(() => {
-        return this.unusedNegatives() != NO_UNUSED_NEGATIVES_MESSAGE;
+    readonly leftovers = signal<string>(NO_UNUSED_NEGATIVES_MESSAGE);
+    readonly leftoversCount = signal<number | null>(null);
+    readonly hasAnyLeftovers = computed(() => {
+        return this.leftovers() != NO_UNUSED_NEGATIVES_MESSAGE;
     });
 
-    downloadUnusedNegatives(): void {
-        if (!this.hasAnyUnusedNegatives()) return;
+    downloadLeftovers(): void {
+        if (!this.hasAnyLeftovers()) return;
 
-        this.fileSystem.saveAs(this.unusedNegatives(), {
+        this.fileSystem.saveAs(this.leftovers(), {
             fileName: 'nieużyte.txt',
             method: FileSaverSaveMethod.PreferFileSystem,
             types: [
