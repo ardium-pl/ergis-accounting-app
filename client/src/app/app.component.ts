@@ -4,9 +4,10 @@ import { HttpClientModule } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FaktoringPage, MainPage } from '@pages';
-import { MergerService } from './services/merger/merger.service';
 import { PolymerscanService } from './services/polymerscan/polymerscan.service';
-import {FaktoringService} from './services/faktoring/faktoring.service';
+import { FaktoringService } from './services/faktoring/faktoring.service';
+import { JsonDataService } from './services/json-data/json-data.service';
+import { PolymerscanPage } from './pages/polymerscan/polymerscan.page';
 
 @Component({
     selector: 'app-root',
@@ -18,8 +19,9 @@ import {FaktoringService} from './services/faktoring/faktoring.service';
         //pages
         MainPage,
         FaktoringPage,
+        PolymerscanPage,
     ],
-    providers: [MergerService, PolymerscanService, FaktoringService,{ provide: LOCALE_ID, useValue: 'pl-PL' }],
+    providers: [PolymerscanService, FaktoringService, JsonDataService, { provide: LOCALE_ID, useValue: 'pl-PL' }],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
 })

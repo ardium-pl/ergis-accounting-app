@@ -1,20 +1,15 @@
 
 
-export const TakAlboNie = {
-    Tak: 'Tak',
-    Nie: 'Nie',
-} as const;
-export type TakAlboNie = typeof TakAlboNie[keyof typeof TakAlboNie];
 
-export type MergerObject = {
+export type FaktoringObject = {
     referencjaKG: string;
     naDzien: string;
     kwotaWWalucie: number;
     kwotaWZł: number;
-    korekta: TakAlboNie;
+    korekta: boolean;
 }
 
-export type FinalMergerObject = {
+export type FinalFaktoringObject = {
     referencjaKG: string;
     currencyCorrection: number;
 }

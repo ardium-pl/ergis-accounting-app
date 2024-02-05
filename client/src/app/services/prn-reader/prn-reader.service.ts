@@ -7,16 +7,21 @@ import { PrnObject } from './prn-reader.types';
 export class PrnReaderService {
     constructor() {}
 
-    readPrn(data: string): [PrnObject[], string] {
+    readPrn(data: string): PrnObject[] {
         const lines = this._filterOnlyDataRows(data);
         const noHeaders = this._filterOutHeadersAndReverse(lines);
         return this._linesToPrnObjects(noHeaders);
     }
-
+    getPrnDataString(data: string): string {
+        const lines = this._filterOnlyDataRows(data);
+        const noHeaders = this._filterOutHeadersAndReverse(lines);
+        noHeaders.reverse();
+        return noHeaders.join('\n');
+    }
     private _filterOnlyDataRows(data: string): string[] {
         const lines = data.split('\n');
         const filtered = lines
-            .filter((l) => /^  [a-z0-9-]/i.test(l))
+            .filter((l) => /^  [a-z0-9./-]/i.test(l))
             .map((v) => v.trimStart());
         return filtered;
     }
@@ -35,7 +40,7 @@ export class PrnReaderService {
             return true;
         });
     }
-    private _linesToPrnObjects(lines: string[]): [PrnObject[], string] {
+    private _linesToPrnObjects(lines: string[]): PrnObject[] {
         const headersLine = lines.pop()!;
         const widths = lines
             .pop()!
@@ -62,9 +67,7 @@ export class PrnReaderService {
             return resultObject;
         });
 
-        const contentAsString = unreversedLines.join('\n');
-
-        return [objects, contentAsString];
+        return objects;
     }
     private _splitSingleLine(line: string, widths: number[]): string[] {
         const items: string[] = [];

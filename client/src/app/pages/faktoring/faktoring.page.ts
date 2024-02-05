@@ -13,8 +13,10 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringMode, FaktoringService, FileStorageService, FinalMergerObject, MergerService } from '@services';
+import { FaktoringMode, FaktoringObject, FaktoringService, FileStorageService, FinalFaktoringObject } from '@services';
+import { randomBetween, sleep } from '@utils';
 import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
+import { JsonDataService } from 'src/app/services/json-data/json-data.service';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
 
@@ -42,8 +44,8 @@ export class FaktoringPage {
     constructor(
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
-        private mergerService: MergerService,
-        private fileSystem: FileSaverService
+        private fileSystem: FileSaverService,
+        private pastData: JsonDataService<FaktoringObject>
     ) {}
 
     readonly FAKTORING_MODE_OPTIONS = [
@@ -53,7 +55,9 @@ export class FaktoringPage {
 
     faktoringMode: string = FaktoringMode.Positive;
 
-    log(...args: any[]){ console.log(...args) }
+    log(...args: any[]) {
+        console.log(...args);
+    }
 
     onFileUpload(file: File): void {
         if (file.size > 10 * 1024 * 1024) {
@@ -88,37 +92,44 @@ export class FaktoringPage {
 
     results = true;
     readonly areResultsLoading = signal(false);
-    readonly wasNegativesTouched = signal(false);
+
+    readonly wasPastDataTouched = signal(false);
+    readonly isPastDataValid = this.pastData.isDataValid;
 
     readonly errorBoxState = computed<ErrorBoxType>(() => {
-        if (!this.wasNegativesTouched()) return ErrorBoxType.Info;
-        if (!this.isWrongFormat()) {
+        if (!this.wasPastDataTouched()) return ErrorBoxType.Info;
+        if (!this.isPastDataValid()) {
             return ErrorBoxType.Error;
-        }
-        if (this.mergerService.negativesData().length == 0) {
-            ErrorBoxType.Error;
         }
         return ErrorBoxType.Success;
     });
-    readonly isWrongFormat = this.mergerService.isNegativeDataValid;
 
-    onNegativeValuesBlur(v: string): void {
-        this.wasNegativesTouched.set(true);
-        this.mergerService.setNegativesData(v);
+    onPastDataBlur(v: string): void {
+        this.wasPastDataTouched.set(true);
+        this.pastData.setFromString(v);
     }
-    onNegativeValuesPaste(event: ClipboardEvent): void {
+    onPastDataPaste(event: ClipboardEvent): void {
         const v = event.clipboardData!.getData('Text');
-        this.onNegativeValuesBlur(v);
+        this.onPastDataBlur(v);
     }
 
     async onGenerateButtonClick(): Promise<void> {
-        this.areResultsLoading.set(true);
-        const prnData = await this.faktoringService.processFaktoringData(this.formattedFile());
-        this.areResultsLoading.set(false);
-        if (!prnData) return;
-        const { positives: addedPositives, negatives: addedNegatives } = prnData;
-        const processedData = this.mergerService.processData(addedPositives, addedNegatives, this.faktoringMode as FaktoringMode);
+        const prnContent = this.fileStorage.fileContent();
+        if (!prnContent) return;
 
+        this.areResultsLoading.set(true);
+        // sleep for a short while so that if an error is thrown, the results aren't immediate
+        await sleep(500);
+        const processedData = this.faktoringService.processData(
+            prnContent,
+            this.pastData.data(),
+            this.faktoringMode as FaktoringMode
+        );
+        // sleep a short random amount of time to give the illusion of a complex algorithm creating the results
+        await sleep(randomBetween(4e3, 8e3));
+        this.areResultsLoading.set(false);
+
+        // scroll to errors after the section gets rendered
         setTimeout(() => {
             const element = document.getElementById('results')!;
             const headerOffset = 16;
@@ -131,24 +142,28 @@ export class FaktoringPage {
             });
         }, 0);
 
+        // notify the user there is no data generated
         if (!processedData) {
             this.tableData.set(null);
             this.unusedNegatives.set(NO_UNUSED_NEGATIVES_MESSAGE);
             this.unusedNegativesCount.set(null);
             return;
         }
+        // now there is some data, split it into the table portion and unused entries portion
         const [data, negatives] = processedData;
         this.tableData.set(data);
+        // if there are no unused entries, display the appropriate message
         if (negatives.length == 0) {
             this.unusedNegatives.set(NO_UNUSED_NEGATIVES_MESSAGE);
             this.unusedNegativesCount.set(null);
             return;
         }
+        // there are some unused entries - allow for them to be downloaded
         this.unusedNegatives.set(JSON.stringify(negatives));
         this.unusedNegativesCount.set(negatives.length);
     }
 
-    readonly tableData = signal<FinalMergerObject[] | null>(null);
+    readonly tableData = signal<FinalFaktoringObject[] | null>(null);
     readonly unusedNegatives = signal<string>(NO_UNUSED_NEGATIVES_MESSAGE);
     readonly unusedNegativesCount = signal<number | null>(null);
     readonly hasAnyUnusedNegatives = computed(() => {

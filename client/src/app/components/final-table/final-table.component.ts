@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { FinalMergerObject } from '@services';
+import { FinalFaktoringObject } from '@services';
 
 @Component({
   selector: 'app-final-table',
@@ -10,7 +10,7 @@ import { FinalMergerObject } from '@services';
   styleUrl: './final-table.component.scss'
 })
 export class FinalTableComponent {
-    @Input({ required: true }) data!: FinalMergerObject[] | null;
+    @Input({ required: true }) data!: FinalFaktoringObject[] | null;
 
     abs = Math.abs;
 }
