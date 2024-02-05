@@ -12,6 +12,7 @@ server/client
 **/npm-debug.log
 **/yarn-error.log
 package-lock.json
+server/_uploads
 
 # IDEs and editors
 **/.idea/

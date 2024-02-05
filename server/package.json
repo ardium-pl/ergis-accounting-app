@@ -1,6 +1,7 @@
 {
   "name": "ergis-accounting-server",
   "version": "0.0.0",
+  "type": "module",
   "description": "",
   "main": "src/index.js",
   "scripts": {
@@ -14,8 +15,12 @@
   "dependencies": {
     "axios": "^1.6.3",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "exceljs": "^4.4.0",
     "express": "^4.18.2",
-    "langchain": "^0.1.2",
-    "openai": "^4.24.3"
+    "langchain": "^0.1.3",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.24.7",
+    "pdfreader": "^3.0.2"
   }
 }

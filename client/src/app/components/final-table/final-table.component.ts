@@ -1,10 +1,11 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { FinalMergerObject } from '@services';
 
 @Component({
   selector: 'app-final-table',
   standalone: true,
-  imports: [],
+  imports: [DecimalPipe],
   templateUrl: './final-table.component.html',
   styleUrl: './final-table.component.scss'
 })

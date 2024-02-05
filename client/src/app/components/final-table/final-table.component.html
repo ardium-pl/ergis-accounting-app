@@ -8,7 +8,7 @@
                 <td>75210</td>
                 <td>0d00</td>
                 <td>RK{{ row.referencjaKG }}</td>
-                <td>{{ abs(row.currencyCorrection) }}</td>
+                <td>{{ abs(row.currencyCorrection) | number: '1.2-2' }}</td>
             </tr>
             }
         </tbody>
@@ -21,7 +21,7 @@
                 <td>26403</td>
                 <td>0000</td>
                 <td>RK{{ row.referencjaKG }}</td>
-                <td>{{ row.currencyCorrection }}</td>
+                <td>{{ row.currencyCorrection | number: '1.2-2' }}</td>
             </tr>
             }
         </tbody>

@@ -1,5 +1,9 @@
-const express = require("express");
-const path = require("path");
+import path from "path";
+import express from "express";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const router = express.Router();
 
 //if we want all possible URLs to point to the main page we need to use both
@@ -8,4 +12,4 @@ const router = express.Router();
 router.use('/', express.static(path.join(__dirname, "../client/browser")));
 router.use('*', express.static(path.join(__dirname, "../client/browser")));
 
-module.exports = router;
+export default router;

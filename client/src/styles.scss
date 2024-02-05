@@ -78,6 +78,7 @@ body {
     min-width: 100vw;
     max-width: 100vw;
     min-height: 100dvh;
+    scroll-behavior: smooth;
 }
 
 h1,
@@ -107,6 +108,10 @@ h2 {
     margin-bottom: 1rem;
 }
 
+strong {
+    font-weight: bold;
+}
+
 .additional {
     font-size: 14px;
     color: #666;
@@ -118,4 +123,45 @@ span.material-symbols-outlined {
 
 .no-pointer {
     pointer-events: none;
+}
+
+main {
+    width: max-content;
+    max-width: 95%;
+    min-width: 25rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+a[href], a[routerLink], .link {
+    color: rgb(0, 102, 204);
+    color: -webkit-link;
+    text-decoration: underline;
+
+    &.disabled {
+        opacity: 50%;
+    }
+}
+
+mat-spinner {
+    --mdc-circular-progress-active-indicator-color: var(--main);
+}
+
+//! markdown
+markdown {
+    text-align: justify;
+
+    p, ul {
+        padding: 0.33rem;
+    }
+    li {
+        padding: 0.05rem;
+    }
+    h2 {
+        padding: 0.33rem;
+        margin: 0;
+        height: unset;
+    }
 }

@@ -18,3 +18,9 @@ export type FinalMergerObject = {
     referencjaKG: string;
     currencyCorrection: number;
 }
+
+export const FaktoringMode = {
+    positiveAsBase: "positiveAsBase",
+    negativeAsBase: "negativeAsBase"
+} as const
+export type FaktoringMode = typeof FaktoringMode[keyof typeof FaktoringMode];

@@ -15,6 +15,7 @@ import { coerceBooleanProperty } from '@ardium-ui/devkit';
 export class SectionComponent {
 
     @Input({ required: true }) header!: string;
+    @Input() headerId?: string;
 
     private _required: boolean = false;
     @Input()
