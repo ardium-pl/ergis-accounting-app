@@ -1,0 +1,33 @@
+<main>
+    <h1>Polymerscan</h1>
+    <div class="sections-wrapper polymerscan">
+        <app-section required header="Dodaj plik PDF">
+            <app-file-drop-zone (upload)="onFileUpload($event)" accept=".pdf"></app-file-drop-zone>
+            <app-file-display [file]="fileStorage.file()"></app-file-display>
+        </app-section>
+        <app-section required header="Generuj dane">
+            <div class="button-container">
+                <app-button [disabled]="isButtonDisabled()"
+                    (click)="onGenerateButtonClick()">Generuj</app-button>
+                @if (areResultsLoading()) {<mat-spinner diameter="36"></mat-spinner>}
+            </div>
+        </app-section>
+        <app-section header="Przeczytaj odpowiedź">
+            @if (areResultsLoading()) {
+                <p>
+                    @if (uploadProgress() < 100) {
+                        Wysyłanie pliku PDF... ({{ uploadProgress() | number: '1.0-0' }}%)
+                    } @else {
+                        Oczekiwanie na odpowiedź...
+                    }
+                </p>
+            } @else {
+                <div class="markdown-container">
+                    <markdown>
+                        {{ formattedResponse() }}
+                    </markdown>
+                </div>
+            }
+        </app-section>
+    </div>
+</main>

@@ -14,6 +14,9 @@ button {
     font-weight: 500;
     user-select: none;
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.6ch;
     
     transition: box-shadow 0.28s var(--timing-fn), background-color 0.2s ease, opacity 0.2s ease;
     box-shadow: var(--simple-shadow);

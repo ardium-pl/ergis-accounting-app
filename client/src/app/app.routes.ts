@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
-import { MainPage } from './pages/main/main.page';
+import { MainPage, FaktoringPage } from '@pages';
+import { PolymerscanPage } from './pages/polymerscan/polymerscan.page';
 
 export const routes: Routes = [
     { path: "", component: MainPage },
-    { path: "faktoring", component: MainPage },
+    { path: "faktoring", component: FaktoringPage },
+    { path: "polymerscan", component: PolymerscanPage },
     { path: "**", redirectTo: "" }
 ];
