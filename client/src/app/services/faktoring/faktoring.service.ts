@@ -25,6 +25,7 @@ export class FaktoringService {
         for (const obj of rawPrnObjects) {
             const mappedObj = this._mapRawPrnObject(obj);
             if (mappedObj.korekta) continue;
+            if(mappedObj.kwotaWWalucie == 0) continue; // Removing correction positions, marked as Rkur WB
             if (mappedObj.kwotaWZl < 0) {
                 negatives.push(mappedObj);
                 continue;
