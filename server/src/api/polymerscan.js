@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import fs from 'fs';
 import { PdfReader } from "pdfreader";
 
-const PHRASES = ['European LDPE', 'European polypropylene'];
+const PHRASES = ['European LDPE', 'European polypropylene','Platts European and Turkish PVC'];
 
 export default async (req, res) => {
     const pdfFile = req.files[0];
@@ -47,7 +47,24 @@ export default async (req, res) => {
         return res.status(400).send({ success: false, error: 'NO_DATA_ERR' });
     }
 
-    const polymerScan = `LDPE report: \n${polymerScanRawData[0].textContent}\n Polypropylene report: \n${polymerScanRawData[1].textContent}`;
+    const messagePrefix = `As a business analyst with 10 years of experience based on the attached document 
+    make a note up to 400 words regarding changes in`;
+
+    // Prompts
+    const messageLDPE = `${messagePrefix} LDPE. In the note, divide the answer
+    into regions: Europe, North America, Asia, Rest of the World. The recipients of the
+    summary will be salespeople. In the note, provide the values for raw materials if they
+    appear in the attached document. Values may be given in $/MT. LDPE report: \n${polymerScanRawData[0].textContent}\n`;
+
+    const messagePP = `${messagePrefix} PP. In the note, divide the answer
+    into regions: Europe, North America, Asia, Rest of the World. The recipients of the
+    summary will be salespeople. In the note, provide the values for raw materials if they
+    appear in the attached document. Values may be given in $/MT. PP report: \n${polymerScanRawData[1].textContent}\n`;
+
+    const messagePVC = `${messagePrefix} PVC. In the note, divide the answer
+    into regions: Europe, North America, Asia, Rest of the World. The recipients of the
+    summary will be salespeople. In the note, provide the values for raw materials if they
+    appear in the attached document. Values may be given in $/MT. PVC report: \n${polymerScanRawData[2].textContent}\n`;
 
     try {
         const openai = new OpenAI({
@@ -55,31 +72,29 @@ export default async (req, res) => {
             timeout: 180 * 1000, // 3min
         });
 
-        const messages = [{
-            role: 'user',
-            content: `Please act and respond as an analyst. Please take a look at the report below and summarize the information
-             about the European LDPE market and the European polypropylene market.Please format your answer in Polish. Report: ${polymerScan}`
-        }];
+        const promises = [messageLDPE, messagePP, messagePVC].map(message => 
+            openai.chat.completions.create({
+                model: 'gpt-4-0125-preview',
+                messages: [{ role: 'user', content: message }],
+                temperature: 0.2
+            })
+        );
 
         const startDate = new Date();
 
-        const chatCompletion = await openai.chat.completions.create({
-            model: 'gpt-4-0125-preview',
-            messages: messages,
-            temperature: 0.2
-        });
+        const results = await Promise.all(promises);
 
-        console.info(`Polymerscan OpenAI request successful. Completed it ${Date.now() - startDate.valueOf()}ms`)
+        console.info(`Polymerscan OpenAI requests successful. Completed in ${Date.now() - startDate.valueOf()}ms`);
 
-        if (chatCompletion && chatCompletion.choices && chatCompletion.choices.length > 0) {
-            const responseMessages = chatCompletion.choices[0].message;
+        const combinedResponseText = results.reduce((acc, result) => {
+            if (result && result.choices && result.choices.length > 0) {
+                return acc + result.choices[0].message.content + "\n\n"; 
+            } else {
+                return acc + 'NO_AI_RESPONSE\n\n';
+            }
+        }, '');
 
-            const formattedResponse = responseMessages.content;
-
-            res.status(200).json({ success: true, response: formattedResponse });
-        } else {
-            res.status(204).send({ success: false, error: 'NO_AI_RESPONSE' });
-        }
+        res.status(200).json({ success: true, response: combinedResponseText });
     } catch (error) {
         console.error('Error occurred:', error.message);
         console.error('Stack Trace:', error.stack);
