@@ -1,0 +1,11 @@
+<div class="form-field" [class.has-error]="hasError()">
+    @if (label) {
+        <label [htmlFor]="htmlFor">{{ label }}</label>
+    }
+    <div class="form-field-content">
+        <ng-content></ng-content>
+    </div>
+    @if (helperText) {
+        <div class="helper-text">{{ helperText }}</div>
+    }
+</div>

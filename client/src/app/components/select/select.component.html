@@ -1,0 +1,18 @@
+<app-_form-field
+    [label]="label"
+    [htmlFor]="htmlId"
+    [hasError]="hasError()"
+    [helperText]="helperText"
+>
+    <select
+        #select
+        [name]="htmlId ?? ''"
+        [id]="htmlId"
+        [(ngModel)]="value"
+        (ngModelChange)="valueChange.emit($event)"
+    >
+        @for (opt of options; track $index) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+        }
+    </select>
+</app-_form-field>

@@ -27,6 +27,7 @@
             "@components": ["src/app/components/index"],
             "@pages": ["src/app/pages/index"],
             "@services": ["src/app/services/index"],
+            "@utils": ["src/app/utils/index"],
         }
     },
     "angularCompilerOptions": {
