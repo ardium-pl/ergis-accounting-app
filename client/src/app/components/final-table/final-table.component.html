@@ -1,8 +1,8 @@
-@if (data) {
+@if (data()) {
 <div class="tables-container">
     <table class="results-table">
         <tbody class="results-table-body">
-            @for (row of data; track $index) {
+            @for (row of data(); track $index) {
             <tr class="results-row" [class.above-zero]="row.currencyCorrection > 0" [class.below-zero]="row.currencyCorrection < 0">
                 <td>{{ row.currencyCorrection > 0 ? 750 : 751 }}</td>
                 <td>75210</td>
@@ -15,7 +15,7 @@
     </table>
     <table class="results-table">
         <tbody class="results-table-body">
-            @for (row of data; track $index) {
+            @for (row of data(); track $index) {
             <tr class="results-row" [class.above-zero]="row.currencyCorrection > 0" [class.below-zero]="row.currencyCorrection < 0">
                 <td>264</td>
                 <td>26403</td>
