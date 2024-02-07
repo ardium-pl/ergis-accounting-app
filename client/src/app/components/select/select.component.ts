@@ -1,8 +1,8 @@
-import { Component, Input, signal, Output, EventEmitter } from '@angular/core';
-import { SelectOption } from './select.types';
-import { FormFieldComponent } from '../_internal/form-field/form-field.component';
-import { coerceBooleanProperty } from '@ardium-ui/devkit';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { coerceBooleanProperty } from '@ardium-ui/devkit';
+import { FormFieldComponent } from '../_internal/form-field/form-field.component';
+import { SelectOption } from './select.types';
 
 @Component({
     selector: 'app-select',
@@ -12,30 +12,24 @@ import { FormsModule } from '@angular/forms';
     styleUrl: './select.component.scss',
 })
 export class SelectComponent {
-    @Input({
-        required: true,
+    readonly options = input.required<any, Exclude<SelectOption, string>[]>({
         alias: 'options',
         transform: (value: SelectOption[]): Exclude<SelectOption, string>[] => {
             return value.map(v => (typeof v == 'string' ? { value: v, label: v } : v));
         },
-    })
-    options!: Exclude<SelectOption, string>[];
+    });
 
-    @Input() value?: string;
+    readonly value = input<string | undefined>();
     @Output() valueChange = new EventEmitter<string>();
 
     emitValue(v: string): void {
         this.valueChange.emit(v);
     }
 
-    @Input() label?: string;
-    @Input() htmlId?: string;
+    readonly label = input<string | undefined>();
+    readonly htmlId = input<string | undefined>();
 
-    @Input() helperText?: string;
+    readonly helperText = input<string | undefined>();
 
-    readonly hasError = signal<boolean>(false);
-    @Input('hasError')
-    set _hasError(v: any) {
-        this.hasError.set(coerceBooleanProperty(v));
-    }
+    readonly hasError = input<any, boolean>(false, { transform: v => coerceBooleanProperty(v) });
 }

@@ -1,5 +1,5 @@
 <div class="file-preview">
-    @if (!file) {
+    @if (!file()) {
         <div id="file-not-uploaded">Nie dodano żadnego pliku!</div>
     } @else {
         <div id="file-uploaded">
@@ -7,8 +7,8 @@
                 description
             </span>
             <div class="file-info">
-                <div id="file-name">{{ file.name }}</div>
-                <div id="file-size" class="additional">{{ file.size | filesize }}</div>
+                <div id="file-name">{{ file()!.name }}</div>
+                <div id="file-size" class="additional">{{ file()!.size | filesize }}</div>
             </div>
         </div>
     }

@@ -1,4 +1,4 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { coerceBooleanProperty } from '@ardium-ui/devkit';
 
 @Component({
@@ -9,12 +9,10 @@ import { coerceBooleanProperty } from '@ardium-ui/devkit';
   styleUrl: './form-field.component.scss'
 })
 export class FormFieldComponent {
-    @Input() label?: string;
-    @Input() htmlFor?: string;
+    readonly label = input<string | undefined>();
+    readonly htmlFor = input<string | undefined>();
 
-    @Input() helperText?: string;
+    readonly helperText = input<string | undefined>();
     
-    readonly hasError = signal<boolean>(false);
-    @Input("hasError")
-    set _hasError(v: any) { this.hasError.set(coerceBooleanProperty(v)); }
+    readonly hasError = input<any, boolean>(false, { transform: v => coerceBooleanProperty(v) });
 }
