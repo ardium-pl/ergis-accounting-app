@@ -8,7 +8,7 @@ import { FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } f
     providedIn: 'root',
 })
 export class FaktoringService {
-    constructor(private _prnReader: PrnReaderService) {}
+    constructor(private _prnReader: PrnReaderService) { }
 
     public processData(rawPrnData: string, pastEntries: FaktoringObject[], faktoringMode: FaktoringMode) {
         const rawPrnObjects = this._prnReader.readPrn(rawPrnData);
@@ -25,7 +25,7 @@ export class FaktoringService {
         for (const obj of rawPrnObjects) {
             const mappedObj = this._mapRawPrnObject(obj);
             if (mappedObj.korekta) continue;
-            if(mappedObj.kwotaWWalucie == 0) continue; // Removing correction positions, marked as Rkur WB
+            if (mappedObj.kwotaWWalucie == 0) continue; // Removing correction positions, marked as Rkur WB
             if (mappedObj.kwotaWZl < 0) {
                 negatives.push(mappedObj);
                 continue;
