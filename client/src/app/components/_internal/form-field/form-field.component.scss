@@ -1,0 +1,26 @@
+
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    max-width: 100%;
+
+    label, .helper-text {
+        font-size: 0.8125rem;
+        letter-spacing: -0.2px;
+        user-select: none;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: 1.25rem;
+    }
+    label {
+        font-weight: 600;
+    }
+    .form-field-content {
+        min-width: max-content;
+        max-width: 100%;
+    }
+}
