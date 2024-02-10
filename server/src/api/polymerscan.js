@@ -54,17 +54,20 @@ export default async (req, res) => {
     const messageLDPE = `${messagePrefix} LDPE. In the note, divide the answer
     into regions: Europe, North America, Asia, Rest of the World. The recipients of the
     summary will be salespeople. In the note, provide the values for raw materials if they
-    appear in the attached document. Values may be given in $/MT. LDPE report: \n${polymerScanRawData[0].textContent}\n`;
+    appear in the attached document. Values may be given in $/MT. Please give your answer in Polish. 
+    LDPE report: \n${polymerScanRawData[0].textContent}\n`;
 
     const messagePP = `${messagePrefix} PP. In the note, divide the answer
     into regions: Europe, North America, Asia, Rest of the World. The recipients of the
     summary will be salespeople. In the note, provide the values for raw materials if they
-    appear in the attached document. Values may be given in $/MT. PP report: \n${polymerScanRawData[1].textContent}\n`;
+    appear in the attached document. Values may be given in $/MT. Please give your answer in Polish.
+    PP report: \n${polymerScanRawData[1].textContent}\n`;
 
     const messagePVC = `${messagePrefix} PVC. In the note, divide the answer
     into regions: Europe, North America, Asia, Rest of the World. The recipients of the
     summary will be salespeople. In the note, provide the values for raw materials if they
-    appear in the attached document. Values may be given in $/MT. PVC report: \n${polymerScanRawData[2].textContent}\n`;
+    appear in the attached document. Values may be given in $/MT. Please give your answer in Polish.
+    PVC report: \n${polymerScanRawData[2].textContent}\n`;
 
     try {
         const openai = new OpenAI({
