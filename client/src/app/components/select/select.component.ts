@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, EventEmitter, Output, input, ɵINPUT_SIGNAL_BRAND_WRITE_TYPE } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { coerceBooleanProperty } from '@ardium-ui/devkit';
 import { FormFieldComponent } from '../_internal/form-field/form-field.component';
@@ -22,7 +22,7 @@ export class SelectComponent {
     readonly value = input<string | undefined>();
     @Output() valueChange = new EventEmitter<string>();
 
-    emitValue(v: string): void {
+    onValueChange(v: string): void {
         this.valueChange.emit(v);
     }
 

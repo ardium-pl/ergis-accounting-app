@@ -9,7 +9,7 @@
             <span>lub przeciągnij i upuść</span>
         </div>
         <div class="file-drop-zone-additional additional">
-            Maks. 10 MB • {{ accept == "*" ? "Dowolny rodzaj plików" : "Jedynie pliki "+accept }}
+            Maks. 10 MB • {{ accept() == "*" ? "Dowolny rodzaj plików" : "Jedynie pliki "+accept }}
         </div>
     </div>
 </div>

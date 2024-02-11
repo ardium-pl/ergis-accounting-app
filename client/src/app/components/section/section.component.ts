@@ -14,5 +14,5 @@ export class SectionComponent {
     readonly header = input.required<string>();
     readonly headerId = input<string | undefined>();
 
-    readonly required = input<any, boolean>(false, { transform: v => coerceBooleanProperty(v) });
+    readonly required = input<boolean, any>(false, { transform: v => coerceBooleanProperty(v) });
 }
