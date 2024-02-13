@@ -4,8 +4,8 @@
     "description": "",
     "author": "",
     "scripts": {
-        "start": "npm run build && cd server && npm install && node src/index.js",
-        "build": "cd client && npm install && npm run build",
+        "start": "node server/src/index.js",
+        "build": "cd client && npm install && npm run build && cd ../server && npm install",
         "watch": "cd client && npm run watch",
         "server": "cd server && nodemon",
         "dev": "concurrently --kill-others \"npm run watch\" \"npm run server\"",
