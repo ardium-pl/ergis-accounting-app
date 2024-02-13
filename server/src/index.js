@@ -8,17 +8,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const router = express.Router();
-
-router.get('/', (req, res) => {
-    console.log('Server received a request');
-    res.send('The server is working!');
-});
-
-app.use(router);
-
-// app.use(apiRouter);
-// app.use(clientRouter);
+app.use(apiRouter);
+app.use(clientRouter);
 
 console.log('Server is starting up...');
 
