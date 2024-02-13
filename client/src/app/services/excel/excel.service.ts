@@ -1,87 +1,49 @@
 import { Injectable } from '@angular/core';
-import { Workbook, Worksheet, Row, Cell } from 'exceljs';
 
-type ExcelCellContent = string | number | boolean | null;
-
-interface ExcelRowData {
-    [header: string]: ExcelCellContent;
-}
+type CsvObject<T extends string> = Partial<{ [key in T]: string }>;
 
 @Injectable({
     providedIn: 'root',
 })
-export class FileProcessingService {
-    async readXlsx(
-        file: File,
-        worksheetName: string,
-        headerRowIndex: number = 7,
-        dataStartRowIndex: number = 8
-    ): Promise<ExcelRowData[]> {
-        try {
-            const reader = new FileReader();
-            const workbook = new Workbook();
-            reader.readAsArrayBuffer(file);
-            return await new Promise<ExcelRowData[]>((resolve, reject) => {
-                reader.onload = async (e: any) => {
-                    const buffer = e.target.result;
-                    await workbook.xlsx.load(buffer);
-
-                    const worksheet = workbook.getWorksheet(0);
-                    if (!worksheet) {
-                        throw new Error(`Worksheet named "${worksheetName}" not found in the Excel file.`);
-                    }
-
-                    const columnHeaders = this.extractHeadersFromRow(worksheet, headerRowIndex);
-                    const data = this.extractDataRowsFromWorksheet(worksheet, columnHeaders, dataStartRowIndex);
-                    resolve(data);
-                };
-                reader.onerror = error => reject(error);
-            });
-        } catch (error) {
-            console.error('Error reading Excel file:', error);
-            throw error; // or handle the error as needed
+export class ExcelService {
+    readAsCsv<T extends string>(csvData: string): CsvObject<T>[] {
+        const lines = csvData.trim().split('\n');
+        if (lines.length === 0) {
+            throw new Error('Empty CSV data provided');
         }
-    }
 
-    private extractHeadersFromRow(worksheet: Worksheet, headerRowIndex: number): string[] {
-        const headers: string[] = [];
-        const headerRow = worksheet.getRow(headerRowIndex);
-        headerRow.eachCell((cell: Cell, index: number) => {
-            headers[index - 1] = cell.text.trim();
-        });
-        return headers;
-    }
+        const separator = this._detectSeparator(lines);
 
-    private getCellTextValue(cell: Cell): ExcelCellContent {
-        const cellValue = cell.text;
-        return typeof cellValue === 'string' ? cellValue : 'null';
-    }
+        const headers = lines[0].trim().split(separator) as T[];
+        const result: CsvObject<T>[] = [];
 
-    private isRowDataNotEmpty(rowData: ExcelRowData): boolean {
-        return Object.values(rowData).some(value => value !== null);
-    }
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim().split(separator);
+            const obj: CsvObject<T> = {};
 
-    private extractDataRowsFromWorksheet(worksheet: Worksheet, columnHeaders: string[], startingRow: number): ExcelRowData[] {
-        const dataRows: ExcelRowData[] = [];
-
-        worksheet.eachRow({ includeEmpty: false }, (row: Row, rowIndex: number) => {
-            if (rowIndex >= startingRow) {
-                const rowData = this.buildRowData(row, columnHeaders);
-                if (this.isRowDataNotEmpty(rowData)) {
-                    dataRows.push(rowData);
-                }
+            for (let j = 0; j < headers.length; j++) {
+                obj[headers[j]] = line[j] || '';
             }
-        });
-        return dataRows;
+
+            result.push(obj);
+        }
+
+        return result;
     }
 
-    private buildRowData(row: Row, columnHeaders: string[]): ExcelRowData {
-        const rowData: ExcelRowData = {};
+    private readonly _POSSIBLE_SEPARATORS = [',', ';', '\t']; // most common separators
+    private _detectSeparator(lines: string[]): string {
+        // check each separator
+        for (const separator of this._POSSIBLE_SEPARATORS) {
+            // count the occurences of the separator in each line
+            const counts = lines.map(line => line.match(new RegExp(separator, 'g'))?.length);
+            // check if the number of occurences is the same in every line
+            // and if it is, we have found the separator
+            if (counts.every(count => count === counts[0])) {
+                return separator;
+            }
+        }
 
-        row.eachCell({ includeEmpty: true }, (cell: Cell, columnIndex: number) => {
-            const header = columnHeaders[columnIndex - 1];
-            rowData[header] = this.getCellTextValue(cell);
-        });
-        return rowData;
+        throw new Error('Cannot find matching separator.');
     }
 }
