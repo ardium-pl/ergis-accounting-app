@@ -6,7 +6,7 @@
             <app-file-display [file]="fileStorage.file()"></app-file-display> 
             <app-select [options]="FAKTORING_MODE_OPTIONS" label="Podstawa rozliczenia" [(value)]="faktoringMode" />
         </app-section>
-            @if (fileLoaded == true) {
+            @if (fileStorage.isLoaded() === true) {
                 <app-section header="Przejrzyj podgląd pliku">            
                     <div class="table-wrapper">
                         <app-editable-data-table [dataArray]="formattedFile()"></app-editable-data-table>

@@ -47,11 +47,8 @@ export class FaktoringPage {
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
         private fileSystem: FileSaverService,
-        private prnReader: PrnReaderService,
+        private prnReader: PrnReaderService
     ) {}
-
-    public fileLoaded : boolean = false;
-
 
     private readonly pastData = new JsonDataStore<FaktoringObject>(v => {
         return {
@@ -78,17 +75,16 @@ export class FaktoringPage {
             alert('Plik musi być typu .prn');
             return;
         }
-        this.fileLoaded = true;
         this.fileStorage.setFile(file);
     }
 
     readonly formattedFile = computed(() => {
-        console.log("Func triggered!");
+        console.log('Func triggered!');
         const fileContent = this.fileStorage.fileContent();
-        if (typeof fileContent === "string") {
+        if (typeof fileContent === 'string') {
             return this.prnReader.readPrn(fileContent);
         }
-        console.error(".Prn file content is not a string");
+        console.error('.Prn file content is not a string');
         return [];
     });
 
