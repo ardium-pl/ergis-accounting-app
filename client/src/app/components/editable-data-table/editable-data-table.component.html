@@ -12,7 +12,7 @@
             <td>{{i + 1}}</td>
             @for (key of dataArray[0] | keys; track $index) {
             <td>
-                <input [(ngModel)]="item[key]" type="text">
+                <input [(ngModel)]="item[key]" type="text" appAutoLength>
             </td>
             }
             <td>

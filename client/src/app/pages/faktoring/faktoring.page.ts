@@ -84,7 +84,7 @@ export class FaktoringPage {
         if (typeof fileContent === 'string') {
             return this.prnReader.readPrn(fileContent);
         }
-        console.error('.Prn file content is not a string');
+        console.error('.Prn file content is not a string', fileContent);
         return [];
     });
 

@@ -1,11 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'keys',
-  standalone: true
+    name: 'keys',
+    standalone: true,
 })
 export class KeysPipe implements PipeTransform {
-  transform(value: any): string[] {
-    return Object.keys(value);
-  }
+    transform(value: Record<any, any> | null): string[] {
+        if (!value) return [];
+        return Object.keys(value);
+    }
 }

@@ -6,12 +6,12 @@ table {
   }
   
   th, td {
-    padding: 8px;
     border: 1px solid #ddd;
     white-space: nowrap; /* Ensures content stays on one line */
   }
   
   th {
+    padding: 8px;
     background-color: white; 
     color: grey;
   }
@@ -35,9 +35,6 @@ table {
   }
   
   input[type="text"] {
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0;
     display: inline-block;
     border: 1px solid #ccc;
     border-radius: 4px;

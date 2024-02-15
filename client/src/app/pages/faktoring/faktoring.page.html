@@ -17,7 +17,7 @@
             <textarea rows="7" #negatives (blur)="onPastDataBlur(negatives.value)" (paste)="onPastDataPaste($event)"></textarea>
             <app-error-box [type]="errorBoxState()">
                 @if (errorBoxState() == 'info') {
-                Tutaj wprowadź dane o kwotach ujemnych.Can 
+                Tutaj wprowadź dane o kwotach ujemnych.
                 } @else if (errorBoxState() == 'error') {
                 @if (negatives.value) {
                 Wprowadzone dane są w nieprawidłowym formacie.
