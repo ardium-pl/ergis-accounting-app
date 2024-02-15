@@ -1,0 +1,18 @@
+<div class="scrollable-table">
+  <table>
+      <tr>
+        <th>#</th>
+        <th *ngFor="let key of dataArray[0] | keys">{{key}}</th>
+        <th>Actions</th>
+      </tr>
+      <tr *ngFor="let item of dataArray; let i = index">
+        <td>{{i + 1}}</td>
+        <td *ngFor="let key of dataArray[0] | keys">
+          <input [(ngModel)]="item[key]" type="text">
+        </td>
+        <td>
+          <button (click)="deleteRow(i)">🗑️</button>
+        </td>
+      </tr>
+  </table>
+</div>

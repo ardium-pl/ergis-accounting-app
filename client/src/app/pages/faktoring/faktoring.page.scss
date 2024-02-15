@@ -67,6 +67,13 @@ mat-spinner {
     padding: 1rem;
 }
 
+.table-wrapper {
+    max-width: 80%; /* Adjust this value as needed */
+    overflow-x: auto; /* Allows horizontal scrolling */
+    margin: 0 auto; /* Centers the table wrapper if it's narrower than the max-width */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on touch devices */
+}
+
 app-select {
     padding-top: 1rem;
     align-self: flex-start;

@@ -5,6 +5,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
 import {
     ButtonComponent,
+    EditableDataTableComponent,
     ErrorBoxComponent,
     FileDisplayComponent,
     FileDropZoneComponent,
@@ -35,6 +36,7 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         IconButtonComponent,
         DecimalPipe,
         SelectComponent,
+        EditableDataTableComponent,
     ],
     providers: [FileSaverService, PrnReaderService],
     templateUrl: './faktoring.page.html',
@@ -45,8 +47,11 @@ export class FaktoringPage {
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
         private fileSystem: FileSaverService,
-        private prnReader: PrnReaderService
+        private prnReader: PrnReaderService,
     ) {}
+
+    public fileLoaded : boolean = false;
+
 
     private readonly pastData = new JsonDataStore<FaktoringObject>(v => {
         return {
@@ -73,11 +78,18 @@ export class FaktoringPage {
             alert('Plik musi być typu .prn');
             return;
         }
+        this.fileLoaded = true;
         this.fileStorage.setFile(file);
     }
 
     readonly formattedFile = computed(() => {
-        return this.prnReader.getPrnDataString(this.fileStorage.fileContent());
+        console.log("Func triggered!");
+        const fileContent = this.fileStorage.fileContent();
+        if (typeof fileContent === "string") {
+            return this.prnReader.readPrn(fileContent);
+        }
+        console.error(".Prn file content is not a string");
+        return [];
     });
 
     readonly areResultsLoading = signal(false);
