@@ -12,7 +12,7 @@
         (ngModelChange)="onValueChange($event)"
     >
         @for (opt of options(); track $index) {
-            <option [value]="opt.value()">{{ opt.label() }}</option>
+            <option [value]="opt.value">{{ opt.label }}</option>
         }
     </select>
 </app-_form-field>
