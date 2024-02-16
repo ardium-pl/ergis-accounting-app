@@ -18,4 +18,9 @@ export class EditableDataTableComponent {
     deleteRow(index: number): void {
         this.dataArray.splice(index, 1);
     }
+
+    updateCellValue(item: PrnObject, key: string, event: Event): void {
+        const value = (event.target as HTMLDivElement).textContent || '';
+        item[key] = value;
+    }
 }

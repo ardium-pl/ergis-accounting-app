@@ -76,7 +76,14 @@ export class FaktoringPage {
             return;
         }
         this.fileStorage.setFile(file);
+        
+        this.isPrnLoading.set(true);
+        setTimeout(() => {
+            this.isPrnLoading.set(false);
+        }, 500);
     }
+
+    readonly isPrnLoading = signal<boolean>(false);
 
     readonly formattedFile = computed(() => {
         console.log('Func triggered!');

@@ -3,18 +3,23 @@
     <div class="sections-wrapper">
         <app-section required header="Dodaj plik PRN">
             <app-file-drop-zone (upload)="onFileUpload($event)" accept=".prn"></app-file-drop-zone>
-            <app-file-display [file]="fileStorage.file()"></app-file-display> 
+            <app-file-display [file]="fileStorage.file()"></app-file-display>
             <app-select [options]="FAKTORING_MODE_OPTIONS" label="Podstawa rozliczenia" [(value)]="faktoringMode" />
         </app-section>
-            @if (fileStorage.isLoaded() === true) {
-                <app-section header="Przejrzyj podgląd pliku">            
-                    <div class="table-wrapper">
-                        <app-editable-data-table [dataArray]="formattedFile()"></app-editable-data-table>
-                    </div>
-                </app-section>
-            }
+        @if (fileStorage.isLoaded() === true) {
+        <app-section header="Przejrzyj podgląd pliku">
+            <div class="table-wrapper">
+                @if (isPrnLoading()) {
+                <mat-spinner class="table-spinner"></mat-spinner>
+                }
+                <app-editable-data-table [class.table-loading]="isPrnLoading()"
+                    [dataArray]="formattedFile()"></app-editable-data-table>
+            </div>
+        </app-section>
+        }
         <app-section required header="Dodaj dane o kwotach ujemnych">
-            <textarea rows="7" #negatives (blur)="onPastDataBlur(negatives.value)" (paste)="onPastDataPaste($event)"></textarea>
+            <textarea rows="7" #negatives (blur)="onPastDataBlur(negatives.value)"
+                (paste)="onPastDataPaste($event)"></textarea>
             <app-error-box [type]="errorBoxState()">
                 @if (errorBoxState() == 'info') {
                 Tutaj wprowadź dane o kwotach ujemnych.
@@ -42,13 +47,13 @@
         </app-section>
         <app-section header="Pobierz nieużyte pozycje">
             @if (hasAnyLeftovers()) {
-                <app-button (click)="downloadLeftovers()">
-                    <span class="upload-icon material-symbols-outlined">
-                        download
-                    </span>
-                    Pobierz
-                </app-button>
-                <p class="unused-count">Nieużyte elementy: <strong>{{ leftoversCount() | number }}</strong></p>
+            <app-button (click)="downloadLeftovers()">
+                <span class="upload-icon material-symbols-outlined">
+                    download
+                </span>
+                Pobierz
+            </app-button>
+            <p class="unused-count">Nieużyte elementy: <strong>{{ leftoversCount() | number }}</strong></p>
             }
         </app-section>
         }

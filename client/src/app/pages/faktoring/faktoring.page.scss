@@ -1,5 +1,5 @@
 .sections-wrapper {
-    max-width: 100%;
+    width: 100%;
 }
 
 app-error-box {
@@ -63,6 +63,11 @@ mat-spinner {
     position: absolute;
     left: calc(100% + 1rem);
 }
+.table-spinner {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
 .unused-count {
     padding: 1rem;
 }
@@ -72,6 +77,11 @@ mat-spinner {
     overflow-x: auto; /* Allows horizontal scrolling */
     margin: 0 auto; /* Centers the table wrapper if it's narrower than the max-width */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on touch devices */
+}
+
+.table-loading {
+    opacity: 0%;
+    position: absolute;
 }
 
 app-select {

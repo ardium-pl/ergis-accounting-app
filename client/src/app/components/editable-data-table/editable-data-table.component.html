@@ -12,7 +12,7 @@
             <td>{{i + 1}}</td>
             @for (key of dataArray[0] | keys; track $index) {
             <td>
-                <input [(ngModel)]="item[key]" type="text" appAutoLength>
+                <div contenteditable [textContent]="item[key]" (input)="updateCellValue(item, key, $event)"></div>
             </td>
             }
             <td>
