@@ -2,15 +2,15 @@
     <table>
         <tr>
             <th class="empty-header"></th>
-            @for (key of dataArray[0] | keys; track $index) {
+            @for (key of headers(); track $index) {
             <th>{{key}}</th>
             }
             <th class="empty-header"></th>
         </tr>
-        @for (item of dataArray; let i = $index; track i;) {
+        @for (item of dataArray(); let i = $index; track i;) {
         <tr>
             <td class="number-cell">{{i + 1}}</td>
-            @for (key of dataArray[0] | keys; track $index) {
+            @for (key of dataArray()[0] | keys; track $index) {
             <td contenteditable [textContent]="item[key]" (input)="updateCellValue(item, key, $event)"></td>
             }
             <td class="action-cell">

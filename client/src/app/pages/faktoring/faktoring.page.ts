@@ -92,6 +92,13 @@ export class FaktoringPage {
         }
         return [];
     });
+    readonly prnHeaders = computed(() => {
+        const fileContent = this.fileStorage.fileContent();
+        if (typeof fileContent === 'string') {
+            return this.prnReader.readPrnHeaders(fileContent);
+        }
+        return [];
+    })
 
     readonly areResultsLoading = signal(false);
 

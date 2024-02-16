@@ -12,7 +12,7 @@
                 @if (isPrnLoading()) {
                 <mat-spinner class="table-spinner"></mat-spinner>
                 }
-                <app-editable-data-table [class.table-loading]="isPrnLoading()" [dataArray]="prnArray()" />
+                <app-editable-data-table [class.table-loading]="isPrnLoading()" [dataArray]="prnArray()" [headers]="prnHeaders()" />
             </div>
         </app-section>
         }
