@@ -1,14 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AutoLengthDirective } from '@directives';
 import { KeysPipe } from '@pipes';
 import { PrnObject } from '@services';
+import { IconButtonComponent } from '../icon-button/icon-button.component';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
     selector: 'app-editable-data-table',
     standalone: true,
-    imports: [CommonModule, FormsModule, KeysPipe, AutoLengthDirective],
+    imports: [CommonModule, FormsModule, KeysPipe, IconButtonComponent, IconComponent],
     templateUrl: './editable-data-table.component.html',
     styleUrl: './editable-data-table.component.scss',
 })

@@ -1,22 +1,20 @@
 <div class="scrollable-table">
     <table>
         <tr>
-            <th>#</th>
+            <th class="empty-header"></th>
             @for (key of dataArray[0] | keys; track $index) {
             <th>{{key}}</th>
             }
-            <th>Actions</th>
+            <th class="empty-header"></th>
         </tr>
         @for (item of dataArray; let i = $index; track i;) {
         <tr>
-            <td>{{i + 1}}</td>
+            <td class="number-cell">{{i + 1}}</td>
             @for (key of dataArray[0] | keys; track $index) {
-            <td>
-                <div contenteditable [textContent]="item[key]" (input)="updateCellValue(item, key, $event)"></div>
-            </td>
+            <td contenteditable [textContent]="item[key]" (input)="updateCellValue(item, key, $event)"></td>
             }
-            <td>
-                <button (click)="deleteRow(i)">🗑️</button>
+            <td class="action-cell">
+                <app-icon-button (click)="deleteRow(i)" size="medium"><app-icon>delete</app-icon></app-icon-button>
             </td>
         </tr>
         }

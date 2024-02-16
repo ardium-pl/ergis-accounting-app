@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, effect } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
 import {
@@ -76,7 +76,7 @@ export class FaktoringPage {
             return;
         }
         this.fileStorage.setFile(file);
-        
+
         this.isPrnLoading.set(true);
         setTimeout(() => {
             this.isPrnLoading.set(false);
@@ -85,13 +85,11 @@ export class FaktoringPage {
 
     readonly isPrnLoading = signal<boolean>(false);
 
-    readonly formattedFile = computed(() => {
-        console.log('Func triggered!');
+    readonly prnArray = computed(() => {
         const fileContent = this.fileStorage.fileContent();
         if (typeof fileContent === 'string') {
             return this.prnReader.readPrn(fileContent);
         }
-        console.error('.Prn file content is not a string', fileContent);
         return [];
     });
 
