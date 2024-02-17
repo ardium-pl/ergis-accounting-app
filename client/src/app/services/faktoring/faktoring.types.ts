@@ -17,6 +17,8 @@ export type FinalFaktoringObject = {
     positiveExchangeRate: number;
     lookUpPositiveAmount: number;
     lookUpNegativeAmount: number;
+    lookUpPositiveReference: string;
+    lookUpNegativeReference: string;
 }
 
 export const FaktoringMode = {

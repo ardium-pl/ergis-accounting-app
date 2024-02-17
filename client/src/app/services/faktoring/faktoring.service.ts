@@ -105,6 +105,8 @@ export class FaktoringService {
             // for validation purpase 
             const lookUpPositiveAmount: number = positiveAmount;
             const lookUpNegativeAmount: number = negativeAmount;
+            const lookUpPositiveReference: string = positiveObject.referencjaKG;
+            const lookUpNegativeReference: string = negativeObject.referencjaKG;
 
             if (positiveAmount > negativeAmount) {
                 // negative is the valid correction amount - remove one entry and subtract from the positive total
@@ -146,6 +148,8 @@ export class FaktoringService {
                 positiveExchangeRate,
                 lookUpPositiveAmount,
                 lookUpNegativeAmount,
+                lookUpPositiveReference,
+                lookUpNegativeReference,
             });
         }
 
