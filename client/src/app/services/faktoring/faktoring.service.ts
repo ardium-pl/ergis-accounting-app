@@ -104,7 +104,7 @@ export class FaktoringService {
 
             // for validation purpase 
             const lookUpPositiveAmount: number = positiveAmount;
-            const lookUpNegativeAmount: number = negativeAmount;
+            const lookUpNegativeAmount: number = - negativeAmount;
             const lookUpPositiveReference: string = positiveObject.referencjaKG;
             const lookUpNegativeReference: string = negativeObject.referencjaKG;
 
