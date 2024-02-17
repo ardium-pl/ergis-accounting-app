@@ -12,11 +12,13 @@ export class PrnReaderService {
         const noHeaders = this._filterOutHeadersAndReverse(lines);
         return this._linesToPrnObjects(noHeaders);
     }
-    getPrnDataString(data: string | null): string {
-        if (!data) return "";
+    readPrnHeaders(data: string): string[] {
         const lines = this._filterOnlyDataRows(data);
-        const noHeaders = this._filterOutHeadersAndReverse(lines);
-        return noHeaders.reverse().join('\n');
+        lines.reverse();
+        const headersLine = lines.pop()!;
+        const widths = this._getWidths(lines);
+        console.log(headersLine.split('').map(ch => [ch, ch.charCodeAt(0)]));
+        return this._splitSingleLine(headersLine, widths).map(v => this._mapHeaderName(v));
     }
     private _filterOnlyDataRows(data: string): string[] {
         const lines = data.split('\n');
@@ -40,12 +42,15 @@ export class PrnReaderService {
             return true;
         });
     }
-    private _linesToPrnObjects(lines: string[]): PrnObject[] {
-        const headersLine = lines.pop()!;
-        const widths = lines
+    private _getWidths(lines: string[]): number[] {
+        return lines
             .pop()!
             .split(/\s/)
-            .map((v) => v.length);
+            .map(v => v.length);
+    }
+    private _linesToPrnObjects(lines: string[]): PrnObject[] {
+        const headersLine = lines.pop()!;
+        const widths = this._getWidths(lines);
         const headers = this._splitSingleLine(headersLine, widths).map((v) =>
             this._mapHeaderName(v)
         );

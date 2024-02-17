@@ -1,10 +1,11 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, effect } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
 import {
     ButtonComponent,
+    EditableDataTableComponent,
     ErrorBoxComponent,
     FileDisplayComponent,
     FileDropZoneComponent,
@@ -35,6 +36,7 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         IconButtonComponent,
         DecimalPipe,
         SelectComponent,
+        EditableDataTableComponent,
     ],
     providers: [FileSaverService, PrnReaderService],
     templateUrl: './faktoring.page.html',
@@ -74,11 +76,29 @@ export class FaktoringPage {
             return;
         }
         this.fileStorage.setFile(file);
+
+        this.isPrnLoading.set(true);
+        setTimeout(() => {
+            this.isPrnLoading.set(false);
+        }, 500);
     }
 
-    readonly formattedFile = computed(() => {
-        return this.prnReader.getPrnDataString(this.fileStorage.fileContent());
+    readonly isPrnLoading = signal<boolean>(false);
+
+    readonly prnArray = computed(() => {
+        const fileContent = this.fileStorage.fileContent();
+        if (typeof fileContent === 'string') {
+            return this.prnReader.readPrn(fileContent);
+        }
+        return [];
     });
+    readonly prnHeaders = computed(() => {
+        const fileContent = this.fileStorage.fileContent();
+        if (typeof fileContent === 'string') {
+            return this.prnReader.readPrnHeaders(fileContent);
+        }
+        return [];
+    })
 
     readonly areResultsLoading = signal(false);
 
