@@ -101,6 +101,11 @@ export class FaktoringService {
 
             // get the valid correction amount
             let correctionAmount: number;
+
+            // for validation purpase 
+            const lookUpPositiveAmount: number = positiveAmount;
+            const lookUpNegativeAmount: number = negativeAmount;
+
             if (positiveAmount > negativeAmount) {
                 // negative is the valid correction amount - remove one entry and subtract from the positive total
                 correctionAmount = negativeAmount;
@@ -133,9 +138,14 @@ export class FaktoringService {
             }
             const currencyCorrection = correctionAmount * (negativeExchangeRate - positiveExchangeRate);
 
-            allCurrencyCorrections.push({
+            allCurrencyCorrections.push({ // TODO: zmienić typ FinalFaktoringObject
                 referencjaKG,
                 currencyCorrection,
+                correctionAmount,
+                negativeExchangeRate,
+                positiveExchangeRate,
+                lookUpPositiveAmount,
+                lookUpNegativeAmount,
             });
         }
 

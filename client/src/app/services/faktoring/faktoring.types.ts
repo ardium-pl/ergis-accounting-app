@@ -12,6 +12,11 @@ export type FaktoringObject = {
 export type FinalFaktoringObject = {
     referencjaKG: string;
     currencyCorrection: number;
+    correctionAmount: number;
+    negativeExchangeRate: number;
+    positiveExchangeRate: number;
+    lookUpPositiveAmount: number;
+    lookUpNegativeAmount: number;
 }
 
 export const FaktoringMode = {
