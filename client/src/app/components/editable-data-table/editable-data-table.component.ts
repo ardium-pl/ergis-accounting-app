@@ -24,11 +24,7 @@ export class EditableDataTableComponent {
         this.dataArray.set(v.slice(1));
         this.dataHeaders.set(v[0]);
     }
-
-    jsdnf = effect(() => {
-        console.log(this.headers());
-    })
-
+    
     deleteRow(index: number): void {
         const newArr = [...this.dataArray()];
         newArr.splice(index, 1);
