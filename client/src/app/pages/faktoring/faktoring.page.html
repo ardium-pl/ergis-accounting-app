@@ -2,32 +2,20 @@
     <h1>Konwerter plików PRN</h1>
     <div class="sections-wrapper">
         <app-section required header="Dodaj plik PRN">
-            <app-file-drop-zone (upload)="onFileUpload($event)" accept=".prn"></app-file-drop-zone>
+            <app-file-drop-zone (upload)="onPrnFileUpload($event)" accept=".prn"></app-file-drop-zone>
             <app-file-display [file]="fileStorage.file()"></app-file-display>
             <app-select [options]="FAKTORING_MODE_OPTIONS" label="Podstawa rozliczenia" [(value)]="faktoringMode" />
         </app-section>
         <app-section header="Przejrzyj podgląd pliku">
             <pre class="file-content-wrapper">{{ formattedFile() }}</pre>
         </app-section>
-        <app-section required header="Dodaj dane o kwotach ujemnych">
-            <textarea rows="7" #negatives (blur)="onPastDataBlur(negatives.value)" (paste)="onPastDataPaste($event)"></textarea>
-            <app-error-box [type]="errorBoxState()">
-                @if (errorBoxState() == 'info') {
-                Tutaj wprowadź dane o kwotach ujemnych.
-                } @else if (errorBoxState() == 'error') {
-                @if (negatives.value) {
-                Wprowadzone dane są w nieprawidłowym formacie.
-                } @else {
-                Dane o kwotach ujemnych są wymagane!
-                }
-                } @else {
-                Wprowadzone dane są prawidłowe!
-                }
-            </app-error-box>
+        <app-section required header="Dodaj pozycje z poprzedniego miesiąca ">
+            <app-file-drop-zone (upload)="onCsvFileUpload($event)" accept=".csv"></app-file-drop-zone>
+            <app-file-display [file]="fileStorage.csvFile()"></app-file-display>
         </app-section>
         <app-section header="Generuj rozliczenie kursów">
             <div class="button-container">
-                <app-button [disabled]="errorBoxState() != 'success' || !formattedFile()"
+                <app-button [disabled]="!formattedFile()"
                     (click)="onGenerateButtonClick()">Generuj</app-button>
                 @if (areResultsLoading()) {<mat-spinner></mat-spinner>}
             </div>
@@ -38,13 +26,13 @@
         </app-section>
         <app-section header="Pobierz nieużyte pozycje">
             @if (hasAnyLeftovers()) {
-                <app-button (click)="downloadLeftovers()">
-                    <span class="upload-icon material-symbols-outlined">
-                        download
-                    </span>
-                    Pobierz
-                </app-button>
-                <p class="unused-count">Nieużyte elementy: <strong>{{ leftoversCount() | number }}</strong></p>
+            <app-button (click)="downloadLeftovers()">
+                <span class="upload-icon material-symbols-outlined">
+                    download
+                </span>
+                Pobierz
+            </app-button>
+            <p class="unused-count">Nieużyte elementy: <strong>{{ leftoversCount() | number }}</strong></p>
             }
         </app-section>
         }
