@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { PrnReaderService } from '../prn-reader/prn-reader.service';
 import { PrnObject } from '../prn-reader/prn-reader.types';
 import { parseNumber, parseYesNo } from './../../utils/helpers';
 import { FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } from './faktoring.types';
@@ -8,11 +7,7 @@ import { FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } f
     providedIn: 'root',
 })
 export class FaktoringService {
-    constructor(private _prnReader: PrnReaderService) { }
-
-    public processData(rawPrnData: string, pastEntries: FaktoringObject[], faktoringMode: FaktoringMode) {
-        const rawPrnObjects = this._prnReader.readPrn(rawPrnData);
-
+    public processData(rawPrnObjects: PrnObject[], pastEntries: FaktoringObject[], faktoringMode: FaktoringMode) {
         // the past entries cannot contain a value equal to zero
         if (pastEntries.some(v => v.kwotaWWalucie == 0)) {
             throw new Error(`Kwota w walucie musi być różna od zero.`);
@@ -140,16 +135,16 @@ export class FaktoringService {
             }
             const currencyCorrection = correctionAmount * (negativeExchangeRate - positiveExchangeRate);
 
-            allCurrencyCorrections.push({ // TODO: zmienić typ FinalFaktoringObject
-                referencjaKG,
-                currencyCorrection,
-                correctionAmount,
-                negativeExchangeRate,
-                positiveExchangeRate,
+            const details = {
                 lookUpPositiveAmount,
                 lookUpNegativeAmount,
                 lookUpPositiveReference,
                 lookUpNegativeReference,
+            };
+            allCurrencyCorrections.push({
+                referencjaKG,
+                currencyCorrection,
+                details,
             });
         }
 

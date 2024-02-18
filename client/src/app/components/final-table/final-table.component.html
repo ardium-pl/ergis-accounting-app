@@ -1,9 +1,14 @@
 @if (data()) {
-<div class="tables-container">
+<div class="final-table">
     <table class="results-table">
         <tbody class="results-table-body">
-            @for (row of data(); track $index) {
-            <tr class="results-row" [class.above-zero]="row.currencyCorrection > 0" [class.below-zero]="row.currencyCorrection < 0">
+            @for (row of data(); let index = $index; track index) {
+            <tr
+                class="results-row"
+                [class.above-zero]="row.currencyCorrection > 0"
+                [class.below-zero]="row.currencyCorrection < 0"
+                [class.is-focused]="tooltipIndex() === index"
+            >
                 <td>{{ row.currencyCorrection > 0 ? 750 : 751 }}</td>
                 <td>75210</td>
                 <td>0d00</td>
@@ -15,13 +20,35 @@
     </table>
     <table class="results-table">
         <tbody class="results-table-body">
-            @for (row of data(); track $index) {
-            <tr class="results-row" [class.above-zero]="row.currencyCorrection > 0" [class.below-zero]="row.currencyCorrection < 0">
+            @for (row of data(); let index = $index; track index) {
+            <tr
+                class="results-row"
+                [class.above-zero]="row.currencyCorrection > 0"
+                [class.below-zero]="row.currencyCorrection < 0"
+                [class.is-focused]="tooltipIndex() === index"
+            >
                 <td>264</td>
                 <td>26403</td>
                 <td>0000</td>
                 <td>RK{{ row.referencjaKG }}</td>
                 <td>{{ (row.currencyCorrection | number: '1.2-2') || '0,00' }}</td>
+                <td class="info-cell"
+                    (ardClickOutside)="tooltipIndex.set(-1)"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="tooltipIndex.set(index)"
+                >
+                    <app-icon>info</app-icon>
+                    <div class="row-tooltip">
+                        <div class="tooltip-grid">
+                            <div class="top-row">{{ row.details.lookUpPositiveReference }}</div>
+                            <div class="top-row">{{ row.details.lookUpNegativeReference }}</div>
+                            <div class="top-row">Korekta</div>
+                            <div class="bottom-row">{{ row.details.lookUpPositiveAmount | pln }}</div>
+                            <div class="bottom-row">{{ row.details.lookUpNegativeAmount | pln }}</div>
+                            <div class="bottom-row">{{ row.currencyCorrection | pln }}</div>
+                        </div>
+                    </div>
+                </td>
             </tr>
             }
         </tbody>
