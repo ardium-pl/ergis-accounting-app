@@ -105,7 +105,6 @@ export class FaktoringPage {
     }
 
     private isValidFaktoringObjectArray(parsedEntries: any[]): parsedEntries is FaktoringObject[] {
-        console.log(parsedEntries);
         if (!Array.isArray(parsedEntries) || parsedEntries.length === 0) {
             return false;
         }
@@ -126,9 +125,6 @@ export class FaktoringPage {
     readonly areResultsLoading = signal(false);
 
     async onGenerateButtonClick(): Promise<void> {
-
-        console.log(this.parseCsvContent());
-
         const prnContent = this.fileStorage.fileContent();
         if (!prnContent) return;
 
@@ -181,20 +177,39 @@ export class FaktoringPage {
         return this.leftovers() != NO_UNUSED_NEGATIVES_MESSAGE;
     });
 
+    private jsonToCsv(jsonString: string): string {
+        const jsonData = JSON.parse(jsonString);
+
+        if (!Array.isArray(jsonData) || jsonData.length === 0) {
+            return '';
+        }
+        const headers = Object.keys(jsonData[0]);
+        const csvRows = jsonData.map(row =>
+            headers
+                .map(fieldName =>
+                    JSON.stringify(row[fieldName], (_, value) => (typeof value === 'string' ? value.replace(/"/g, '""') : value))
+                )
+                .join(';')
+        );
+        csvRows.unshift(headers.join(';'));
+
+        return csvRows.join('\r\n');
+    }
+
     downloadLeftovers(): void {
         if (!this.hasAnyLeftovers()) return;
+        const leftoversJsonString = this.leftovers();
+        const csvData = this.jsonToCsv(leftoversJsonString);
+        console.log(csvData);
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
 
-        this.fileSystem.saveAs(this.leftovers(), {
-            fileName: 'nieużyte.txt',
+        this.fileSystem.saveAs(blob, {
+            fileName: 'nieużyte.csv', // Specify the CSV file name
             method: FileSaverSaveMethod.PreferFileSystem,
             types: [
                 {
-                    description: 'Plik tekstowy',
-                    accept: { 'text/plain': ['.txt'] },
-                },
-                {
-                    description: 'Plik JSON',
-                    accept: { 'application/json': ['.json', '.jsonc'] },
+                    description: 'Plik CSV',
+                    accept: { 'text/csv': ['.csv'] },
                 },
             ],
         });
