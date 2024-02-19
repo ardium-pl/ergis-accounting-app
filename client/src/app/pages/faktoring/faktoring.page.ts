@@ -116,10 +116,6 @@ export class FaktoringPage {
         return [];
     });
 
-    refes = effect(() => {
-        console.log(Object.keys(this.prnArray()?.[0] ?? {}), this.prnHeaders());
-    });
-
     readonly csvArray = computed<FaktoringObject[]>(() => {
         const csvContent = this.fileStorage.csvFileContent();
 
