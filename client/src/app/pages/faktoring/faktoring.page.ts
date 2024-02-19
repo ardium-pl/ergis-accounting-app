@@ -118,7 +118,7 @@ export class FaktoringPage {
 
     refes = effect(() => {
         console.log(Object.keys(this.prnArray()?.[0] ?? {}), this.prnHeaders());
-    })
+    });
 
     readonly csvArray = computed<FaktoringObject[]>(() => {
         const csvContent = this.fileStorage.csvFileContent();
@@ -191,20 +191,38 @@ export class FaktoringPage {
         return this.leftovers() != NO_UNUSED_NEGATIVES_MESSAGE;
     });
 
+    private jsonToCsv(jsonString: string): string {
+        const jsonData = JSON.parse(jsonString);
+
+        if (!Array.isArray(jsonData) || jsonData.length === 0) {
+            return '';
+        }
+        const headers = Object.keys(jsonData[0]);
+        const csvData = [];
+        csvData.push(headers.join(';'));
+        csvData.push(...jsonData.map(row =>
+            headers
+                .map(fieldName =>
+                    JSON.stringify(row[fieldName], (_, value) => (typeof value === 'string' ? value.replace(/"/g, '""') : value))
+                )
+                .join(';')
+        ));
+
+        return csvData.join('\r\n');
+    }
+
     downloadLeftovers(): void {
         if (!this.hasAnyLeftovers()) return;
+        const csvData = this.jsonToCsv(this.leftovers());
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
 
-        this.fileSystem.saveAs(this.leftovers(), {
-            fileName: 'nieużyte.txt',
+        this.fileSystem.saveAs(blob, {
+            fileName: 'nieużyte',
             method: FileSaverSaveMethod.PreferFileSystem,
             types: [
                 {
-                    description: 'Plik tekstowy',
-                    accept: { 'text/plain': ['.txt'] },
-                },
-                {
-                    description: 'Plik JSON',
-                    accept: { 'application/json': ['.json', '.jsonc'] },
+                    description: 'Plik CSV',
+                    accept: { 'text/csv': ['.csv'] },
                 },
             ],
         });
