@@ -8,11 +8,18 @@ import { isDefined } from 'simple-bool';
 export class FileStorageService {
     constructor() {}
 
+    // First file signals
     readonly file = signal<File | undefined>(undefined);
     readonly fileContent = signal<string | null>(null);
     readonly fileBuffer = signal<ArrayBuffer | null>(null);
     readonly fileType = signal<string | null>(null);
-    readonly isLoaded = computed(() => isDefined(this.file()))
+    readonly isLoaded = computed(() => isDefined(this.file()));
+
+    // Second file signals
+    readonly csvFile = signal<File | undefined>(undefined);
+    readonly csvFileContent = signal<string | null>(null);
+    readonly csvFileBuffer = signal<ArrayBuffer | null>(null);
+    readonly csvFileType = signal<string | null>(null);
 
     setFile(file: File, readAs: 'text' | 'binary' = 'text'): void {
         this.file.set(file);
@@ -43,10 +50,45 @@ export class FileStorageService {
 
         this.fileType.set(file.name.split('.').at(-1)!.toLowerCase());
     }
-    reset(): void {
+
+    setCsvFile(file: File, readAs: 'text' | 'binary' = 'text'): void {
+        this.csvFile.set(file);
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            switch (readAs) {
+                case 'binary':
+                    this.csvFileBuffer.set(e.target?.result as ArrayBuffer);
+                    break;
+                default:
+                    this.csvFileContent.set(e.target?.result as string);
+                    break;
+            }
+        };
+        reader.onerror = () => {
+            throw new Error('Error reading file.');
+        };
+
+        switch (readAs) {
+            case 'binary':
+                reader.readAsArrayBuffer(file);
+                break;
+            default:
+                reader.readAsText(file);
+                break;
+        }
+
+        this.csvFileType.set(file.name.split('.').at(-1)!.toLowerCase());
+    }
+
+    resetFile(): void {
         this.file.set(undefined);
         this.fileBuffer.set(null);
         this.fileContent.set(null);
         this.fileType.set(null);
+    }
+
+    resetCsvFile(): void {
+        this.csvFile.set(undefined);
     }
 }

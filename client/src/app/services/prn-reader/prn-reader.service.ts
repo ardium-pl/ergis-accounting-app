@@ -64,7 +64,8 @@ export class PrnReaderService {
             const resultObject: PrnObject = {};
 
             for (let i = 0; i < line.length; i++) {
-                const header = headers[i];
+                let header = headers[i];
+                while (header in resultObject) header = header + '_2'
                 const data = line[i];
                 resultObject[header] = data;
             }

@@ -1,8 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal, effect } from '@angular/core';
+import { Component, computed, effect, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Router } from '@angular/router';
 import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
 import {
     ButtonComponent,
@@ -15,9 +14,8 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringMode, FaktoringObject, FaktoringService, FileStorageService, FinalFaktoringObject, PrnReaderService } from '@services';
+import { CsvParserService, FaktoringMode, FaktoringObject, FaktoringService, FileStorageService, FinalFaktoringObject, PrnReaderService } from '@services';
 import { parseYesNo, randomBetween, sleep } from '@utils';
-import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
 import { JsonDataStore } from 'src/app/utils/json-data-store';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
@@ -39,7 +37,7 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         SelectComponent,
         EditableDataTableComponent,
     ],
-    providers: [FileSaverService, PrnReaderService],
+    providers: [FileSaverService, PrnReaderService, CsvParserService],
     templateUrl: './faktoring.page.html',
     styleUrl: './faktoring.page.scss',
 })
@@ -49,18 +47,8 @@ export class FaktoringPage {
         public faktoringService: FaktoringService,
         private fileSystem: FileSaverService,
         private prnReader: PrnReaderService,
-        private router: Router
+        private csvParser: CsvParserService
     ) {}
-
-    private readonly pastData = new JsonDataStore<FaktoringObject>(v => {
-        return {
-            referencjaKG: v['referencjaKG'],
-            naDzien: v['naDzien'],
-            kwotaWWalucie: v['kwotaWWalucie'],
-            kwotaWZl: v['kwotaWZł'] ?? v['kwotaWZl'],
-            korekta: parseYesNo(v['korekta']),
-        };
-    });
 
     readonly FAKTORING_MODE_OPTIONS = [
         { value: FaktoringMode.Negative, label: 'Kwoty ujemne' },
@@ -68,7 +56,7 @@ export class FaktoringPage {
     ];
     faktoringMode: string = FaktoringMode.Negative;
 
-    onFileUpload(file: File): void {
+    onPrnFileUpload(file: File): void {
         if (file.size > 10 * 1024 * 1024) {
             alert('Plik musi być mniejszy niż 10 MB');
             return;
@@ -77,12 +65,38 @@ export class FaktoringPage {
             alert('Plik musi być typu .prn');
             return;
         }
+
         this.fileStorage.setFile(file);
 
         this.isPrnLoading.set(true);
         setTimeout(() => {
             this.isPrnLoading.set(false);
         }, 500);
+    }
+    onCsvFileUpload(file: File): void {
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Plik musi być mniejszy niż 10 MB');
+            return;
+        }
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            alert('Plik musi być typu .csv');
+            return;
+        }
+        this.fileStorage.setCsvFile(file);
+    }
+
+    private isValidFaktoringObjectArray(parsedEntries: any[]): parsedEntries is FaktoringObject[] {
+        if (!Array.isArray(parsedEntries) || parsedEntries.length === 0) {
+            return false;
+        }
+        return parsedEntries.every(
+            entry =>
+                entry.hasOwnProperty('referencjaKG') &&
+                entry.hasOwnProperty('naDzien') &&
+                entry.hasOwnProperty('kwotaWWalucie') &&
+                entry.hasOwnProperty('kwotaWZl') &&
+                entry.hasOwnProperty('korekta')
+        );
     }
 
     readonly isPrnLoading = signal<boolean>(false);
@@ -102,27 +116,27 @@ export class FaktoringPage {
         return [];
     });
 
-    readonly areResultsLoading = signal(false);
+    refes = effect(() => {
+        console.log(Object.keys(this.prnArray()?.[0] ?? {}), this.prnHeaders());
+    })
 
-    readonly wasPastDataTouched = signal(false);
-    readonly isPastDataValid = this.pastData.isDataValid;
+    readonly csvArray = computed<FaktoringObject[]>(() => {
+        const csvContent = this.fileStorage.csvFileContent();
 
-    readonly errorBoxState = computed<ErrorBoxType>(() => {
-        if (!this.wasPastDataTouched()) return ErrorBoxType.Info;
-        if (!this.isPastDataValid()) {
-            return ErrorBoxType.Error;
+        if (csvContent) {
+            const parsedEntries = this.csvParser.parseCsv(csvContent);
+
+            if (parsedEntries && this.isValidFaktoringObjectArray(parsedEntries)) {
+                return parsedEntries;
+            } else {
+                throw new Error('CSV data is not in the correct format.');
+            }
         }
-        return ErrorBoxType.Success;
+        if (csvContent != null) throw new Error('No CSV content available or content is invalid.');
+        return [];
     });
 
-    onPastDataBlur(v: string): void {
-        this.wasPastDataTouched.set(true);
-        this.pastData.setFromString(v);
-    }
-    onPastDataPaste(event: ClipboardEvent): void {
-        const v = event.clipboardData!.getData('Text');
-        this.onPastDataBlur(v);
-    }
+    readonly areResultsLoading = signal(false);
 
     async onGenerateButtonClick(): Promise<void> {
         const prn = this.prnArray();
@@ -131,7 +145,7 @@ export class FaktoringPage {
         this.areResultsLoading.set(true);
         // sleep for a short while so that if an error is thrown, the results aren't immediate
         await sleep(500);
-        const processedData = this.faktoringService.processData(prn, this.pastData.data(), this.faktoringMode as FaktoringMode);
+        const processedData = this.faktoringService.processData(prn, this.csvArray(), this.faktoringMode as FaktoringMode);
         // sleep a short random amount of time to give the illusion of a complex algorithm creating the results
         if (!window.location.href.includes('localhost')) await sleep(randomBetween(4e3, 8e3));
         this.areResultsLoading.set(false);
