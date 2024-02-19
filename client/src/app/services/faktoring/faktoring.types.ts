@@ -15,10 +15,13 @@ export type FinalFaktoringObject = {
     details: FaktoringDetails;
 }
 export type FaktoringDetails = {
-    lookUpPositiveAmount: number;
-    lookUpNegativeAmount: number;
-    lookUpPositiveReference: string;
-    lookUpNegativeReference: string;
+    positiveAmount: number;
+    negativeAmount: number;
+    positiveReference: string;
+    negativeReference: string;
+    positiveRate: number;
+    negativeRate: number;
+    rateDifference: number;
 };
 
 export const FaktoringMode = {

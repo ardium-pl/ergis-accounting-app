@@ -133,13 +133,17 @@ export class FaktoringService {
 
                 leftoversFlag = LeftoversFlag.NoneLeft;
             }
-            const currencyCorrection = correctionAmount * (negativeExchangeRate - positiveExchangeRate);
+            const rateDifference = negativeExchangeRate - positiveExchangeRate;
+            const currencyCorrection = correctionAmount * rateDifference;
 
             const details = {
-                lookUpPositiveAmount,
-                lookUpNegativeAmount,
-                lookUpPositiveReference,
-                lookUpNegativeReference,
+                positiveAmount: lookUpPositiveAmount,
+                negativeAmount: lookUpNegativeAmount,
+                positiveReference: lookUpPositiveReference,
+                negativeReference: lookUpNegativeReference,
+                positiveRate: positiveExchangeRate,
+                negativeRate: negativeExchangeRate,
+                rateDifference,
             };
             allCurrencyCorrections.push({
                 referencjaKG,

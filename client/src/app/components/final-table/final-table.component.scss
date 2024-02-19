@@ -51,11 +51,9 @@ app-final-table,
         background: none;
         cursor: pointer;
         opacity: 0;
-        pointer-events: none;
     }
     .results-row:hover .info-cell.info-cell.info-cell {
         opacity: 1;
-        pointer-events: all;
     }
     .row-tooltip {
         position: absolute;

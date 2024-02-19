@@ -40,12 +40,18 @@
                     <app-icon>info</app-icon>
                     <div class="row-tooltip">
                         <div class="tooltip-grid">
-                            <div class="top-row">{{ row.details.lookUpPositiveReference }}</div>
-                            <div class="top-row">{{ row.details.lookUpNegativeReference }}</div>
+                            <div class="top-row">{{ row.details.positiveReference }}</div>
+                            <div class="top-row">{{ row.details.negativeReference }}</div>
                             <div class="top-row">Korekta</div>
-                            <div class="bottom-row">{{ row.details.lookUpPositiveAmount | pln }}</div>
-                            <div class="bottom-row">{{ row.details.lookUpNegativeAmount | pln }}</div>
+                            <div class="bottom-row">{{ row.details.positiveAmount | pln }}</div>
+                            <div class="bottom-row">{{ row.details.negativeAmount | pln }}</div>
                             <div class="bottom-row">{{ row.currencyCorrection | pln }}</div>
+                            <div class="top-row">Waluta po</div>
+                            <div class="top-row">Waluta po</div>
+                            <div class="top-row">Różnica kursów</div>
+                            <div class="bottom-row">≈{{ row.details.positiveRate | pln:3 }}</div>
+                            <div class="bottom-row">≈{{ row.details.negativeRate | pln:3 }}</div>
+                            <div class="bottom-row">≈{{ row.details.rateDifference | pln:3 }}</div>
                         </div>
                     </div>
                 </td>
