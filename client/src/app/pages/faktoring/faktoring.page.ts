@@ -37,7 +37,7 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         SelectComponent,
         EditableDataTableComponent,
     ],
-    providers: [FileSaverService, PrnReaderService, CsvParserService],
+    providers: [FileSaverService, CsvParserService],
     templateUrl: './faktoring.page.html',
     styleUrl: './faktoring.page.scss',
 })
@@ -46,7 +46,6 @@ export class FaktoringPage {
         public fileStorage: FileStorageService,
         public faktoringService: FaktoringService,
         private fileSystem: FileSaverService,
-        private prnReader: PrnReaderService,
         private csvParser: CsvParserService
     ) {}
 
@@ -56,6 +55,7 @@ export class FaktoringPage {
     ];
     faktoringMode: string = FaktoringMode.Negative;
 
+    readonly isPrnLoading = signal<boolean>(false);
     onPrnFileUpload(file: File): void {
         if (file.size > 10 * 1024 * 1024) {
             alert('Plik musi być mniejszy niż 10 MB');
@@ -66,8 +66,10 @@ export class FaktoringPage {
             return;
         }
 
-        this.fileStorage.setFile(file);
+        this.faktoringService.setPrnFile(file);
 
+        // for the appearance of smooth loading
+        // the editable table takes quite a bit to load, so we temporarily display a loading state instead
         this.isPrnLoading.set(true);
         setTimeout(() => {
             this.isPrnLoading.set(false);
@@ -99,23 +101,6 @@ export class FaktoringPage {
         );
     }
 
-    readonly isPrnLoading = signal<boolean>(false);
-
-    readonly prnArray = computed(() => {
-        const fileContent = this.fileStorage.fileContent();
-        if (typeof fileContent === 'string') {
-            return this.prnReader.readPrn(fileContent);
-        }
-        return [];
-    });
-    readonly prnHeaders = computed(() => {
-        const fileContent = this.fileStorage.fileContent();
-        if (typeof fileContent === 'string') {
-            return this.prnReader.readPrnHeaders(fileContent);
-        }
-        return [];
-    });
-
     readonly csvArray = computed<FaktoringObject[]>(() => {
         const csvContent = this.fileStorage.csvFileContent();
 
@@ -132,20 +117,15 @@ export class FaktoringPage {
         return [];
     });
 
-    private convertStringToNumber(value: string): number {
-        return parseFloat(value.replace(/\s+/g, '').replace(',', '.'));
-      }
-
     readonly areResultsLoading = signal(false);
 
     async onGenerateButtonClick(): Promise<void> {
-        const prn = this.prnArray();
-        if (!prn.length) return;
+        if (!this.faktoringService.hasPrn()) return;
 
         this.areResultsLoading.set(true);
         // sleep for a short while so that if an error is thrown, the results aren't immediate
         await sleep(500);
-        const processedData = this.faktoringService.processData(prn, this.csvArray(), this.faktoringMode as FaktoringMode);
+        const processedData = this.faktoringService.processData(this.csvArray(), this.faktoringMode as FaktoringMode);
         // sleep a short random amount of time to give the illusion of a complex algorithm creating the results
         if (!window.location.href.includes('localhost')) await sleep(randomBetween(4e3, 8e3));
         this.areResultsLoading.set(false);
@@ -200,13 +180,15 @@ export class FaktoringPage {
         const headers = Object.keys(jsonData[0]);
         const csvData = [];
         csvData.push(headers.join(';'));
-        csvData.push(...jsonData.map(row =>
-            headers
-                .map(fieldName =>
-                    JSON.stringify(row[fieldName], (_, value) => (typeof value === 'string' ? value.replace(/"/g, '""') : value))
-                )
-                .join(';')
-        ));
+        csvData.push(
+            ...jsonData.map(row =>
+                headers
+                    .map(fieldName =>
+                        JSON.stringify(row[fieldName], (_, value) => (typeof value === 'string' ? value.replace(/"/g, '""') : value))
+                    )
+                    .join(';')
+            )
+        );
 
         return csvData.join('\r\n');
     }

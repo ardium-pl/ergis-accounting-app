@@ -3,17 +3,17 @@
     <div class="sections-wrapper">
         <app-section required header="Dodaj plik PRN">
             <app-file-drop-zone (upload)="onPrnFileUpload($event)" accept=".prn" />
-            <app-file-display [file]="fileStorage.file()" />
+            <app-file-display [file]="faktoringService.prnFile()" />
             <app-select [options]="FAKTORING_MODE_OPTIONS" label="Kierunek salda" [(value)]="faktoringMode" />
         </app-section>
-        @if (fileStorage.isLoaded() === true) {
+        @if (faktoringService.hasPrn() || isPrnLoading()) {
         <app-section header="Przejrzyj podgląd pliku">
             <div class="table-wrapper">
                 @if (isPrnLoading()) {
                 <mat-spinner class="table-spinner" />
                 }
-                <app-editable-data-table [class.table-loading]="isPrnLoading()" [dataArray]="prnArray()"
-                    [headers]="prnHeaders()" />
+                <app-editable-data-table [class.table-loading]="isPrnLoading()"
+                    [dataArray]="faktoringService.prnArray()" [headers]="faktoringService.prnHeaders()" />
             </div>
         </app-section>
         }
@@ -23,7 +23,7 @@
         </app-section>
         <app-section header="Generuj rozliczenie kursów">
             <div class="button-container">
-                <app-button [disabled]="!prnArray().length || !csvArray().length"
+                <app-button [disabled]="!faktoringService.hasPrn() || !csvArray().length"
                     (click)="onGenerateButtonClick()">Generuj</app-button>
                 @if (areResultsLoading()) {<mat-spinner />}
             </div>

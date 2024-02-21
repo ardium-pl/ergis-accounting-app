@@ -16,7 +16,13 @@ import { PlnPipe } from '@pipes';
 export class FinalTableComponent {
     readonly data = input.required<FinalFaktoringObject[] | null>();
 
-    readonly abs = Math.abs;
-
     readonly tooltipIndex = signal<number>(-1);
+
+    toggleTooltip(index: number): void {
+        if (this.tooltipIndex() === -1) {
+            this.tooltipIndex.set(index);
+            return;
+        }
+        this.tooltipIndex.set(-1);
+    }
 }

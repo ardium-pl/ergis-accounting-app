@@ -11,7 +11,7 @@
         <tr>
             <td class="number-cell">{{i + 1}}</td>
             @for (key of dataArray()[0] | keys; track $index) {
-            <td contenteditable [textContent]="item[key]" (input)="updateCellValue(item, key, $event)"></td>
+            <td contenteditable [textContent]="item[key]" (input)="updateCellValue(i, key, $event)"></td>
             }
             <td class="action-cell">
                 <app-icon-button (click)="deleteRow(i)" size="medium"><app-icon>delete</app-icon></app-icon-button>

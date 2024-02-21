@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, effect, input, signal } from '@angular/core';
+import { Component, Input, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KeysPipe } from '@pipes';
-import { PrnObject } from '@services';
+import { FaktoringService, PrnObject } from '@services';
 import { IconButtonComponent } from '../icon-button/icon-button.component';
 import { IconComponent } from '../icon/icon.component';
 
@@ -14,25 +14,18 @@ import { IconComponent } from '../icon/icon.component';
     styleUrl: './editable-data-table.component.scss',
 })
 export class EditableDataTableComponent {
-    readonly dataArray = signal<PrnObject[]>([]);
-    readonly dataHeaders = signal<PrnObject>({});
+    private readonly faktoringService = inject(FaktoringService);
+
+    readonly dataArray = input.required<PrnObject[]>();
 
     readonly headers = input.required<string[]>();
 
-    @Input({ required: true, alias: 'dataArray' })
-    set _dataArray(v: PrnObject[]) {
-        this.dataArray.set(v.slice(1));
-        this.dataHeaders.set(v[0]);
-    }
-    
     deleteRow(index: number): void {
-        const newArr = [...this.dataArray()];
-        newArr.splice(index, 1);
-        this.dataArray.set(newArr);
+        this.faktoringService.removePrnRow(index);
     }
 
-    updateCellValue(item: PrnObject, key: string, event: Event): void {
+    updateCellValue(index: number, key: string, event: Event): void {
         const value = (event.target as HTMLDivElement).textContent || '';
-        item[key] = value;
+        this.faktoringService.updatePrnRow(index, key, value);
     }
 }

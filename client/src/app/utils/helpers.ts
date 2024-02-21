@@ -1,11 +1,7 @@
 
 
 export function parseNumber(str: string): number {
-    return Number(str.replaceAll(',', ''));
-}
-
-export function parseCsvValue(str: string): number {
-    return Number(str.replace(/\s/g, '').replaceAll(',', '.'));
+    return Number(str.replace(/\s/g, '').replaceAll(',', ''));
 }
 
 export function parseYesNo(v: any): boolean {

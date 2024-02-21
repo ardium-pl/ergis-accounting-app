@@ -9,14 +9,14 @@ export class FileStorageService {
     constructor() {}
 
     // First file signals
-    readonly file = signal<File | undefined>(undefined);
+    readonly file = signal<File | null>(null);
     readonly fileContent = signal<string | null>(null);
     readonly fileBuffer = signal<ArrayBuffer | null>(null);
     readonly fileType = signal<string | null>(null);
     readonly isLoaded = computed(() => isDefined(this.file()));
 
     // Second file signals
-    readonly csvFile = signal<File | undefined>(undefined);
+    readonly csvFile = signal<File | null>(null);
     readonly csvFileContent = signal<string | null>(null);
     readonly csvFileBuffer = signal<ArrayBuffer | null>(null);
     readonly csvFileType = signal<string | null>(null);
@@ -92,13 +92,16 @@ export class FileStorageService {
   }
 
     resetFile(): void {
-        this.file.set(undefined);
+        this.file.set(null);
         this.fileBuffer.set(null);
         this.fileContent.set(null);
         this.fileType.set(null);
     }
 
     resetCsvFile(): void {
-        this.csvFile.set(undefined);
+        this.csvFile.set(null);
+        this.csvFileBuffer.set(null);
+        this.csvFileContent.set(null);
+        this.csvFileType.set(null);
     }
 }

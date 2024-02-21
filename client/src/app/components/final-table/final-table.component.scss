@@ -94,8 +94,12 @@ app-final-table,
         > * {
             font-size: 14px;
         }
-        .top-row {
+        .title-row {
             font-weight: 500;
+
+            &:not(.top-row) {
+                padding-top: 0.25rem;
+            }
         }
     }
 }

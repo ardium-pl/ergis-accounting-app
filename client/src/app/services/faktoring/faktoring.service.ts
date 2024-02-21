@@ -1,32 +1,68 @@
-import { Injectable } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { PrnReaderService } from '../prn-reader/prn-reader.service';
 import { PrnObject } from '../prn-reader/prn-reader.types';
-import { parseNumber, parseYesNo , parseCsvValue} from './../../utils/helpers';
+import { parseNumber, parseYesNo } from './../../utils/helpers';
 import { FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } from './faktoring.types';
 
 @Injectable({
     providedIn: 'root',
 })
 export class FaktoringService {
-    public processData(rawPrnObjects: PrnObject[], pastEntries: FaktoringObject[], faktoringMode: FaktoringMode) {
-        let convertedPastEntries: FaktoringObject[] = [];
+    private readonly prnReader = inject(PrnReaderService);
+
+    private readonly _prnFile = signal<File | null>(null);
+    public readonly prnFile = computed(() => this._prnFile());
+    private readonly _prnArray = signal<PrnObject[]>([]);
+    public readonly prnArray = computed(() => this._prnArray());
+    private readonly _prnHeaders = signal<string[]>([]);
+    public readonly prnHeaders = computed(() => this._prnHeaders());
+    public readonly hasPrn = computed(() => this._prnArray().length > 0);
+
+    public setPrnFile(file: File): void {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const content = e.target?.result as string;
+
+            const prnObjects = this.prnReader.readPrn(content);
+            this._prnArray.set(prnObjects);
+
+            const headers = this.prnReader.readPrnHeaders(content);
+            this._prnHeaders.set(headers);
+        };
+        reader.onerror = () => {
+            throw new Error('Error reading file.');
+        };
+        reader.readAsText(file);
+        this._prnFile.set(file);
+    }
+    public removePrnRow(index: number): void {
+        const newArray = [...this._prnArray()];
+        newArray.splice(index, 1);
+        this._prnArray.set(newArray);
+    }
+    public updatePrnRow(index: number, key: string, value: string): void {
+        const newArray = [...this._prnArray()];
+        newArray[index][key] = value;
+        this._prnArray.set(newArray);
+    }
+
+    public processData(pastEntries: FaktoringObject[], faktoringMode: FaktoringMode) {
+        const rawPrnObjects = this._prnArray();
 
         if (pastEntries.some(v => v.kwotaWWalucie == 0)) {
             throw new Error(`Kwota w walucie musi być różna od zero.`);
         }
 
-        for(let i =0; i < pastEntries.length; i++){
-            let convertedEntry = {
-                referencjaKG: pastEntries[i].referencjaKG,
-                naDzien : pastEntries[i].naDzien,
-                kwotaWWalucie : parseCsvValue(String(pastEntries[i].kwotaWWalucie)),
-                kwotaWZl: parseCsvValue(String(pastEntries[i].kwotaWZl)),
-                korekta : parseYesNo(pastEntries[i].korekta),
-            }
-            convertedPastEntries.push(convertedEntry);
-        }
+        pastEntries = pastEntries.map(obj => ({
+            referencjaKG: obj.referencjaKG,
+            naDzien: obj.naDzien,
+            kwotaWWalucie: parseNumber(obj.kwotaWWalucie as unknown as string),
+            kwotaWZl: parseNumber(obj.kwotaWZl as unknown as string),
+            korekta: parseYesNo(obj.korekta),
+        }));
 
-        const positives: FaktoringObject[] = convertedPastEntries[0].kwotaWWalucie > 0 ? [...convertedPastEntries] : [];
-        const negatives: FaktoringObject[] = convertedPastEntries[0].kwotaWWalucie < 0 ? [...convertedPastEntries] : [];
+        const positives: FaktoringObject[] = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
+        const negatives: FaktoringObject[] = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];
 
         // filter out corrections & sort entries into positives and negatives
         for (const obj of rawPrnObjects) {
@@ -108,9 +144,9 @@ export class FaktoringService {
             // get the valid correction amount
             let correctionAmount: number;
 
-            // for validation purpase 
+            // for validation purpase
             const lookUpPositiveAmount: number = positiveAmount;
-            const lookUpNegativeAmount: number = - negativeAmount;
+            const lookUpNegativeAmount: number = -negativeAmount;
             const lookUpPositiveReference: string = positiveObject.referencjaKG;
             const lookUpNegativeReference: string = negativeObject.referencjaKG;
 

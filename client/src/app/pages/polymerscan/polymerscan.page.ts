@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, ViewEncapsulation, computed, effect } from '@angular/core';
+import { Component, ViewEncapsulation, computed } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
 import { FileStorageService, PolymerscanService } from '@services';

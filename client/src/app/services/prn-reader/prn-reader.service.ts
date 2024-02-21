@@ -17,7 +17,7 @@ export class PrnReaderService {
         lines.reverse();
         const headersLine = lines.pop()!;
         const widths = this._getWidths(lines);
-        return this._splitSingleLine(headersLine, widths).map(v => this._mapHeaderName(v));
+        return this._splitSingleLine(headersLine, widths);
     }
     private _filterOnlyDataRows(data: string): string[] {
         const lines = data.split('\n');
