@@ -96,7 +96,7 @@ export class FaktoringService {
     private _mapRawPrnObject(rawObject: PrnObject): FaktoringObject {
         return {
             referencjaKG: rawObject['ReferencjaKG'],
-            naDzien: rawObject['NaDzie'], //The polish character ń cant fit into a key
+            naDzien: rawObject['NaDzie'] ?? rawObject['NaDzien'], //The polish character ń is usually removed
             kwotaWWalucie: parseNumber(rawObject['KwotaWWalucie']),
             kwotaWZl: parseNumber(rawObject['Kwota']),
             korekta: parseYesNo(rawObject['Kor']),
@@ -140,8 +140,6 @@ export class FaktoringService {
 
         const allCurrencyCorrections: FinalFaktoringObject[] = [];
         let leftoversFlag: LeftoversFlag = LeftoversFlag.NoneLeft;
-
-        console.table(negatives);
 
         while ((positives.length > 0 || !isNaN(positiveAmount)) && negatives.length > 0) {
             const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
