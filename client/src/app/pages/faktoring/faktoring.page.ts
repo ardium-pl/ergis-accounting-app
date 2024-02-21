@@ -51,8 +51,8 @@ export class FaktoringPage {
     ) {}
 
     readonly FAKTORING_MODE_OPTIONS = [
-        { value: FaktoringMode.Negative, label: 'Kwoty ujemne' },
-        { value: FaktoringMode.Positive, label: 'Kwoty dodatnie' },
+        { value: FaktoringMode.Negative, label: 'Ujemne' },
+        { value: FaktoringMode.Positive, label: 'Dodatnie' },
     ];
     faktoringMode: string = FaktoringMode.Negative;
 
@@ -131,6 +131,10 @@ export class FaktoringPage {
         if (csvContent != null) throw new Error('No CSV content available or content is invalid.');
         return [];
     });
+
+    private convertStringToNumber(value: string): number {
+        return parseFloat(value.replace(/\s+/g, '').replace(',', '.'));
+      }
 
     readonly areResultsLoading = signal(false);
 

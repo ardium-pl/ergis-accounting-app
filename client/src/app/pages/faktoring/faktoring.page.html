@@ -4,7 +4,7 @@
         <app-section required header="Dodaj plik PRN">
             <app-file-drop-zone (upload)="onPrnFileUpload($event)" accept=".prn" />
             <app-file-display [file]="fileStorage.file()" />
-            <app-select [options]="FAKTORING_MODE_OPTIONS" label="Podstawa rozliczenia" [(value)]="faktoringMode" />
+            <app-select [options]="FAKTORING_MODE_OPTIONS" label="Kierunek salda" [(value)]="faktoringMode" />
         </app-section>
         @if (fileStorage.isLoaded() === true) {
         <app-section header="Przejrzyj podgląd pliku">

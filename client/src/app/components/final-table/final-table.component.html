@@ -13,7 +13,7 @@
                 <td>75210</td>
                 <td>0d00</td>
                 <td>RK{{ row.referencjaKG }}</td>
-                <td>{{ (abs(row.currencyCorrection) | number: '1.2-2') || '0,00' }}</td>
+                <td>{{ ((-row.currencyCorrection) | number: '1.2-2') || '0,00' }}</td> <!-- It wasn't supose to be absolute value but simply currencyCorrection *(-1)-->
             </tr>
             }
         </tbody>

@@ -52,34 +52,44 @@ export class FileStorageService {
     }
 
     setCsvFile(file: File, readAs: 'text' | 'binary' = 'text'): void {
-        this.csvFile.set(file);
-
-        const reader = new FileReader();
-        reader.onload = e => {
-            switch (readAs) {
-                case 'binary':
-                    this.csvFileBuffer.set(e.target?.result as ArrayBuffer);
-                    break;
-                default:
-                    this.csvFileContent.set(e.target?.result as string);
-                    break;
-            }
-        };
-        reader.onerror = () => {
-            throw new Error('Error reading file.');
-        };
-
-        switch (readAs) {
-            case 'binary':
-                reader.readAsArrayBuffer(file);
-                break;
-            default:
-                reader.readAsText(file);
-                break;
-        }
-
-        this.csvFileType.set(file.name.split('.').at(-1)!.toLowerCase());
-    }
+      this.csvFile.set(file);
+  
+      const reader = new FileReader();
+      reader.onload = e => {
+          switch (readAs) {
+              case 'binary':
+                  this.csvFileBuffer.set(e.target?.result as ArrayBuffer);
+                  break;
+              default:
+                  let textResult = e.target?.result as string;
+  
+                  const lines = textResult.split(/\r\n|\n/); 
+                  const processedLines = lines.map(line => {
+                      const values = line.split(';');
+                      const processedValues = values.map(value => value.replace(/^"(.*)"$/, '$1')); // Removing quotes from each string value
+                      return processedValues.join(';'); 
+                  });
+                  const processedResult = processedLines.join('\n'); // Joining all lines back together
+  
+                  this.csvFileContent.set(processedResult);
+                  break;
+          }
+      };
+      reader.onerror = () => {
+          throw new Error('Error reading file.');
+      };
+  
+      switch (readAs) {
+          case 'binary':
+              reader.readAsArrayBuffer(file);
+              break;
+          default:
+              reader.readAsText(file);
+              break;
+      }
+  
+      this.csvFileType.set(file.name.split('.').at(-1)!.toLowerCase());
+  }
 
     resetFile(): void {
         this.file.set(undefined);

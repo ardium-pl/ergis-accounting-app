@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { PrnObject } from '../prn-reader/prn-reader.types';
-import { parseNumber, parseYesNo } from './../../utils/helpers';
+import { parseNumber, parseYesNo , parseCsvValue} from './../../utils/helpers';
 import { FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } from './faktoring.types';
 
 @Injectable({
@@ -8,13 +8,25 @@ import { FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } f
 })
 export class FaktoringService {
     public processData(rawPrnObjects: PrnObject[], pastEntries: FaktoringObject[], faktoringMode: FaktoringMode) {
-        // the past entries cannot contain a value equal to zero
+        let convertedPastEntries: FaktoringObject[] = [];
+
         if (pastEntries.some(v => v.kwotaWWalucie == 0)) {
             throw new Error(`Kwota w walucie musi być różna od zero.`);
         }
 
-        const positives: FaktoringObject[] = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
-        const negatives: FaktoringObject[] = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];
+        for(let i =0; i < pastEntries.length; i++){
+            let convertedEntry = {
+                referencjaKG: pastEntries[i].referencjaKG,
+                naDzien : pastEntries[i].naDzien,
+                kwotaWWalucie : parseCsvValue(String(pastEntries[i].kwotaWWalucie)),
+                kwotaWZl: parseCsvValue(String(pastEntries[i].kwotaWZl)),
+                korekta : parseYesNo(pastEntries[i].korekta),
+            }
+            convertedPastEntries.push(convertedEntry);
+        }
+
+        const positives: FaktoringObject[] = convertedPastEntries[0].kwotaWWalucie > 0 ? [...convertedPastEntries] : [];
+        const negatives: FaktoringObject[] = convertedPastEntries[0].kwotaWWalucie < 0 ? [...convertedPastEntries] : [];
 
         // filter out corrections & sort entries into positives and negatives
         for (const obj of rawPrnObjects) {
@@ -46,7 +58,7 @@ export class FaktoringService {
     private _mapRawPrnObject(rawObject: PrnObject): FaktoringObject {
         return {
             referencjaKG: rawObject['ReferencjaKG'],
-            naDzien: rawObject['NaDzień'],
+            naDzien: rawObject['NaDzie'], //The polisch character ń can't fit into a key
             kwotaWWalucie: parseNumber(rawObject['KwotaWWalucie']),
             kwotaWZl: parseNumber(rawObject['Kwota']),
             korekta: parseYesNo(rawObject['Kor']),
@@ -65,7 +77,6 @@ export class FaktoringService {
             kwotaWWalucie: -v.kwotaWWalucie,
             kwotaWZl: -v.kwotaWZl,
         }));
-
         // get the first
         let positiveObject = positives.shift()!;
         let negativeObject = negatives.shift()!;
