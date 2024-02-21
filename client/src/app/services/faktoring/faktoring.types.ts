@@ -7,13 +7,17 @@ export type FaktoringObject = {
     kwotaWWalucie: number;
     kwotaWZl: number;
     korekta: boolean;
+    konto: string;
+    subkonto: string;
 }
 
 export type FinalFaktoringObject = {
     referencjaKG: string;
     currencyCorrection: number;
     details: FaktoringDetails;
-}
+    konto: string;
+    subkonto: string;
+};
 export type FaktoringDetails = {
     positiveAmount: number;
     negativeAmount: number;

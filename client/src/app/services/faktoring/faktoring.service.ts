@@ -59,6 +59,8 @@ export class FaktoringService {
             kwotaWWalucie: parseNumber(obj.kwotaWWalucie as unknown as string),
             kwotaWZl: parseNumber(obj.kwotaWZl as unknown as string),
             korekta: parseYesNo(obj.korekta),
+            konto: obj.konto,
+            subkonto: obj.subkonto,
         }));
 
         const positives: FaktoringObject[] = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
@@ -94,10 +96,12 @@ export class FaktoringService {
     private _mapRawPrnObject(rawObject: PrnObject): FaktoringObject {
         return {
             referencjaKG: rawObject['ReferencjaKG'],
-            naDzien: rawObject['NaDzie'], //The polisch character ń can't fit into a key
+            naDzien: rawObject['NaDzie'], //The polish character ń cant fit into a key
             kwotaWWalucie: parseNumber(rawObject['KwotaWWalucie']),
             kwotaWZl: parseNumber(rawObject['Kwota']),
             korekta: parseYesNo(rawObject['Kor']),
+            konto: rawObject['Konto'],
+            subkonto: rawObject['Subkonto'],
         };
     }
 
@@ -127,7 +131,9 @@ export class FaktoringService {
                 negatives,
                 negativeExchangeRate,
                 negativeObject.referencjaKG,
-                negativeObject.naDzien
+                negativeObject.naDzien,
+                negativeObject.konto,
+                negativeObject.subkonto
             );
             return [[], negatives];
         }
@@ -135,11 +141,15 @@ export class FaktoringService {
         const allCurrencyCorrections: FinalFaktoringObject[] = [];
         let leftoversFlag: LeftoversFlag = LeftoversFlag.NoneLeft;
 
+        console.table(negatives);
+
         while ((positives.length > 0 || !isNaN(positiveAmount)) && negatives.length > 0) {
             const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
             const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
 
             const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG;
+            const konto = faktoringMode == FaktoringMode.Positive ? positiveObject.konto : negativeObject.konto;
+            const subkonto = faktoringMode == FaktoringMode.Positive ? positiveObject.subkonto : negativeObject.konto;
 
             // get the valid correction amount
             let correctionAmount: number;
@@ -196,6 +206,8 @@ export class FaktoringService {
                 referencjaKG,
                 currencyCorrection,
                 details,
+                konto,
+                subkonto,
             });
         }
 
@@ -214,7 +226,9 @@ export class FaktoringService {
                 negatives,
                 negativeExchangeRate,
                 negativeObject.referencjaKG,
-                negativeObject.naDzien
+                negativeObject.naDzien,
+                negativeObject.konto,
+                negativeObject.subkonto
             );
 
             return [allCurrencyCorrections, negatives];
@@ -226,7 +240,9 @@ export class FaktoringService {
                 positives,
                 positiveExchangeRate,
                 positiveObject.referencjaKG,
-                positiveObject.naDzien
+                positiveObject.naDzien,
+                positiveObject.konto,
+                positiveObject.subkonto
             );
 
             return [allCurrencyCorrections, positives];
@@ -239,7 +255,9 @@ export class FaktoringService {
         leftoverArray: FaktoringObject[],
         exchangeRate: number,
         referencjaKG: string,
-        naDzien: string
+        naDzien: string,
+        konto: string,
+        subkonto: string
     ) {
         // TODO: dodać możliwość oddawania nie wykorzystanych plusów
         const kwotaWZl = exchangeRate * currencyAmount;
@@ -248,8 +266,10 @@ export class FaktoringService {
             referencjaKG,
             naDzien,
             kwotaWWalucie: currencyAmount,
-            kwotaWZl: kwotaWZl,
+            kwotaWZl,
             korekta: false,
+            konto,
+            subkonto,
         });
         return leftoverArray;
     }
