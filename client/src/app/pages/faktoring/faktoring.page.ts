@@ -14,7 +14,7 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringMode, FaktoringObject, FaktoringService, FileStorageService, FinalFaktoringObject } from '@services';
+import { FaktoringMode, FaktoringService, FinalFaktoringObject } from '@services';
 import { randomBetween, sleep } from '@utils';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
@@ -41,7 +41,7 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
     styleUrl: './faktoring.page.scss',
 })
 export class FaktoringPage {
-    constructor(public fileStorage: FileStorageService, public faktoringService: FaktoringService, private fileSystem: FileSaverService) {}
+    constructor(public faktoringService: FaktoringService, private fileSystem: FileSaverService) {}
 
     readonly FAKTORING_MODE_OPTIONS = [
         { value: FaktoringMode.Negative, label: 'Ujemne' },
