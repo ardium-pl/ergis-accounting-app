@@ -1,7 +1,7 @@
 
 
-export function parseNumber(str: string): number {
-    return Number(str.replace(/\s/g, '').replaceAll(',', ''));
+export function parseNumber(str: string | number): number {
+    return typeof str === 'string' ? Number(str.replace(/\s/g, '').replaceAll(',', '')) : str;
 }
 
 export function parseYesNo(v: any): boolean {

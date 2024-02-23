@@ -1,15 +1,16 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { PrnReaderService } from '../prn-reader/prn-reader.service';
-import { PrnObject } from '../prn-reader/prn-reader.types';
 import { parseNumber, parseYesNo } from './../../utils/helpers';
 import { FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } from './faktoring.types';
+import { CsvObject, ExcelService, PrnObject, PrnReaderService } from '@services';
 
 @Injectable({
     providedIn: 'root',
 })
 export class FaktoringService {
     private readonly prnReader = inject(PrnReaderService);
+    private readonly excelService = inject(ExcelService);
 
+    //! prn file
     private readonly _prnFile = signal<File | null>(null);
     public readonly prnFile = computed(() => this._prnFile());
     private readonly _prnArray = signal<PrnObject[]>([]);
@@ -18,7 +19,21 @@ export class FaktoringService {
     public readonly prnHeaders = computed(() => this._prnHeaders());
     public readonly hasPrn = computed(() => this._prnArray().length > 0);
 
-    public setPrnFile(file: File): void {
+    /**
+     * Sets the prn file to be used in the service.
+     * @param file The file uploaded.
+     * @returns Whether the file met the expected criteria or not.
+     */
+    public setPrnFile(file: File): boolean {
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Plik musi być mniejszy niż 10 MB');
+            return false;
+        }
+        if (!file.name.toLowerCase().endsWith('.prn')) {
+            alert('Plik musi być typu .prn');
+            return false;
+        }
+
         const reader = new FileReader();
         reader.onload = e => {
             const content = e.target?.result as string;
@@ -34,6 +49,7 @@ export class FaktoringService {
         };
         reader.readAsText(file);
         this._prnFile.set(file);
+        return true;
     }
     public removePrnRow(index: number): void {
         const newArray = [...this._prnArray()];
@@ -45,23 +61,61 @@ export class FaktoringService {
         newArray[index][key] = value;
         this._prnArray.set(newArray);
     }
+    //! csv file
+    private readonly _csvFile = signal<File | null>(null);
+    public readonly csvFile = computed(() => this._csvFile());
+    private readonly _csvArray = signal<FaktoringObject[]>([]);
+    public readonly csvArray = computed(() => this._csvArray());
+    public readonly hasCsv = computed(() => this._csvArray().length > 0);
 
-    public processData(pastEntries: FaktoringObject[], faktoringMode: FaktoringMode) {
-        const rawPrnObjects = this._prnArray();
-
-        if (pastEntries.some(v => v.kwotaWWalucie == 0)) {
-            throw new Error(`Kwota w walucie musi być różna od zero.`);
+    public setCsvFile(file: File): boolean {
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Plik musi być mniejszy niż 10 MB');
+            return false;
+        }
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            alert('Plik musi być typu .csv');
+            return false;
         }
 
-        pastEntries = pastEntries.map(obj => ({
-            referencjaKG: obj.referencjaKG,
-            naDzien: obj.naDzien,
-            kwotaWWalucie: parseNumber(obj.kwotaWWalucie as unknown as string),
-            kwotaWZl: parseNumber(obj.kwotaWZl as unknown as string),
-            korekta: parseYesNo(obj.korekta),
-            konto: obj.konto,
-            subkonto: obj.subkonto,
-        }));
+        const reader = new FileReader();
+        reader.onload = e => {
+            const content = e.target?.result as string;
+
+            try {
+                const csvObjects = this.excelService.readAsCsv<keyof FaktoringObject>(content);
+                const faktoringObjects = csvObjects.map(this._mapRawCsvObject);
+                this._csvArray.set(faktoringObjects);
+                this._csvFile.set(file);
+            } catch (error) {
+                if (error === "EMPTY_CSV_ERR") {
+                    alert('Dodano plik CSV bez zawartości!');
+                    return;
+                }
+                if (error === "SEPARATOR_ERR") {
+                    alert('Nie udało się wykryć rodzaju separatora pliku CSV. Sprawdź, czy plik nie był ręcznie edytowany.');
+                    return;
+                }
+                if (error === 'CSV_FORMAT_ERR') {
+                    alert('Plik CSV ma nieprawidłowy format!');
+                    return;
+                }
+            }
+        };
+        reader.onerror = () => {
+            throw new Error('Error reading file.');
+        };
+        reader.readAsText(file);
+        return true;
+    }
+
+    public processData(faktoringMode: FaktoringMode) {
+        if (this._csvArray().some(v => v.kwotaWWalucie == 0)) {
+            throw "ZERO_AMOUNT_ERR";
+        }
+        
+        const rawPrnObjects = this._prnArray();
+        const pastEntries = this._csvArray();
 
         const positives: FaktoringObject[] = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
         const negatives: FaktoringObject[] = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];
@@ -102,6 +156,21 @@ export class FaktoringService {
             korekta: parseYesNo(rawObject['Kor']),
             konto: rawObject['Konto'],
             subkonto: rawObject['Subkonto'],
+        };
+    }
+    private _mapRawCsvObject(rawObject: CsvObject<keyof FaktoringObject>): FaktoringObject {
+        const entries = Object.entries(rawObject);
+        if (entries.length < 7 || entries.some(([, v]) => !v)) {
+            throw "CSV_FORMAT_ERR";
+        }
+        return {
+            referencjaKG: rawObject.referencjaKG ?? '',
+            naDzien: rawObject.naDzien ?? '',
+            kwotaWWalucie: parseNumber(rawObject.kwotaWWalucie ?? '0'),
+            kwotaWZl: parseNumber(rawObject.kwotaWZl ?? '0'),
+            korekta: parseYesNo(rawObject.korekta),
+            konto: rawObject.konto ?? '',
+            subkonto: rawObject.subkonto ?? '',
         };
     }
 
@@ -147,7 +216,7 @@ export class FaktoringService {
 
             const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG;
             const konto = faktoringMode == FaktoringMode.Positive ? positiveObject.konto : negativeObject.konto;
-            const subkonto = faktoringMode == FaktoringMode.Positive ? positiveObject.subkonto : negativeObject.konto;
+            const subkonto = faktoringMode == FaktoringMode.Positive ? positiveObject.subkonto : negativeObject.subkonto;
 
             // get the valid correction amount
             let correctionAmount: number;

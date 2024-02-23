@@ -9,4 +9,4 @@ export * from './polymerscan/polymerscan.types';
 export * from './prn-reader/prn-reader.service';
 export * from './prn-reader/prn-reader.types';
 
-export * from './csv-parser/csv-parser.service';
+export * from './excel/excel.service';

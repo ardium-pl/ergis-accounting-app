@@ -19,11 +19,11 @@
         }
         <app-section required header="Dodaj pozycje z poprzedniego miesiąca">
             <app-file-drop-zone (upload)="onCsvFileUpload($event)" accept=".csv" />
-            <app-file-display [file]="fileStorage.csvFile()" />
+            <app-file-display [file]="faktoringService.csvFile()" />
         </app-section>
         <app-section header="Generuj rozliczenie kursów">
             <div class="button-container">
-                <app-button [disabled]="!faktoringService.hasPrn() || !csvArray().length"
+                <app-button [disabled]="!faktoringService.hasPrn() || !faktoringService.hasCsv()"
                     (click)="onGenerateButtonClick()">Generuj</app-button>
                 @if (areResultsLoading()) {<mat-spinner />}
             </div>

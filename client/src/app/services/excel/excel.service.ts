@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 
-type CsvObject<T extends string> = Partial<{ [key in T]: string }>;
+export type CsvObject<T extends string> = Partial<{ [key in T]: string }>;
 
 @Injectable({
     providedIn: 'root',
 })
 export class ExcelService {
     readAsCsv<T extends string>(csvData: string): CsvObject<T>[] {
-        const lines = csvData.trim().split('\n');
+        const lines = csvData.indexOf('\r\n') != -1 ? csvData.trim().split(/\r\n/) : csvData.trim().split(/\n/);
         if (lines.length === 0) {
-            throw new Error('Empty CSV data provided');
+            throw "EMPTY_CSV_ERR";
         }
 
         const separator = this._detectSeparator(lines);
@@ -39,11 +39,11 @@ export class ExcelService {
             const counts = lines.map(line => line.match(new RegExp(separator, 'g'))?.length);
             // check if the number of occurences is the same in every line
             // and if it is, we have found the separator
-            if (counts.every(count => count === counts[0])) {
+            if (counts.every(count => count && count === counts[0])) {
                 return separator;
             }
         }
 
-        throw new Error('Cannot find matching separator.');
+        throw "SEPARATOR_ERR";
     }
 }
