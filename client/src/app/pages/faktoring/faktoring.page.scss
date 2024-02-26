@@ -5,6 +5,10 @@
 app-error-box {
     width: 100%;
 }
+h1{
+    display: flex;
+    justify-content: center;
+}
 
 textarea, pre {
     min-width: 35rem;
