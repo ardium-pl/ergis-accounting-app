@@ -3,13 +3,21 @@
 }
 
 app-error-box {
+    display: flex;
+    justify-content: center;
     width: 100%;
+
 }
 h1{
     display: flex;
     justify-content: center;
 }
-
+.file-content-wrapper{
+    height: 100%;
+    width: 100%;
+    background-color: var(--on-main);
+    
+}
 textarea, pre {
     min-width: 35rem;
     width: 100%;

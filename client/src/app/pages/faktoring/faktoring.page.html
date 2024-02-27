@@ -1,5 +1,5 @@
 <main>
-    <h1>Konwerter plików PRN</h1>
+    <h1 style="cursor: pointer;" onclick="document.location.reload()">Konwerter plików PRN</h1>
     <div class="sections-wrapper">
         <app-section required header="Dodaj plik PRN">
             <app-file-drop-zone (upload)="onFileUpload($event)" accept=".prn"></app-file-drop-zone>
@@ -11,7 +11,7 @@
         </app-section>
         <app-section required header="Dodaj dane o kwotach ujemnych">
             <textarea rows="7" #negatives (blur)="onPastDataBlur(negatives.value)" (paste)="onPastDataPaste($event)"></textarea>
-            <app-error-box [type]="errorBoxState()">
+            <app-error-box [type]="errorBoxState()" style="color: var(--border);">
                 @if (errorBoxState() == 'info') {
                 Tutaj wprowadź dane o kwotach ujemnych.
                 } @else if (errorBoxState() == 'error') {

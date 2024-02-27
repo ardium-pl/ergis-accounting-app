@@ -1,5 +1,3 @@
-$animationBaseDelay: 0.5s;
-$animation: fadeIn $animationBaseDelay ease-out;
 $darkGray: #333;
 $originalLogoWidth: 1200px;
 $originalLogoHeight: 850px;
@@ -62,7 +60,7 @@ img {
             font-family: var(--main-font);
             font-size: 16px;
             margin-bottom: 10px;
-            color: $darkGray;
+            color: rgba(255, 255, 255, 0.572);
         }
 
     }
