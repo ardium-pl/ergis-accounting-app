@@ -26,8 +26,14 @@
       "@components": [
         "src/app/components/index"
       ],
+      "@directives": [
+        "src/app/directives/index"
+      ],
       "@pages": [
         "src/app/pages/index"
+      ],
+      "@pipes": [
+        "src/app/pipes/index"
       ],
       "@services": [
         "src/app/services/index"
