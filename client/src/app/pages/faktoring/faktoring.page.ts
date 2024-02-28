@@ -43,12 +43,6 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
 export class FaktoringPage {
     constructor(public faktoringService: FaktoringService, private fileSystem: FileSaverService) {}
 
-    readonly FAKTORING_MODE_OPTIONS = [
-        { value: FaktoringMode.Negative, label: 'Ujemne' },
-        { value: FaktoringMode.Positive, label: 'Dodatnie' },
-    ];
-    faktoringMode: string = FaktoringMode.Negative;
-
     readonly isPrnLoading = signal<boolean>(false);
     onPrnFileUpload(file: File): void {
         const isSuccessful = this.faktoringService.setPrnFile(file);
@@ -74,7 +68,7 @@ export class FaktoringPage {
         // sleep for a short while so that if an error is thrown, the results aren't immediate
         await sleep(500);
         try {
-            const processedData = this.faktoringService.processData(this.faktoringMode as FaktoringMode);
+            const processedData = this.faktoringService.processData();
             // sleep a short random amount of time to give the illusion of a complex algorithm creating the results
             if (!window.location.href.includes('localhost')) await sleep(randomBetween(4e3, 8e3));
             this.areResultsLoading.set(false);

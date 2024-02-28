@@ -109,7 +109,7 @@ export class FaktoringService {
         return true;
     }
 
-    public processData(faktoringMode: FaktoringMode) {
+    public processData() {
         if (this._csvArray().some(v => v.kwotaWWalucie == 0)) {
             throw "ZERO_AMOUNT_ERR";
         }
@@ -119,6 +119,9 @@ export class FaktoringService {
 
         const positives: FaktoringObject[] = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
         const negatives: FaktoringObject[] = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];
+
+        //Setting faktoring mode dynamically based on the type of past entrie
+        const faktoringMode: FaktoringMode = pastEntries[0].kwotaWWalucie > 0 ? FaktoringMode.Negative : FaktoringMode.Positive
 
         // filter out corrections & sort entries into positives and negatives
         for (const obj of rawPrnObjects) {

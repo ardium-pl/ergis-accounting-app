@@ -4,7 +4,6 @@
         <app-section required header="Dodaj plik PRN">
             <app-file-drop-zone (upload)="onPrnFileUpload($event)" accept=".prn" />
             <app-file-display [file]="faktoringService.prnFile()" />
-            <app-select [options]="FAKTORING_MODE_OPTIONS" label="Kierunek salda" [(value)]="faktoringMode" style="color: var(--border); font-family: 'Outfit', sans-serif;"/>
         </app-section>
         @if (faktoringService.hasPrn() || isPrnLoading()) {
         <app-section header="Przejrzyj podgląd pliku">
