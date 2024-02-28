@@ -1,5 +1,5 @@
 <main>
-    <h1 style="cursor: pointer;" onclick="document.location.reload()">Konwerter plików PRN</h1>
+    <h1>Konwerter plików PRN</h1>
     <div class="sections-wrapper">
         <app-section required header="Dodaj plik PRN">
             <app-file-drop-zone (upload)="onPrnFileUpload($event)" accept=".prn" />
@@ -39,7 +39,7 @@
                 </span>
                 Pobierz
             </app-button>
-            <p class="unused-count" style="color: var(--border); font-family: 'Outfit', sans-serif;">Nieużyte elementy: <strong>{{ leftoversCount() | number }}</strong></p>
+            <p class="unused-count">Nieużyte elementy: <strong>{{ leftoversCount() | number }}</strong></p>
             }
         </app-section>
         }

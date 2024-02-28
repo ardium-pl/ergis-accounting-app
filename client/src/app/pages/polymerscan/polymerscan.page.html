@@ -1,5 +1,5 @@
 <main>
-    <h1 onclick="document.location.reload()" style="cursor: pointer;">Polymerscan</h1>
+    <h1>Polymerscan</h1>
     <div class="sections-wrapper polymerscan">
         <app-section required header="Dodaj plik PDF">
             <app-file-drop-zone (upload)="onFileUpload($event)" accept=".pdf"></app-file-drop-zone>
@@ -12,7 +12,6 @@
                 @if (areResultsLoading()) {<mat-spinner diameter="36"></mat-spinner>}
             </div>
         </app-section>
-        <div class="answer">
         <app-section header="Przeczytaj odpowiedź">
             @if (areResultsLoading()) {
                 <p>
@@ -30,6 +29,5 @@
                 </div>
             }
         </app-section>
-    </div>
     </div>
 </main>
