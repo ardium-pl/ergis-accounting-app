@@ -1,22 +1,18 @@
 <main>
 
     <body>
-        <h1 class="app-title"><img src="https://i.postimg.cc/Fs2QCjKh/ergis-logo-Any-Eraser.png"></h1>
+        <img src="https://i.postimg.cc/Fs2QCjKh/ergis-logo-Any-Eraser.png">
         <div class="subtitle show-subtitle"> Kolekcja narzędzi stworzonych specjalnie dla Ergis Management
         </div>
-        <div class="card-container">
-            <div class="card" routerLink="faktoring">
-                <div class="content">
-                    <h2>Faktoring</h2>
-                    <p>Skonwertuj swój plik PRN</p>
-                </div>
-            </div>
-            <div class="card" routerLink="polymerscan">
-                <div class="content">
-                    <h2>Polymerscan</h2>
-                    <p>Wykorzystaj dane z pliku PDF</p>
-                </div>
-            </div>
+        <div class="content">
+            <app-card routerLink="faktoring" class="margin">
+                <h2>Faktoring</h2>
+                <p>Skonwertuj swój plik PRN</p>
+            </app-card>
+            <app-card routerLink="faktoring" class="margin">
+                <h2>Polymerscan</h2>
+                <p>Wykorzystaj dane z pliku PDF</p>
+            </app-card>
         </div>
     </body>
 </main>

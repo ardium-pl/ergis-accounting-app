@@ -16,6 +16,7 @@
         right: 10px;
         bottom: 10px;
         border-radius: 2px;
+        pointer-events: none
 
     }
 
@@ -27,7 +28,7 @@
         border: 1px solid var(--detail);
         font-size: 1rem;
         font-family: var(--main-font);
-        background-color: var(--border);
+        background-color: var(--bg2-light);
         width: 100px;
         appearance: none;
     }

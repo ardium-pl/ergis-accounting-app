@@ -1,0 +1,37 @@
+.card {
+    cursor: pointer;
+    background-color: var(--bg2-light);
+    width: 250px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px var(--shadow-main);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: scale(1.02);
+    }
+
+
+    .content {
+        padding: 10px;
+
+        h2 {
+            color: var(--border);
+            display: flex;
+            justify-content: center;
+            font-family: var(--main-font);
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            display: flex;
+            justify-content: center;
+            font-family: var(--main-font);
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: rgba(20, 20, 20, 0.9);
+        }
+
+    }
+}

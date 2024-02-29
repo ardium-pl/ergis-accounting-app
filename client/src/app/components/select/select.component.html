@@ -1,10 +1,10 @@
 <app-_form-field
+    class="custom-selector"
     [label]="label()"
     [htmlFor]="htmlId()"
     [hasError]="hasError()"
     [helperText]="helperText()"
 >
-<div class="custom-selector">
     <select
         #select
         [name]="htmlId() ?? ''"
@@ -16,5 +16,4 @@
             <option [value]="opt.value">{{ opt.label }}</option>
         }
     </select>
-</div>
 </app-_form-field>
