@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { CsvObject, ExcelService, PrnObject, PrnReaderService } from '@services';
 import { parseNumber, parseYesNo } from './../../utils/helpers';
 import { FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } from './faktoring.types';
-import { CsvObject, ExcelService, PrnObject, PrnReaderService } from '@services';
 
 @Injectable({
     providedIn: 'root',
@@ -88,11 +88,11 @@ export class FaktoringService {
                 this._csvArray.set(faktoringObjects);
                 this._csvFile.set(file);
             } catch (error) {
-                if (error === "EMPTY_CSV_ERR") {
+                if (error === 'EMPTY_CSV_ERR') {
                     alert('Dodano plik CSV bez zawartości!');
                     return;
                 }
-                if (error === "SEPARATOR_ERR") {
+                if (error === 'SEPARATOR_ERR') {
                     alert('Nie udało się wykryć rodzaju separatora pliku CSV. Sprawdź, czy plik nie był ręcznie edytowany.');
                     return;
                 }
@@ -111,29 +111,26 @@ export class FaktoringService {
 
     public processData() {
         if (this._csvArray().some(v => v.kwotaWWalucie == 0)) {
-            throw "ZERO_AMOUNT_ERR";
+            throw 'ZERO_AMOUNT_ERR';
         }
-        
-        const rawPrnObjects = this._prnArray();
+
+        const fromPrn = this._mapPrnObjectsToFaktoringObjects(this._prnArray());
         const pastEntries = this._csvArray();
 
         const positives: FaktoringObject[] = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
         const negatives: FaktoringObject[] = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];
 
         //Setting faktoring mode dynamically based on the type of past entrie
-        const faktoringMode: FaktoringMode = pastEntries[0].kwotaWWalucie > 0 ? FaktoringMode.Negative : FaktoringMode.Positive
+        const faktoringMode: FaktoringMode = pastEntries[0].kwotaWWalucie > 0 ? FaktoringMode.Negative : FaktoringMode.Positive;
 
         // filter out corrections & sort entries into positives and negatives
-        for (const obj of rawPrnObjects) {
-            const mappedObj = this._mapRawPrnObject(obj);
-            if (mappedObj.korekta) continue;
-            if (mappedObj.kwotaWWalucie == 0) continue; // Removing correction positions, marked as Rkur WB
-            if (mappedObj.kwotaWZl < 0) {
-                negatives.push(mappedObj);
+        for (const obj of fromPrn) {
+            if (obj.kwotaWZl < 0) {
+                negatives.push(obj);
                 continue;
             }
-            if (mappedObj.kwotaWZl > 0) {
-                positives.push(mappedObj);
+            if (obj.kwotaWZl > 0) {
+                positives.push(obj);
                 continue;
             }
         }
@@ -150,6 +147,10 @@ export class FaktoringService {
         }
     }
 
+    private _mapPrnObjectsToFaktoringObjects(rawObjects: PrnObject[]): FaktoringObject[] {
+        return rawObjects.map(this._mapRawPrnObject).filter(obj => !obj.korekta && obj.kwotaWWalucie != 0);
+    }
+
     private _mapRawPrnObject(rawObject: PrnObject): FaktoringObject {
         return {
             referencjaKG: rawObject['ReferencjaKG'],
@@ -164,7 +165,7 @@ export class FaktoringService {
     private _mapRawCsvObject(rawObject: CsvObject<keyof FaktoringObject>): FaktoringObject {
         const entries = Object.entries(rawObject);
         if (entries.length < 7 || entries.some(([, v]) => !v)) {
-            throw "CSV_FORMAT_ERR";
+            throw 'CSV_FORMAT_ERR';
         }
         return {
             referencjaKG: rawObject.referencjaKG ?? '',
@@ -342,5 +343,29 @@ export class FaktoringService {
             subkonto,
         });
         return leftoverArray;
+    }
+
+    public getMismatchedAccounts(): { prn: { obj: FaktoringObject; index: number }; csv: { obj: FaktoringObject; index: number } } | null {
+        const fromPrn = this._mapPrnObjectsToFaktoringObjects(this._prnArray());
+        const fromCsv = this._csvArray();
+
+        for (const prnObj of fromPrn) {
+            if (!prnObj.konto || !prnObj.subkonto) continue;
+            for (const csvObj of fromCsv) {
+                if (csvObj.konto && csvObj.konto != prnObj.konto || csvObj.subkonto && csvObj.subkonto != prnObj.subkonto) {
+                    return {
+                        prn: {
+                            obj: prnObj,
+                            index: fromPrn.findIndex(v => v == prnObj),
+                        },
+                        csv: {
+                            obj: csvObj,
+                            index: fromCsv.findIndex(v => v == csvObj),
+                        },
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
