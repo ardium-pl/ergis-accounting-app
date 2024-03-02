@@ -5,6 +5,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
 import {
     ButtonComponent,
+    EditableDataTableComponent,
     ErrorBoxComponent,
     FileDisplayComponent,
     FileDropZoneComponent,
@@ -13,10 +14,8 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringMode, FaktoringObject, FaktoringService, FileStorageService, FinalFaktoringObject, PrnReaderService } from '@services';
-import { parseYesNo, randomBetween, sleep } from '@utils';
-import { ErrorBoxType } from 'src/app/components/error-box/error-box.types';
-import { JsonDataStore } from 'src/app/utils/json-data-store';
+import { FaktoringMode, FaktoringService, FinalFaktoringObject } from '@services';
+import { randomBetween, sleep } from '@utils';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
 
@@ -35,117 +34,84 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         IconButtonComponent,
         DecimalPipe,
         SelectComponent,
+        EditableDataTableComponent,
     ],
-    providers: [FileSaverService, PrnReaderService],
+    providers: [FileSaverService],
     templateUrl: './faktoring.page.html',
     styleUrl: './faktoring.page.scss',
 })
 export class FaktoringPage {
-    constructor(
-        public fileStorage: FileStorageService,
-        public faktoringService: FaktoringService,
-        private fileSystem: FileSaverService,
-        private prnReader: PrnReaderService
-    ) {}
+    constructor(public faktoringService: FaktoringService, private fileSystem: FileSaverService) {}
 
-    private readonly pastData = new JsonDataStore<FaktoringObject>(v => {
-        return {
-            referencjaKG: v['referencjaKG'],
-            naDzien: v['naDzien'],
-            kwotaWWalucie: v['kwotaWWalucie'],
-            kwotaWZl: v['kwotaWZł'] ?? v['kwotaWZl'],
-            korekta: parseYesNo(v['korekta']),
-        };
-    });
+    readonly isPrnLoading = signal<boolean>(false);
+    onPrnFileUpload(file: File): void {
+        const isSuccessful = this.faktoringService.setPrnFile(file);
+        if (!isSuccessful) return;
 
-    readonly FAKTORING_MODE_OPTIONS = [
-        { value: FaktoringMode.Negative, label: 'Kwoty ujemne' },
-        { value: FaktoringMode.Positive, label: 'Kwoty dodatnie' },
-    ];
-    faktoringMode: string = FaktoringMode.Negative;
-
-    onFileUpload(file: File): void {
-        if (file.size > 10 * 1024 * 1024) {
-            alert('Plik musi być mniejszy niż 10 MB');
-            return;
-        }
-        if (!file.name.toLowerCase().endsWith('.prn')) {
-            alert('Plik musi być typu .prn');
-            return;
-        }
-        this.fileStorage.setFile(file);
+        // for the appearance of smooth loading
+        // the editable table takes quite a bit to load, so we temporarily display a loading state instead
+        this.isPrnLoading.set(true);
+        setTimeout(() => {
+            this.isPrnLoading.set(false);
+        }, 500);
     }
-
-    readonly formattedFile = computed(() => {
-        return this.prnReader.getPrnDataString(this.fileStorage.fileContent());
-    });
+    onCsvFileUpload(file: File): void {
+        this.faktoringService.setCsvFile(file);
+    }
 
     readonly areResultsLoading = signal(false);
 
-    readonly wasPastDataTouched = signal(false);
-    readonly isPastDataValid = this.pastData.isDataValid;
-
-    readonly errorBoxState = computed<ErrorBoxType>(() => {
-        if (!this.wasPastDataTouched()) return ErrorBoxType.Info;
-        if (!this.isPastDataValid()) {
-            return ErrorBoxType.Error;
-        }
-        return ErrorBoxType.Success;
-    });
-
-    onPastDataBlur(v: string): void {
-        this.wasPastDataTouched.set(true);
-        this.pastData.setFromString(v);
-    }
-    onPastDataPaste(event: ClipboardEvent): void {
-        const v = event.clipboardData!.getData('Text');
-        this.onPastDataBlur(v);
-    }
-
     async onGenerateButtonClick(): Promise<void> {
-        const prnContent = this.fileStorage.fileContent();
-        if (!prnContent) return;
+        if (!this.faktoringService.hasPrn()) return;
 
         this.areResultsLoading.set(true);
         // sleep for a short while so that if an error is thrown, the results aren't immediate
         await sleep(500);
-        const processedData = this.faktoringService.processData(prnContent, this.pastData.data(), this.faktoringMode as FaktoringMode);
-        // sleep a short random amount of time to give the illusion of a complex algorithm creating the results
-        await sleep(randomBetween(4e3, 8e3));
-        this.areResultsLoading.set(false);
+        try {
+            const processedData = this.faktoringService.processData();
+            // sleep a short random amount of time to give the illusion of a complex algorithm creating the results
+            if (!window.location.href.includes('localhost')) await sleep(randomBetween(4e3, 8e3));
+            this.areResultsLoading.set(false);
 
-        // scroll to errors after the section gets rendered
-        setTimeout(() => {
-            const element = document.getElementById('results')!;
-            const headerOffset = 16;
-            const elementPosition = element.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.scrollY - headerOffset;
+            // scroll to errors after the section gets rendered
+            setTimeout(() => {
+                const element = document.getElementById('results')!;
+                const headerOffset = 16;
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.scrollY - headerOffset;
 
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth',
-            });
-        }, 0);
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth',
+                });
+            }, 0);
 
-        // notify the user there is no data generated
-        if (!processedData) {
-            this.tableData.set(null);
-            this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
-            this.leftoversCount.set(null);
-            return;
+            // notify the user there is no data generated
+            if (!processedData) {
+                this.tableData.set(null);
+                this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
+                this.leftoversCount.set(null);
+                return;
+            }
+            // now there is some data, split it into the table portion and unused entries portion
+            const [data, leftovers] = processedData;
+            this.tableData.set(data);
+            // if there are no unused entries, display the appropriate message
+            if (leftovers.length == 0) {
+                this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
+                this.leftoversCount.set(null);
+                return;
+            }
+            // there are some unused entries - allow for them to be downloaded
+            this.leftovers.set(JSON.stringify(leftovers));
+            this.leftoversCount.set(leftovers.length);
+        } catch (error) {
+            if (error === 'ZERO_AMOUNT_ERR') {
+                alert('Żadna z kwot nie może być równa zero!');
+                return;
+            }
+            throw error;
         }
-        // now there is some data, split it into the table portion and unused entries portion
-        const [data, leftovers] = processedData;
-        this.tableData.set(data);
-        // if there are no unused entries, display the appropriate message
-        if (leftovers.length == 0) {
-            this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
-            this.leftoversCount.set(null);
-            return;
-        }
-        // there are some unused entries - allow for them to be downloaded
-        this.leftovers.set(JSON.stringify(leftovers));
-        this.leftoversCount.set(leftovers.length);
     }
 
     readonly tableData = signal<FinalFaktoringObject[] | null>(null);
@@ -155,20 +121,43 @@ export class FaktoringPage {
         return this.leftovers() != NO_UNUSED_NEGATIVES_MESSAGE;
     });
 
+    private jsonToCsv(jsonString: string): string {
+        const jsonData = JSON.parse(jsonString);
+
+        if (!Array.isArray(jsonData) || jsonData.length === 0) {
+            return '';
+        }
+        const headers = Object.keys(jsonData[0]);
+        const csvData = [];
+        csvData.push(headers.join(';'));
+        csvData.push(
+            ...jsonData.map(row =>
+                headers
+                    .map(fieldName =>
+                        JSON.stringify(row[fieldName], (_, value) =>
+                            typeof value === 'string' ? value.replace(/"/g, '') : typeof value === 'number' ? value.toFixed(2) : value
+                        )
+                    )
+                    .join(';')
+                    .replace(/"/g, '')
+            )
+        );
+
+        return csvData.join('\r\n');
+    }
+
     downloadLeftovers(): void {
         if (!this.hasAnyLeftovers()) return;
+        const csvData = this.jsonToCsv(this.leftovers());
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
 
-        this.fileSystem.saveAs(this.leftovers(), {
-            fileName: 'nieużyte.txt',
+        this.fileSystem.saveAs(blob, {
+            fileName: 'nieużyte',
             method: FileSaverSaveMethod.PreferFileSystem,
             types: [
                 {
-                    description: 'Plik tekstowy',
-                    accept: { 'text/plain': ['.txt'] },
-                },
-                {
-                    description: 'Plik JSON',
-                    accept: { 'application/json': ['.json', '.jsonc'] },
+                    description: 'Plik CSV',
+                    accept: { 'text/csv': ['.csv'] },
                 },
             ],
         });

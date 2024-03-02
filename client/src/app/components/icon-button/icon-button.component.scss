@@ -1,8 +1,6 @@
 button {
     background: transparent;
     cursor: pointer;
-    height: 2.25rem;
-    width: 2.25rem;
     border: none;
     border-radius: 9999px;
     color: inherit;
@@ -43,5 +41,14 @@ button {
         .focus-overlay {
             opacity: 8%;
         }
+    }
+
+    &.size-big {
+        height: 2.25rem;
+        width: 2.25rem;
+    }
+    &.size-medium {
+        height: 1.5rem;
+        width: 1.5rem;
     }
 }

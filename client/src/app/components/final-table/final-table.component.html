@@ -1,27 +1,60 @@
 @if (data()) {
-<div class="tables-container">
+<div class="final-table">
     <table class="results-table">
         <tbody class="results-table-body">
-            @for (row of data(); track $index) {
-            <tr class="results-row" [class.above-zero]="row.currencyCorrection > 0" [class.below-zero]="row.currencyCorrection < 0">
+            @for (row of data(); let index = $index; track index) {
+            <tr
+                class="results-row"
+                [class.above-zero]="row.currencyCorrection > 0"
+                [class.below-zero]="row.currencyCorrection < 0"
+                [class.is-focused]="tooltipIndex() === index"
+            >
                 <td>{{ row.currencyCorrection > 0 ? 750 : 751 }}</td>
                 <td>75210</td>
                 <td>0d00</td>
                 <td>RK{{ row.referencjaKG }}</td>
-                <td>{{ (abs(row.currencyCorrection) | number: '1.2-2') || '0,00' }}</td>
+                <td>{{ ((-row.currencyCorrection) | number: '1.2-2') || '0,00' }}</td>
             </tr>
             }
         </tbody>
     </table>
     <table class="results-table">
         <tbody class="results-table-body">
-            @for (row of data(); track $index) {
-            <tr class="results-row" [class.above-zero]="row.currencyCorrection > 0" [class.below-zero]="row.currencyCorrection < 0">
-                <td>264</td>
-                <td>26403</td>
+            @for (row of data(); let index = $index; track index) {
+            <tr
+                class="results-row"
+                [class.above-zero]="row.currencyCorrection > 0"
+                [class.below-zero]="row.currencyCorrection < 0"
+                [class.is-focused]="tooltipIndex() === index"
+            >
+                <td>{{ row.konto }}</td>
+                <td>{{ row.subkonto }}</td>
                 <td>0000</td>
                 <td>RK{{ row.referencjaKG }}</td>
                 <td>{{ (row.currencyCorrection | number: '1.2-2') || '0,00' }}</td>
+                <td class="info-cell"
+                    (ardClickOutside)="tooltipIndex.set(-1)"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="toggleTooltip(index)"
+                >
+                    <app-icon>info</app-icon>
+                    <div class="row-tooltip">
+                        <div class="tooltip-grid">
+                            <div class="title-row top-row">{{ row.details.positiveReference }}</div>
+                            <div class="title-row top-row">{{ row.details.negativeReference }}</div>
+                            <div class="title-row top-row">Korekta</div>
+                            <div class="text-row">{{ row.details.positiveAmount | pln }}</div>
+                            <div class="text-row">{{ row.details.negativeAmount | pln }}</div>
+                            <div class="text-row">{{ row.currencyCorrection | pln }}</div>
+                            <div class="title-row">Waluta po</div>
+                            <div class="title-row">Waluta po</div>
+                            <div class="title-row">Różnica kursów</div>
+                            <div class="text-row">≈{{ row.details.positiveRate | pln:4 }}</div>
+                            <div class="text-row">≈{{ row.details.negativeRate | pln:4 }}</div>
+                            <div class="text-row">≈{{ row.details.rateDifference | pln:4 }}</div>
+                        </div>
+                    </div>
+                </td>
             </tr>
             }
         </tbody>

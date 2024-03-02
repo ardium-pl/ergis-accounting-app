@@ -12,5 +12,7 @@ export * from './section/section.component';
 
 export * from './final-table/final-table.component';
 
+export * from './editable-data-table/editable-data-table.component';
+
 export * from './select/select.component';
 export * from './select/select.types';

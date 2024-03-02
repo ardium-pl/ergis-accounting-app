@@ -9,5 +9,5 @@ import { ArdiumFilesizePipeModule } from '@ardium-ui/devkit';
     styleUrl: './file-display.component.scss',
 })
 export class FileDisplayComponent {
-    readonly file = input<File | undefined>();
+    readonly file = input<File | null>(null);
 }
