@@ -3,7 +3,19 @@
 }
 
 app-error-box {
+    display: flex;
+    justify-content: center;
+    width: 50%;
+}
+
+h1 {
+    display: flex;
+    justify-content: center;
+}
+.file-content-wrapper {
+    height: 100%;
     width: 100%;
+    background-color: var(--on-main);
 }
 
 textarea, pre {
@@ -70,6 +82,20 @@ mat-spinner {
 }
 .unused-count {
     padding: 1rem;
+    color: var(--border);
+    font-family: var(--main-font);
+}
+
+.table-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 0 auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-loading {
+    opacity: 0%;
+    position: absolute;
 }
 
 .table-wrapper {

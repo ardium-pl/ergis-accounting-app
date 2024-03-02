@@ -1,0 +1,19 @@
+.card {
+    cursor: pointer;
+    background-color: var(--bg2-light);
+    width: 250px;
+    border-radius: 10px;
+    box-shadow: var(--simple-shadow2);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    user-select: none;
+
+    &:hover {
+        box-shadow: var(--simple-shadow3);
+        transform: translateY(-2px);
+    }
+
+    .content {
+        padding: 10px;
+    }
+}
