@@ -9,6 +9,7 @@ export type FaktoringObject = {
     korekta: boolean;
     konto: string;
     subkonto: string;
+    mpk: string;
 }
 
 export type FinalFaktoringObject = {
@@ -17,6 +18,7 @@ export type FinalFaktoringObject = {
     details: FaktoringDetails;
     konto: string;
     subkonto: string;
+    mpk: string;
 };
 export type FaktoringDetails = {
     positiveAmount: number;
