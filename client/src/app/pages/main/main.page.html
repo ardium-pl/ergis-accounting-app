@@ -1,14 +1,15 @@
 <main>
-    <h1>Ergis App</h1>
-    <div class="subtitle">Kolekcja narzędzi stworzonych specjalnie dla Ergis Management.</div>
-    <section class="links-section">
-        <ul>
-            <li>
-                <a routerLink="faktoring">Konwerter plików PRN</a>
-            </li>
-            <li>
-                <a routerLink="polymerscan">Polymerscan</a>
-            </li>
-        </ul>
-    </section>
+    <body>
+        <img src="https://i.postimg.cc/Fs2QCjKh/ergis-logo-Any-Eraser.png">
+        <div class="subtitle show-subtitle"> Kolekcja narzędzi stworzonych specjalnie dla Ergis Management
+        </div>
+        <div class="content">
+            <app-card routerLink="faktoring" header="Faktoring">
+                <p>Skonwertuj swój plik PRN</p>
+            </app-card>
+            <app-card routerLink="polymerscan" header="Polymerscan">
+                <p>Wykorzystaj dane z pliku PDF</p>
+            </app-card>
+        </div>
+    </body>
 </main>
