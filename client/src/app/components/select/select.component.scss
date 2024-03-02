@@ -4,7 +4,7 @@
     font-size: 14px;
     font-family: var(--main-font);
     color: var(--border);
-
+  
     &::after {
         content: '';
         border-width: 5px;
@@ -36,5 +36,13 @@
     option {
         font-family: var(--main-font);
     }
+}
 
+select {
+    padding: 0.375rem;
+    min-height: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--detail);
+    font-size: 1rem;
+    background: var(--bg2);
 }

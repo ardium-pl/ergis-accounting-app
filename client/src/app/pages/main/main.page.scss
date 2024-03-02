@@ -1,14 +1,4 @@
-$originalLogoWidth: 1200px;
-$originalLogoHeight: 850px;
 
-body {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    background-color: var(--bg-dark);
-    padding: 8rem;
-}
 
 img {
     width: calc($originalLogoHeight / 7);

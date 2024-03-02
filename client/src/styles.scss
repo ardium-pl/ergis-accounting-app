@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import './mat-theme.scss';
 
+
 //reset styles
 *,
 *::before,
@@ -23,7 +24,6 @@
     --bg3: #cacaca;
     --bg2-light: #EEEEEE;
     --bg-dark: #F5F5F5;
-
 
     --main-font: "Outfit", sans-serif;
 
@@ -80,7 +80,7 @@
 
 //global styling
 body {
-    background-color: var(--bg-dark);
+    background-color: var(--bg);
     counter-reset: section-counter 0;
     padding: 1.5rem 4rem;
     min-width: 100vw;
@@ -92,9 +92,8 @@ body {
 h1,
 h2,
 h3 {
-    font-family: var(--main-font);
+    font-family: Roboto, sans-serif;
     font-weight: 400;
-    color: var(--border);
 }
 
 .hidden {
