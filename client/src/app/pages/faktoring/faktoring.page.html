@@ -4,7 +4,7 @@
         <app-section required header="Dodaj plik PRN">
             <app-file-drop-zone (upload)="onPrnFileUpload($event)" accept=".prn" />
             <app-file-display [file]="faktoringService.prnFile()" />
-            <app-select [options]="FAKTORING_MODE_OPTIONS" label="Kierunek salda" [(value)]="faktoringMode"/>
+            <app-select [options]="FAKTORING_MODE_OPTIONS" label="Kierunek salda" [(value)]="faktoringMode" />
         </app-section>
         @if (faktoringService.hasPrn() || isPrnLoading()) {
         <app-section header="Przejrzyj podgląd pliku">
@@ -40,7 +40,7 @@
                 </span>
                 Pobierz
             </app-button>
-            <p class="unused-count un-elements">Nieużyte elementy: <strong>{{ leftoversCount() | number }}</strong></p>
+            <p class="unused-count">Nieużyte elementy: <strong>{{ leftoversCount() | number }}</strong></p>
             }
         </app-section>
         }
