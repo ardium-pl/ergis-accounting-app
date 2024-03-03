@@ -17,6 +17,7 @@ button {
     display: flex;
     align-items: center;
     gap: 0.6ch;
+    outline-offset: 3px;
     
     transition: box-shadow 0.28s var(--timing-fn), background-color 0.2s ease, opacity 0.2s ease;
     box-shadow: var(--simple-shadow);
