@@ -23,6 +23,7 @@ export type FaktoringDetails = {
     negativeAmount: number;
     positiveReference: string;
     negativeReference: string;
+    otherReference: string;
     positiveRate: number;
     negativeRate: number;
     rateDifference: number;
