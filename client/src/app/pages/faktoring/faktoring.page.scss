@@ -5,7 +5,15 @@
 app-error-box {
     display: flex;
     justify-content: center;
-    width: 50%;
+    max-width: 100%;
+    width: max-content;
+    margin-bottom: 2rem;
+
+    &.mismatched-accounts {
+        p:not(:first-child) {
+            margin-top: 0.25rem;
+        }
+    }
 }
 
 h1 {
