@@ -2,6 +2,7 @@
     <span class="material-symbols-outlined">
         @if (type() == "error") { error }
         @else if (type() == "info") { info }
+        @else if (type() == "warning") { warning }
         @else { check_circle }
     </span>
     <div class="content-wrapper">

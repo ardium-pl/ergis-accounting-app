@@ -14,7 +14,7 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringMode, FaktoringService, FinalFaktoringObject } from '@services';
+import { FaktoringMode, FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
 import { randomBetween, sleep } from '@utils';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
@@ -60,6 +60,25 @@ export class FaktoringPage {
     }
 
     readonly areResultsLoading = signal(false);
+    private readonly _mismatchedAccount = signal<{
+        prn: { obj: FaktoringObject; index: number };
+        csv: { obj: FaktoringObject; index: number };
+    } | null>(null);
+    readonly mismatchedAccountMessage = computed<string | null>(() => {
+        const v = this._mismatchedAccount();
+        if (!v) return null;
+
+        return `W pliku PRN konto
+        "${v.prn.obj.konto}"
+        subkonto
+        "${v.prn.obj.subkonto}"
+        (pozycja "${v.prn.obj.referencjaKG}", rząd ${v.prn.index + 1})
+        <br/>W pliku CSV konto
+        "${v.csv.obj.konto}"
+        subkonto
+        "${v.csv.obj.subkonto}"
+        (pozycja "${v.csv.obj.referencjaKG}", rząd ${v.csv.index + 1})`;
+    });
 
     async onGenerateButtonClick(): Promise<void> {
         if (!this.faktoringService.hasPrn()) return;
@@ -95,16 +114,21 @@ export class FaktoringPage {
             }
             // now there is some data, split it into the table portion and unused entries portion
             const [data, leftovers] = processedData;
+            //! table data
             this.tableData.set(data);
+            //! leftovers
             // if there are no unused entries, display the appropriate message
             if (leftovers.length == 0) {
                 this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
                 this.leftoversCount.set(null);
-                return;
+            } else {
+                // there are some unused entries - allow for them to be downloaded
+                this.leftovers.set(JSON.stringify(leftovers));
+                this.leftoversCount.set(leftovers.length);
             }
-            // there are some unused entries - allow for them to be downloaded
-            this.leftovers.set(JSON.stringify(leftovers));
-            this.leftoversCount.set(leftovers.length);
+            //! do accounts match alert
+            const account = this.faktoringService.getMismatchedAccounts();
+            this._mismatchedAccount.set(account);
         } catch (error) {
             if (error === 'ZERO_AMOUNT_ERR') {
                 alert('Żadna z kwot nie może być równa zero!');
