@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { parseNumber, parseYesNo } from './../../utils/helpers';
-import { FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } from './faktoring.types';
+import { FaktoringDetails, FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } from './faktoring.types';
 import { CsvObject, ExcelService, PrnObject, PrnReaderService } from '@services';
 
 @Injectable({
@@ -263,11 +263,12 @@ export class FaktoringService {
             const rateDifference = negativeExchangeRate - positiveExchangeRate;
             const currencyCorrection = correctionAmount * rateDifference;
 
-            const details = {
+            const details: FaktoringDetails = {
                 positiveAmount: lookUpPositiveAmount,
                 negativeAmount: lookUpNegativeAmount,
                 positiveReference: lookUpPositiveReference,
                 negativeReference: lookUpNegativeReference,
+                otherReference: FaktoringMode.Positive ? lookUpNegativeReference : lookUpPositiveReference,
                 positiveRate: positiveExchangeRate,
                 negativeRate: negativeExchangeRate,
                 rateDifference,
