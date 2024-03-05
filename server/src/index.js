@@ -13,6 +13,8 @@ app.use(express.json());
 app.use(apiRouter);
 app.use(clientRouter);
 
+console.log('Server is starting up...');
+
 app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
 });
