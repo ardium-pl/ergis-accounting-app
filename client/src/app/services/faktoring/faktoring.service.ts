@@ -160,6 +160,7 @@ export class FaktoringService {
             korekta: parseYesNo(rawObject['Kor']),
             konto: rawObject['Konto'],
             subkonto: rawObject['Subkonto'],
+            mpk: rawObject['MPK'],
         };
     }
     private _mapRawCsvObject(rawObject: CsvObject<keyof FaktoringObject>): FaktoringObject {
@@ -175,6 +176,7 @@ export class FaktoringService {
             korekta: parseYesNo(rawObject.korekta),
             konto: rawObject.konto ?? '',
             subkonto: rawObject.subkonto ?? '',
+            mpk: rawObject.mpk ?? ''
         };
     }
 
@@ -206,7 +208,8 @@ export class FaktoringService {
                 negativeObject.referencjaKG,
                 negativeObject.naDzien,
                 negativeObject.konto,
-                negativeObject.subkonto
+                negativeObject.subkonto,
+                negativeObject.mpk,
             );
             return [[], negatives];
         }
@@ -221,6 +224,7 @@ export class FaktoringService {
             const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG;
             const konto = faktoringMode == FaktoringMode.Positive ? positiveObject.konto : negativeObject.konto;
             const subkonto = faktoringMode == FaktoringMode.Positive ? positiveObject.subkonto : negativeObject.subkonto;
+            const mpk = faktoringMode == FaktoringMode.Positive ? positiveObject.mpk : negativeObject.mpk;
 
             // get the valid correction amount
             let correctionAmount: number;
@@ -280,6 +284,7 @@ export class FaktoringService {
                 details,
                 konto,
                 subkonto,
+                mpk,
             });
         }
 
@@ -300,7 +305,8 @@ export class FaktoringService {
                 negativeObject.referencjaKG,
                 negativeObject.naDzien,
                 negativeObject.konto,
-                negativeObject.subkonto
+                negativeObject.subkonto,
+                negativeObject.mpk,
             );
 
             return [allCurrencyCorrections, negatives];
@@ -314,7 +320,8 @@ export class FaktoringService {
                 positiveObject.referencjaKG,
                 positiveObject.naDzien,
                 positiveObject.konto,
-                positiveObject.subkonto
+                positiveObject.subkonto,
+                positiveObject.mpk,
             );
 
             return [allCurrencyCorrections, positives];
@@ -329,7 +336,8 @@ export class FaktoringService {
         referencjaKG: string,
         naDzien: string,
         konto: string,
-        subkonto: string
+        subkonto: string,
+        mpk: string,
     ) {
         // TODO: dodać możliwość oddawania nie wykorzystanych plusów
         const kwotaWZl = exchangeRate * currencyAmount;
@@ -342,6 +350,7 @@ export class FaktoringService {
             korekta: false,
             konto,
             subkonto,
+            mpk,
         });
         return leftoverArray;
     }
