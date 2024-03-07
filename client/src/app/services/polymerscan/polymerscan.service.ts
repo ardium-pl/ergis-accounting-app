@@ -57,8 +57,4 @@ export class PolymerscanService {
         this._isPending.set(false);
         this._progress.set(0);
     }
-
-    onEnd() {
-        console.log('end');
-    }
 }

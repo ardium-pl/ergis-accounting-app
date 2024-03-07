@@ -1,4 +1,5 @@
 <app-_form-field
+    class="custom-selector"
     [label]="label()"
     [htmlFor]="htmlId()"
     [hasError]="hasError()"
@@ -12,7 +13,7 @@
         (ngModelChange)="onValueChange($event)"
     >
         @for (opt of options(); track $index) {
-            <option [value]="opt.value()">{{ opt.label() }}</option>
+            <option [value]="opt.value">{{ opt.label }}</option>
         }
     </select>
 </app-_form-field>

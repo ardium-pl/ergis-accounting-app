@@ -1,0 +1,82 @@
+$header-color: darken(white, 3%);
+
+table {
+    width: 100%;
+    table-layout: auto;
+    border-collapse: collapse;
+    margin-top: 20px;
+    position: relative;
+}
+
+th, td {
+    border: 1px solid var(--border);
+    white-space: nowrap; // ensures content stays on one line
+    font-size: 14px;
+    padding: 4px;
+    background: white;
+}
+
+th {
+    background-color: $header-color;
+    color: #555;
+}
+
+td {
+    height: 21px;
+    outline: none;
+    position: relative;
+
+    &:focus {
+        &::before {
+            content: "";
+            position: absolute;
+            left: -2px;
+            right: -2px;
+            top: -2px;
+            bottom: -2px;
+            border: 1px solid black;
+            z-index: 2;
+            border-radius: 2px;
+            pointer-events: none;
+        }
+    }
+}
+
+tr:focus-within {
+    background-color: rgba(0, 0, 0, 2.5%);
+}
+
+.empty-header {
+    background-color: var(--bg);
+    border-top-color: var(--bg);
+
+    &:first-of-type {
+        border-left-color: var(--bg);
+        border-bottom-color: #c4c7c5;
+    }
+    &:last-of-type {
+        border-right-color: var(--bg);
+    }
+}
+.number-cell {
+    padding: 0 4px;
+    text-align: center;
+    border-color: #c4c7c5;
+    background-color: $header-color;
+
+    &+td {
+        padding-left: 8px;
+    }
+}
+.action-cell {
+    padding: 4px;
+}
+
+.table-container {
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+app-icon {
+    font-size: 12px;
+}

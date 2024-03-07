@@ -25,4 +25,8 @@
         --currentColor-500: var(--success-500);
         --currentColor-700: var(--success-700);
     }
+    &.type-warning {
+        --currentColor-500: var(--warn-500);
+        --currentColor-700: var(--warn-700);
+    }
 }

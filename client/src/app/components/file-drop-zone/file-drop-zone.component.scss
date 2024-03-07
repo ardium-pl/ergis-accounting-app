@@ -54,7 +54,11 @@ span.upload-icon {
 }
 
 .file-drop-zone-input:hover+.file-drop-zone {
-    background: rgba(255, 255, 255, 50%);
+    background: #d6d6d690;
+
+    .additional {
+        color: black;
+    }
 }
 
 .file-drop-zone-input:hover+.file-drop-zone strong {

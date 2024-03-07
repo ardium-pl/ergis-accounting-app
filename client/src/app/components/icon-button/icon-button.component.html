@@ -1,4 +1,4 @@
-<button [disabled]="disabled" [tabIndex]="disabled() ? -1 : 0">
+<button [disabled]="disabled()" [tabIndex]="disabled() ? -1 : 0" [class.no-pointer]="disabled()" [className]="classes()">
     <ng-content></ng-content>
     <div class="focus-overlay"></div>
 </button>
