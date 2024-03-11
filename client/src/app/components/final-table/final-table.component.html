@@ -17,7 +17,7 @@
                           <td>{{ row.currencyCorrection > 0 ? 750 : 751 }}</td>
                           <td>75210</td>
                           <td>0d00</td>
-                          <td>RK{{ row.referencjaKG }}</td>
+                          <td>RK {{ row.referencjaKG }}</td>
                           <td>{{ ((-row.currencyCorrection) | number: '1.2-2') || '0,00' }}</td>
                       </tr>
                   }
@@ -35,7 +35,7 @@
                           <td>{{ row.konto }}</td>
                           <td>{{ row.subkonto }}</td>
                           <td>{{row.mpk}}</td>
-                          <td>RK{{ row.referencjaKG }}</td>
+                          <td>RK {{ row.referencjaKG }}</td>
                           <td>{{ (row.currencyCorrection | number: '1.2-2') || '0,00' }}</td>
                           <td class="info-cell"
                               (ardClickOutside)="tooltipIndex.set(-1)"
