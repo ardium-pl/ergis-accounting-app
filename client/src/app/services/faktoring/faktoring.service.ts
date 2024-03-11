@@ -185,41 +185,24 @@ export class FaktoringService {
         negatives: FaktoringObject[],
         faktoringMode: FaktoringMode
     ): [FinalFaktoringObject[], FaktoringObject[]] {
-        if (negatives.length == 0) return [[], []];
+        //handle no negatives
+        if (negatives.length == 0) return [[], positives];
+        //handle no positives
+        if (positives.length == 0) return [[],negatives];
+        
         // make negative entries positive for easier logic
         negatives = negatives.map(v => ({
             ...v,
             kwotaWWalucie: -v.kwotaWWalucie,
             kwotaWZl: -v.kwotaWZl,
         }));
+
         // get the first
         let positiveObject = positives.shift()!;
         let negativeObject = negatives.shift()!;
 
         let positiveAmount = positiveObject?.kwotaWWalucie;
         let negativeAmount = negativeObject.kwotaWWalucie;
-
-        if (positives.length == 0) {
-            // make all negative entries negative again
-            negatives = negatives.map(v => ({
-                ...v,
-                kwotaWWalucie: -v.kwotaWWalucie,
-                kwotaWZl: -v.kwotaWZl,
-            }));
-
-            const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
-            negatives = this._retrieveUnusedElement(
-                -negativeAmount,
-                negatives,
-                negativeExchangeRate,
-                negativeObject.referencjaKG,
-                negativeObject.naDzien,
-                negativeObject.konto,
-                negativeObject.subkonto,
-                negativeObject.mpk
-            );
-            return [[], negatives];
-        }
 
         const allCurrencyCorrections: FinalFaktoringObject[] = [];
         let leftoversFlag: LeftoversFlag = LeftoversFlag.NoneLeft;
