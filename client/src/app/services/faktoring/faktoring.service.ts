@@ -176,7 +176,7 @@ export class FaktoringService {
             korekta: parseYesNo(rawObject.korekta),
             konto: rawObject.konto ?? '',
             subkonto: rawObject.subkonto ?? '',
-            mpk: rawObject.mpk ?? ''
+            mpk: rawObject.mpk ?? '',
         };
     }
 
@@ -200,16 +200,23 @@ export class FaktoringService {
         let negativeAmount = negativeObject.kwotaWWalucie;
 
         if (positives.length == 0) {
+            // make all negative entries negative again
+            negatives = negatives.map(v => ({
+                ...v,
+                kwotaWWalucie: -v.kwotaWWalucie,
+                kwotaWZl: -v.kwotaWZl,
+            }));
+
             const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
             negatives = this._retrieveUnusedElement(
-                negativeAmount,
+                -negativeAmount,
                 negatives,
                 negativeExchangeRate,
                 negativeObject.referencjaKG,
                 negativeObject.naDzien,
                 negativeObject.konto,
                 negativeObject.subkonto,
-                negativeObject.mpk,
+                negativeObject.mpk
             );
             return [[], negatives];
         }
@@ -306,7 +313,7 @@ export class FaktoringService {
                 negativeObject.naDzien,
                 negativeObject.konto,
                 negativeObject.subkonto,
-                negativeObject.mpk,
+                negativeObject.mpk
             );
 
             return [allCurrencyCorrections, negatives];
@@ -321,7 +328,7 @@ export class FaktoringService {
                 positiveObject.naDzien,
                 positiveObject.konto,
                 positiveObject.subkonto,
-                positiveObject.mpk,
+                positiveObject.mpk
             );
 
             return [allCurrencyCorrections, positives];
@@ -337,7 +344,7 @@ export class FaktoringService {
         naDzien: string,
         konto: string,
         subkonto: string,
-        mpk: string,
+        mpk: string
     ) {
         // TODO: dodać możliwość oddawania nie wykorzystanych plusów
         const kwotaWZl = exchangeRate * currencyAmount;
@@ -362,7 +369,7 @@ export class FaktoringService {
         for (const prnObj of fromPrn) {
             if (!prnObj.konto || !prnObj.subkonto) continue;
             for (const csvObj of fromCsv) {
-                if (csvObj.konto && csvObj.konto != prnObj.konto || csvObj.subkonto && csvObj.subkonto != prnObj.subkonto) {
+                if ((csvObj.konto && csvObj.konto != prnObj.konto) || (csvObj.subkonto && csvObj.subkonto != prnObj.subkonto)) {
                     return {
                         prn: {
                             obj: prnObj,
@@ -372,7 +379,7 @@ export class FaktoringService {
                             obj: csvObj,
                             index: fromCsv.findIndex(v => v == csvObj),
                         },
-                    }
+                    };
                 }
             }
         }
