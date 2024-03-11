@@ -1,6 +1,11 @@
 <main>
-    <h1>Konwerter plików PRN</h1>
+    <h1>Faktoring app</h1>
+
     <div class="sections-wrapper">
+        <app-section required header="Dodaj pozycje z poprzedniego miesiąca">
+            <app-file-drop-zone (upload)="onCsvFileUpload($event)" accept=".csv" />
+            <app-file-display [file]="faktoringService.csvFile()" />
+        </app-section>
         <app-section required header="Dodaj plik PRN">
             <app-file-drop-zone (upload)="onPrnFileUpload($event)" accept=".prn" />
             <app-file-display [file]="faktoringService.prnFile()" />
@@ -16,10 +21,6 @@
             </div>
         </app-section>
         }
-        <app-section required header="Dodaj pozycje z poprzedniego miesiąca">
-            <app-file-drop-zone (upload)="onCsvFileUpload($event)" accept=".csv" />
-            <app-file-display [file]="faktoringService.csvFile()" />
-        </app-section>
         <app-section header="Generuj rozliczenie kursów">
             <div class="button-container">
                 <app-button [disabled]="!faktoringService.hasPrn() || !faktoringService.hasCsv()"
