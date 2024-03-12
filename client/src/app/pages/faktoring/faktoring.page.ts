@@ -1,8 +1,8 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
+import { ArdViewportObserverRef, ArdiumViewportObserverService, FileSystemMethod, FileSystemService } from '@ardium-ui/devkit';
 import {
     ButtonComponent,
     EditableDataTableComponent,
@@ -14,7 +14,7 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringMode, FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
+import { FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
 import { randomBetween, sleep } from '@utils';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
@@ -36,12 +36,33 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         SelectComponent,
         EditableDataTableComponent,
     ],
-    providers: [FileSaverService],
+    providers: [FileSystemService, ArdiumViewportObserverService],
     templateUrl: './faktoring.page.html',
     styleUrl: './faktoring.page.scss',
 })
 export class FaktoringPage {
-    constructor(public faktoringService: FaktoringService, private fileSystem: FileSaverService) {}
+    constructor(public faktoringService: FaktoringService, private fileSystem: FileSystemService) {
+        effect(() => {
+            if (faktoringService.hasPrn()) {
+                setTimeout(() => {
+                    this._tableObserver = this._viewportObserver.observeById('editable-table');
+                    console.log('setting observer', this._tableObserver);
+                    this._tableObserver.leaveViewport.subscribe(() => {
+                        console.log('%cleave viewport', 'color:red');
+                    });
+                    this._tableObserver.enterViewport.subscribe(() => {
+                        console.log('%center viewport', 'color:lime');
+                    });
+                }, 0);
+            } else {
+                this._tableObserver?.destroy();
+                this._tableObserver = undefined;
+            }
+        });
+    }
+
+    private readonly _viewportObserver = inject(ArdiumViewportObserverService);
+    private _tableObserver?: ArdViewportObserverRef;
 
     readonly isPrnLoading = signal<boolean>(false);
     onPrnFileUpload(file: File): void {
@@ -177,7 +198,7 @@ export class FaktoringPage {
 
         this.fileSystem.saveAs(blob, {
             fileName: 'nieużyte',
-            method: FileSaverSaveMethod.PreferFileSystem,
+            method: FileSystemMethod.PreferFileSystem,
             types: [
                 {
                     description: 'Plik CSV',
