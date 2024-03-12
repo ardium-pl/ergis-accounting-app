@@ -14,7 +14,7 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringMode, FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
+import { FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
 import { randomBetween, sleep } from '@utils';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';

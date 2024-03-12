@@ -15,6 +15,15 @@ import { ButtonComponent } from '../button/button.component';
     encapsulation: ViewEncapsulation.None,
 })
 export class FinalTableComponent {
+    constructor() {
+        effect(() => {
+            if (!this.isDetailsShown()) return;
+            setTimeout(() => {
+                this._mainContainer.nativeElement.scrollTo(9999, 0);
+            }, 0);
+        });
+    }
+
     readonly data = input.required<FinalFaktoringObject[] | null>();
 
     @ViewChild('mainContainer')
@@ -22,15 +31,9 @@ export class FinalTableComponent {
         
     readonly tooltipIndex = signal<number>(-1);
     readonly isDetailsShown = signal<boolean>(false);
-    private readonly _moveDetailsIntoViewEffect = effect(() => {
-        if (!this.isDetailsShown()) return;
-        setTimeout(() => {
-            this._mainContainer.nativeElement.scrollTo(9999, 0);
-        }, 0);
-    });
 
     toggleTooltip(index: number): void {
-        if (this.tooltipIndex() === -1) {
+        if (this.tooltipIndex() !== index) {
             this.tooltipIndex.set(index);
             return;
         }
