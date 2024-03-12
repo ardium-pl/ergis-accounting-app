@@ -45,13 +45,16 @@ export class FaktoringPage {
         effect(() => {
             if (faktoringService.hasPrn()) {
                 setTimeout(() => {
-                    this._tableObserver = this._viewportObserver.observeById('editable-table');
+                    this._tableObserver = this._viewportObserver.observeByQuery('tr:nth-of-type(10)');
                     console.log('setting observer', this._tableObserver);
                     this._tableObserver.leaveViewport.subscribe(() => {
                         console.log('%cleave viewport', 'color:red');
                     });
                     this._tableObserver.enterViewport.subscribe(() => {
                         console.log('%center viewport', 'color:lime');
+                    });
+                    this._tableObserver.viewportRelation.subscribe((v) => {
+                        console.log('realtion', v);
                     });
                 }, 0);
             } else {
