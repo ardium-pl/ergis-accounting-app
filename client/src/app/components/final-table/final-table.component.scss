@@ -81,10 +81,18 @@ $arrow-size: 8px;
         background: none;
         cursor: pointer;
         opacity: 0;
+
+        app-icon {
+            display: none;
+        }
     }
     .results-row:hover .info-cell.info-cell.info-cell,
     .results-table:not(:hover) .results-row.is-focused .info-cell {
         opacity: 1;
+
+        app-icon {
+            display: block;
+        }
     }
     .row-tooltip {
         z-index: 800;
