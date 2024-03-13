@@ -4,6 +4,7 @@ app-final-table,
 }
 
 $row-height: 3.25rem;
+$arrow-size: 8px;
 
 .main-container {
     display: flex;
@@ -21,6 +22,9 @@ $row-height: 3.25rem;
     }
     .button-container {
         height: $row-height;
+        position: relative;
+        top: 4px;
+        left: 4px;
     }
 
     .results-table {
@@ -77,14 +81,23 @@ $row-height: 3.25rem;
         background: none;
         cursor: pointer;
         opacity: 0;
+
+        app-icon {
+            display: none;
+        }
     }
     .results-row:hover .info-cell.info-cell.info-cell,
     .results-table:not(:hover) .results-row.is-focused .info-cell {
         opacity: 1;
+
+        app-icon {
+            display: block;
+        }
     }
     .row-tooltip {
+        z-index: 800;
         position: absolute;
-        left: 60%;
+        left: 52%;
         bottom: 100%;
         padding: 0.625rem;
         transform: translate(-50%, -1rem);
@@ -126,6 +139,20 @@ $row-height: 3.25rem;
 
             &:not(.top-row) {
                 padding-top: 0.25rem;
+            }
+        }
+    }
+    .results-row:nth-of-type(1),
+    .results-row:nth-of-type(2) {
+        .row-tooltip {
+            top: 100%;
+            bottom: unset;
+            transform: translate(-50%, 1rem);
+
+            &::after {
+                top: unset;
+                bottom: 100%;
+                transform: translate(-50%, #{$arrow-size * 0.707}) rotate(45deg) scale(-1);
             }
         }
     }
