@@ -1,8 +1,14 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
+import {
+    ArdViewportObserverRef,
+    ArdiumViewportObserverService,
+    FileSystemMethod,
+    FileSystemService,
+    ViewportRelation,
+} from '@ardium-ui/devkit';
 import {
     ButtonComponent,
     EditableDataTableComponent,
@@ -16,6 +22,8 @@ import {
 } from '@components';
 import { FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
 import { randomBetween, sleep } from '@utils';
+import { Subscription } from 'rxjs';
+import { IconComponent } from 'src/app/components/icon/icon.component';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
 
@@ -35,13 +43,89 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         DecimalPipe,
         SelectComponent,
         EditableDataTableComponent,
+        IconComponent,
     ],
-    providers: [FileSaverService],
+    providers: [FileSystemService, ArdiumViewportObserverService],
     templateUrl: './faktoring.page.html',
     styleUrl: './faktoring.page.scss',
+    encapsulation: ViewEncapsulation.None,
 })
-export class FaktoringPage {
-    constructor(public faktoringService: FaktoringService, private fileSystem: FileSaverService) {}
+export class FaktoringPage implements AfterViewInit, OnDestroy {
+    private readonly _viewportObserver = inject(ArdiumViewportObserverService);
+    public readonly faktoringService = inject(FaktoringService);
+    private readonly fileSystem = inject(FileSystemService);
+
+    constructor() {
+        effect(() => {
+            if (this.faktoringService.hasPrn()) {
+                setTimeout(() => {
+                    this._tableObserver = this._viewportObserver.observeById('editable-table', { margin: -50 });
+                    const sub = this._tableObserver.viewportRelation.subscribe(v => {
+                        this._tableViewportRelation.set(v);
+                    });
+                    this._subs.push(sub);
+                }, 0);
+            } else {
+                this._tableObserver?.destroy();
+                this._tableObserver = undefined;
+            }
+        });
+    }
+    ngAfterViewInit(): void {
+        this._generateObserver = this._viewportObserver.observeById('generate-btn', { margin: -50 });
+
+        const sub = this._generateObserver.viewportRelation.subscribe(v => {
+            this._generateViewportRelation.set(v);
+        });
+        this._subs.push(sub);
+    }
+    ngOnDestroy(): void {
+        this._tableObserver?.destroy();
+        this._generateObserver?.destroy();
+        this._subs.forEach(sub => sub.unsubscribe());
+    }
+
+    private _tableObserver?: ArdViewportObserverRef;
+    private readonly _tableViewportRelation = signal<ViewportRelation>(ViewportRelation.Undefined);
+    public readonly isSkipToTableVisible = computed(() => {
+        return this.faktoringService.hasPrn() && this._tableViewportRelation() === ViewportRelation.Above;
+    });
+    public onSkipToTableClick(): void {
+        const el = this._tableObserver?.element;
+        if (!el) return;
+        const htmlEl = document.scrollingElement;
+        if (!htmlEl) return;
+
+        const scrollTop = htmlEl.scrollTop;
+        const elementPos = el.getBoundingClientRect().top;
+
+        document.scrollingElement?.scrollTo(0, scrollTop + elementPos - 105);
+    }
+
+    private _generateObserver!: ArdViewportObserverRef;
+    private readonly _generateViewportRelation = signal<ViewportRelation>(ViewportRelation.Undefined);
+    public readonly isSkipToGenerateVisible = computed(() => {
+        return (
+            this.faktoringService.hasPrn() &&
+            (this._generateViewportRelation() === ViewportRelation.Above || this._generateViewportRelation() === ViewportRelation.Below)
+        );
+    });
+    public readonly isSkipToGenerateFlipped = computed(() => {
+        return this.faktoringService.hasPrn() && this._generateViewportRelation() === ViewportRelation.Above;
+    });
+    public onSkipToGenerateClick(): void {
+        const el = this._generateObserver?.element;
+        if (!el) return;
+        const htmlEl = document.scrollingElement;
+        if (!htmlEl) return;
+
+        const scrollTop = htmlEl.scrollTop;
+        const elementPos = el.getBoundingClientRect().top;
+
+        document.scrollingElement?.scrollTo(0, scrollTop + elementPos - window.innerHeight / 2);
+    }
+
+    private readonly _subs: Subscription[] = [];
 
     readonly isPrnLoading = signal<boolean>(false);
     onPrnFileUpload(file: File): void {
@@ -177,7 +261,7 @@ export class FaktoringPage {
 
         this.fileSystem.saveAs(blob, {
             fileName: 'nieużyte',
-            method: FileSaverSaveMethod.PreferFileSystem,
+            method: FileSystemMethod.PreferFileSystem,
             types: [
                 {
                     description: 'Plik CSV',

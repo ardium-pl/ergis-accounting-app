@@ -10,4 +10,6 @@ import { coerceBooleanProperty } from '@ardium-ui/devkit';
 })
 export class ButtonComponent {
     readonly disabled = input<any, boolean>(false, { transform: v => coerceBooleanProperty(v) });
+
+    readonly htmlId = input<string | null | undefined>(null);
 }
