@@ -59,7 +59,7 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
         effect(() => {
             if (this.faktoringService.hasPrn()) {
                 setTimeout(() => {
-                    this._tableObserver = this._viewportObserver.observeById('editable-table');
+                    this._tableObserver = this._viewportObserver.observeById('editable-table', { margin: -50 });
                     const sub = this._tableObserver.viewportRelation.subscribe(v => {
                         this._tableViewportRelation.set(v);
                     });
@@ -72,7 +72,7 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
         });
     }
     ngAfterViewInit(): void {
-        this._generateObserver = this._viewportObserver.observeById('generate-btn');
+        this._generateObserver = this._viewportObserver.observeById('generate-btn', { margin: -50 });
 
         const sub = this._generateObserver.viewportRelation.subscribe(v => {
             this._generateViewportRelation.set(v);
@@ -90,8 +90,19 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
     public readonly isSkipToTableVisible = computed(() => {
         return this.faktoringService.hasPrn() && this._tableViewportRelation() === ViewportRelation.Above;
     });
+    public onSkipToTableClick(): void {
+        const el = this._tableObserver?.element;
+        if (!el) return;
+        const htmlEl = document.scrollingElement;
+        if (!htmlEl) return;
 
-    private _generateObserver?: ArdViewportObserverRef;
+        const scrollTop = htmlEl.scrollTop;
+        const elementPos = el.getBoundingClientRect().top;
+
+        document.scrollingElement?.scrollTo(0, scrollTop + elementPos - 105);
+    }
+
+    private _generateObserver!: ArdViewportObserverRef;
     private readonly _generateViewportRelation = signal<ViewportRelation>(ViewportRelation.Undefined);
     public readonly isSkipToGenerateVisible = computed(() => {
         return (
@@ -102,6 +113,17 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
     public readonly isSkipToGenerateFlipped = computed(() => {
         return this.faktoringService.hasPrn() && this._generateViewportRelation() === ViewportRelation.Above;
     });
+    public onSkipToGenerateClick(): void {
+        const el = this._generateObserver?.element;
+        if (!el) return;
+        const htmlEl = document.scrollingElement;
+        if (!htmlEl) return;
+
+        const scrollTop = htmlEl.scrollTop;
+        const elementPos = el.getBoundingClientRect().top;
+
+        document.scrollingElement?.scrollTo(0, scrollTop + elementPos - window.innerHeight / 2);
+    }
 
     private readonly _subs: Subscription[] = [];
 

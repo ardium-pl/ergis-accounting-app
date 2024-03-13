@@ -17,6 +17,7 @@
             title="Przewiń do przycisku Generuj"
             [class.visible]="isSkipToGenerateVisible()"
             [class.flipped]="isSkipToGenerateFlipped()"
+            (click)="onSkipToGenerateClick()"
         ><app-icon>south</app-icon></app-icon-button>
 
         @if (faktoringService.hasPrn() || isPrnLoading()) {
@@ -37,6 +38,7 @@
             size="very-big"
             title="Przewiń do tabeli edycji"
             [class.visible]="isSkipToTableVisible()"
+            (click)="onSkipToTableClick()"
         ><app-icon>north</app-icon></app-icon-button>
 
         <app-section header="Generuj rozliczenie kursów">
