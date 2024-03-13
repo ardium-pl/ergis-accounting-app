@@ -107,10 +107,14 @@ mat-spinner {
 }
 
 .table-wrapper {
-    max-width: 100%; /* Adjust this value as needed */
-    overflow-x: auto; /* Allows horizontal scrolling */
-    margin: 0 auto; /* Centers the table wrapper if it's narrower than the max-width */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on touch devices */
+    max-width: 100%;
+    /* Adjust this value as needed */
+    overflow-x: auto;
+    /* Allows horizontal scrolling */
+    margin: 0 auto;
+    /* Centers the table wrapper if it's narrower than the max-width */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on touch devices */
 }
 
 .table-loading {
@@ -119,10 +123,14 @@ mat-spinner {
 }
 
 .table-wrapper {
-    max-width: 100%; /* Adjust this value as needed */
-    overflow-x: auto; /* Allows horizontal scrolling */
-    margin: 0 auto; /* Centers the table wrapper if it's narrower than the max-width */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on touch devices */
+    max-width: 100%;
+    /* Adjust this value as needed */
+    overflow-x: auto;
+    /* Allows horizontal scrolling */
+    margin: 0 auto;
+    /* Centers the table wrapper if it's narrower than the max-width */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on touch devices */
 }
 
 .table-loading {
@@ -133,4 +141,44 @@ mat-spinner {
 app-select {
     padding-top: 1rem;
     align-self: flex-start;
+}
+//! skip buttons
+.skip-button {
+    position: fixed;
+    right: 1rem;
+    pointer-events: none;
+    opacity: 0;
+    appearance: none;
+    transition: opacity 0.25s ease;
+
+    app-icon {
+        transform: rotate(0deg);
+        transition: transform 0.25s ease;
+
+        span {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 200,
+                'GRAD' 0,
+                'opsz' 24;
+        }
+    }
+
+    &.button-to-generate {
+        bottom: 1rem;
+    }
+    &.button-to-table {
+        bottom: 2rem;
+        transform: translateY(-100%);
+    }
+    &.visible {
+        opacity: 1;
+        pointer-events: all;
+        appearance: unset;
+    }
+    &.flipped {
+        app-icon {
+            transform: rotate(180deg);
+        }
+    }
 }

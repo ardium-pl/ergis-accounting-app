@@ -154,6 +154,10 @@ a[href], a[routerLink], .link {
 mat-spinner {
     --mdc-circular-progress-active-indicator-color: var(--main);
 }
+app-icon {
+    font-size: 1.5em;
+    max-height: 1em;
+}
 
 //! markdown
 markdown {

@@ -1,8 +1,14 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ArdViewportObserverRef, ArdiumViewportObserverService, FileSystemMethod, FileSystemService } from '@ardium-ui/devkit';
+import {
+    ArdViewportObserverRef,
+    ArdiumViewportObserverService,
+    FileSystemMethod,
+    FileSystemService,
+    ViewportRelation,
+} from '@ardium-ui/devkit';
 import {
     ButtonComponent,
     EditableDataTableComponent,
@@ -16,6 +22,8 @@ import {
 } from '@components';
 import { FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
 import { randomBetween, sleep } from '@utils';
+import { Subscription } from 'rxjs';
+import { IconComponent } from 'src/app/components/icon/icon.component';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
 
@@ -35,27 +43,27 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         DecimalPipe,
         SelectComponent,
         EditableDataTableComponent,
+        IconComponent,
     ],
     providers: [FileSystemService, ArdiumViewportObserverService],
     templateUrl: './faktoring.page.html',
     styleUrl: './faktoring.page.scss',
+    encapsulation: ViewEncapsulation.None,
 })
-export class FaktoringPage {
-    constructor(public faktoringService: FaktoringService, private fileSystem: FileSystemService) {
+export class FaktoringPage implements AfterViewInit, OnDestroy {
+    private readonly _viewportObserver = inject(ArdiumViewportObserverService);
+    public readonly faktoringService = inject(FaktoringService);
+    private readonly fileSystem = inject(FileSystemService);
+
+    constructor() {
         effect(() => {
-            if (faktoringService.hasPrn()) {
+            if (this.faktoringService.hasPrn()) {
                 setTimeout(() => {
-                    this._tableObserver = this._viewportObserver.observeByQuery('tr:nth-of-type(10)');
-                    console.log('setting observer', this._tableObserver);
-                    this._tableObserver.leaveViewport.subscribe(() => {
-                        console.log('%cleave viewport', 'color:red');
+                    this._tableObserver = this._viewportObserver.observeById('editable-table');
+                    const sub = this._tableObserver.viewportRelation.subscribe(v => {
+                        this._tableViewportRelation.set(v);
                     });
-                    this._tableObserver.enterViewport.subscribe(() => {
-                        console.log('%center viewport', 'color:lime');
-                    });
-                    this._tableObserver.viewportRelation.subscribe((v) => {
-                        console.log('realtion', v);
-                    });
+                    this._subs.push(sub);
                 }, 0);
             } else {
                 this._tableObserver?.destroy();
@@ -63,9 +71,39 @@ export class FaktoringPage {
             }
         });
     }
+    ngAfterViewInit(): void {
+        this._generateObserver = this._viewportObserver.observeById('generate-btn');
 
-    private readonly _viewportObserver = inject(ArdiumViewportObserverService);
+        const sub = this._generateObserver.viewportRelation.subscribe(v => {
+            this._generateViewportRelation.set(v);
+        });
+        this._subs.push(sub);
+    }
+    ngOnDestroy(): void {
+        this._tableObserver?.destroy();
+        this._generateObserver?.destroy();
+        this._subs.forEach(sub => sub.unsubscribe());
+    }
+
     private _tableObserver?: ArdViewportObserverRef;
+    private readonly _tableViewportRelation = signal<ViewportRelation>(ViewportRelation.Undefined);
+    public readonly isSkipToTableVisible = computed(() => {
+        return this.faktoringService.hasPrn() && this._tableViewportRelation() === ViewportRelation.Above;
+    });
+
+    private _generateObserver?: ArdViewportObserverRef;
+    private readonly _generateViewportRelation = signal<ViewportRelation>(ViewportRelation.Undefined);
+    public readonly isSkipToGenerateVisible = computed(() => {
+        return (
+            this.faktoringService.hasPrn() &&
+            (this._generateViewportRelation() === ViewportRelation.Above || this._generateViewportRelation() === ViewportRelation.Below)
+        );
+    });
+    public readonly isSkipToGenerateFlipped = computed(() => {
+        return this.faktoringService.hasPrn() && this._generateViewportRelation() === ViewportRelation.Above;
+    });
+
+    private readonly _subs: Subscription[] = [];
 
     readonly isPrnLoading = signal<boolean>(false);
     onPrnFileUpload(file: File): void {
