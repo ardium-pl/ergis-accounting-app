@@ -1,8 +1,14 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { FileSaverSaveMethod, FileSaverService } from '@ardium-ui/devkit';
+import {
+    ArdViewportObserverRef,
+    ArdiumViewportObserverService,
+    FileSystemMethod,
+    FileSystemService,
+    ViewportRelation,
+} from '@ardium-ui/devkit';
 import {
     ButtonComponent,
     EditableDataTableComponent,
@@ -14,8 +20,10 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
+import { ExcelService, FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
 import { randomBetween, sleep } from '@utils';
+import { Subscription } from 'rxjs';
+import { IconComponent } from 'src/app/components/icon/icon.component';
 
 const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
 
@@ -35,13 +43,90 @@ const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!'
         DecimalPipe,
         SelectComponent,
         EditableDataTableComponent,
+        IconComponent,
     ],
-    providers: [FileSaverService],
+    providers: [FileSystemService, ArdiumViewportObserverService],
     templateUrl: './faktoring.page.html',
     styleUrl: './faktoring.page.scss',
+    encapsulation: ViewEncapsulation.None,
 })
-export class FaktoringPage {
-    constructor(public faktoringService: FaktoringService, private fileSystem: FileSaverService) {}
+export class FaktoringPage implements AfterViewInit, OnDestroy {
+    private readonly _viewportObserver = inject(ArdiumViewportObserverService);
+    public readonly faktoringService = inject(FaktoringService);
+    private readonly fileSystem = inject(FileSystemService);
+    private readonly excelService = inject(ExcelService);
+
+    constructor() {
+        effect(() => {
+            if (this.faktoringService.hasPrn()) {
+                setTimeout(() => {
+                    this._tableObserver = this._viewportObserver.observeById('editable-table', { margin: -50 });
+                    const sub = this._tableObserver.viewportRelation.subscribe(v => {
+                        this._tableViewportRelation.set(v);
+                    });
+                    this._subs.push(sub);
+                }, 0);
+            } else {
+                this._tableObserver?.destroy();
+                this._tableObserver = undefined;
+            }
+        });
+    }
+    ngAfterViewInit(): void {
+        this._generateObserver = this._viewportObserver.observeById('generate-btn', { margin: -50 });
+
+        const sub = this._generateObserver.viewportRelation.subscribe(v => {
+            this._generateViewportRelation.set(v);
+        });
+        this._subs.push(sub);
+    }
+    ngOnDestroy(): void {
+        this._tableObserver?.destroy();
+        this._generateObserver?.destroy();
+        this._subs.forEach(sub => sub.unsubscribe());
+    }
+
+    private _tableObserver?: ArdViewportObserverRef;
+    private readonly _tableViewportRelation = signal<ViewportRelation>(ViewportRelation.Undefined);
+    public readonly isSkipToTableVisible = computed(() => {
+        return this.faktoringService.hasPrn() && this._tableViewportRelation() === ViewportRelation.Above;
+    });
+    public onSkipToTableClick(): void {
+        const el = this._tableObserver?.element;
+        if (!el) return;
+        const htmlEl = document.scrollingElement;
+        if (!htmlEl) return;
+
+        const scrollTop = htmlEl.scrollTop;
+        const elementPos = el.getBoundingClientRect().top;
+
+        document.scrollingElement?.scrollTo(0, scrollTop + elementPos - 105);
+    }
+
+    private _generateObserver!: ArdViewportObserverRef;
+    private readonly _generateViewportRelation = signal<ViewportRelation>(ViewportRelation.Undefined);
+    public readonly isSkipToGenerateVisible = computed(() => {
+        return (
+            this.faktoringService.hasPrn() &&
+            (this._generateViewportRelation() === ViewportRelation.Above || this._generateViewportRelation() === ViewportRelation.Below)
+        );
+    });
+    public readonly isSkipToGenerateFlipped = computed(() => {
+        return this.faktoringService.hasPrn() && this._generateViewportRelation() === ViewportRelation.Above;
+    });
+    public onSkipToGenerateClick(): void {
+        const el = this._generateObserver?.element;
+        if (!el) return;
+        const htmlEl = document.scrollingElement;
+        if (!htmlEl) return;
+
+        const scrollTop = htmlEl.scrollTop;
+        const elementPos = el.getBoundingClientRect().top;
+
+        document.scrollingElement?.scrollTo(0, scrollTop + elementPos - window.innerHeight / 2);
+    }
+
+    private readonly _subs: Subscription[] = [];
 
     readonly isPrnLoading = signal<boolean>(false);
     onPrnFileUpload(file: File): void {
@@ -108,7 +193,7 @@ export class FaktoringPage {
             // notify the user there is no data generated
             if (!processedData) {
                 this.tableData.set(null);
-                this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
+                this._leftovers.set(null);
                 this.leftoversCount.set(null);
                 return;
             }
@@ -119,11 +204,11 @@ export class FaktoringPage {
             //! leftovers
             // if there are no unused entries, display the appropriate message
             if (leftovers.length == 0) {
-                this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
+                this._leftovers.set(null);
                 this.leftoversCount.set(null);
             } else {
                 // there are some unused entries - allow for them to be downloaded
-                this.leftovers.set(JSON.stringify(leftovers));
+                this._leftovers.set(leftovers);
                 this.leftoversCount.set(leftovers.length);
             }
             //! do accounts match alert
@@ -139,45 +224,18 @@ export class FaktoringPage {
     }
 
     readonly tableData = signal<FinalFaktoringObject[] | null>(null);
-    readonly leftovers = signal<string>(NO_UNUSED_NEGATIVES_MESSAGE);
+    private readonly _leftovers = signal<FaktoringObject[] | null>(null);
     readonly leftoversCount = signal<number | null>(null);
-    readonly hasAnyLeftovers = computed(() => {
-        return this.leftovers() != NO_UNUSED_NEGATIVES_MESSAGE;
-    });
-
-    private jsonToCsv(jsonString: string): string {
-        const jsonData = JSON.parse(jsonString);
-
-        if (!Array.isArray(jsonData) || jsonData.length === 0) {
-            return '';
-        }
-        const headers = Object.keys(jsonData[0]);
-        const csvData = [];
-        csvData.push(headers.join(';'));
-        csvData.push(
-            ...jsonData.map(row =>
-                headers
-                    .map(fieldName =>
-                        JSON.stringify(row[fieldName], (_, value) =>
-                            typeof value === 'string' ? value.replace(/"/g, '') : typeof value === 'number' ? value.toFixed(2) : value
-                        )
-                    )
-                    .join(';')
-                    .replace(/"/g, '')
-            )
-        );
-
-        return csvData.join('\r\n');
-    }
 
     downloadLeftovers(): void {
-        if (!this.hasAnyLeftovers()) return;
-        const csvData = this.jsonToCsv(this.leftovers());
+        const leftovers = this._leftovers();
+        if (!leftovers) return;
+        const csvData = this.excelService.jsonToCsv(leftovers);
         const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
 
         this.fileSystem.saveAs(blob, {
             fileName: 'nieużyte',
-            method: FileSaverSaveMethod.PreferFileSystem,
+            method: FileSystemMethod.PreferFileSystem,
             types: [
                 {
                     description: 'Plik CSV',

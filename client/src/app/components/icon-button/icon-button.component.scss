@@ -43,6 +43,11 @@ button {
         }
     }
 
+    &.size-very-big {
+        height: 3.5rem;
+        width: 3.5rem;
+        font-size: 1.625rem;
+    }
     &.size-big {
         height: 2.25rem;
         width: 2.25rem;
@@ -50,5 +55,9 @@ button {
     &.size-medium {
         height: 1.5rem;
         width: 1.5rem;
+    }
+    &.appearance-outlined {
+        border: 1px solid var(--border);
+        color: var(--border);
     }
 }

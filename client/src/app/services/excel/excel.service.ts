@@ -9,7 +9,7 @@ export class ExcelService {
     readAsCsv<T extends string>(csvData: string): CsvObject<T>[] {
         const lines = csvData.indexOf('\r\n') != -1 ? csvData.trim().split(/\r\n/) : csvData.trim().split(/\n/);
         if (lines.length === 0) {
-            throw "EMPTY_CSV_ERR";
+            throw 'EMPTY_CSV_ERR';
         }
 
         const separator = this._detectSeparator(lines);
@@ -44,6 +44,33 @@ export class ExcelService {
             }
         }
 
-        throw "SEPARATOR_ERR";
+        throw 'SEPARATOR_ERR';
     }
+
+    jsonToCsv(jsonData: Record<string, any>[]): string {
+        if (!Array.isArray(jsonData) || jsonData.length === 0) {
+            return '';
+        }
+        const headers = Object.keys(jsonData[0]);
+        const csvData = [];
+        csvData.push(headers.join(';'));
+        csvData.push(
+            ...jsonData.map(row =>
+                headers
+                    .map(fieldName => {
+                        return JSON.stringify(row[fieldName], (_, value) => {
+                            if (typeof value === 'string') return value.replace(/"/g, '');
+                            if (typeof value === 'number') return value.toFixed(2);
+                            return value;
+                        });
+                    })
+                    .join(';')
+                    .replace(/"/g, '')
+            )
+        );
+
+        return csvData.join('\r\n');
+    }
+
+    
 }

@@ -15,16 +15,25 @@ $arrow-size: 8px;
     .results-table-master-container {
         display: flex;
         flex-direction: column;
+        width: 100%;
+        max-width: 100%;
     }
     .results-tables {
         display: flex;
         gap: 1rem;
+    }
+    .main-tables {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
     }
     .button-container {
         height: $row-height;
         position: relative;
         top: 4px;
         left: 4px;
+        display: flex;
+        gap: 1rem;
     }
 
     .results-table {
@@ -58,19 +67,26 @@ $arrow-size: 8px;
         }
     }
 
+    th {
+        font-size: 90%;
+    }
     th, td {
         white-space: nowrap;
     }
     td {
-        padding: 0 1rem;
+        padding: 0 0.5rem;
         vertical-align: middle;
         border: none;
         border-top: 1px solid var(--detail-light);
         border-bottom: 1px solid var(--detail-light);
         background: white;
     }
-    th {
+    th:not(.no-padding) {
         padding: 0 0.5rem;
+    }
+    .results-row > :first-child,
+    thead tr > :first-child {
+        padding-left: 1rem;
     }
 
     //! tooltips
@@ -78,11 +94,15 @@ $arrow-size: 8px;
         border-color: transparent;
         border-left: 1px solid var(--detail-light);
         border-right: 1px solid transparent;
+        border-top: 1px solid transparent;
         background: none;
         cursor: pointer;
         opacity: 0;
+        min-width: $row-height;
+        max-width: $row-height;
 
         app-icon {
+            margin: 0 auto;
             display: none;
         }
     }

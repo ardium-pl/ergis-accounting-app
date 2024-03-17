@@ -1,5 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import { coerceBooleanProperty } from '@ardium-ui/devkit';
+import { ButtonAppearance } from './button.types';
 
 @Component({
     selector: 'app-button',
@@ -10,4 +11,12 @@ import { coerceBooleanProperty } from '@ardium-ui/devkit';
 })
 export class ButtonComponent {
     readonly disabled = input<any, boolean>(false, { transform: v => coerceBooleanProperty(v) });
+
+    readonly htmlId = input<string | null | undefined>(null);
+
+    readonly appearance = input<ButtonAppearance>(ButtonAppearance.Raised);
+
+    readonly classes = computed<string>(() => {
+        return [`appearance-${this.appearance()}`].join(' ');
+    });
 }
