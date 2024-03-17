@@ -80,7 +80,7 @@ mat-spinner {
     --mdc-circular-progress-active-indicator-color: #c36;
     height: 2.25rem !important;
     width: 2.25rem !important;
-    position: absolute;
+    position: absolute !important;
     left: calc(100% + 1rem);
 }
 .table-spinner {
@@ -142,6 +142,11 @@ app-select {
     padding-top: 1rem;
     align-self: flex-start;
 }
+
+app-final-table {
+    width: 100%;
+}
+
 //! skip buttons
 .skip-button {
     position: fixed;

@@ -63,7 +63,7 @@
             }
         </app-section>
         <app-section header="Pobierz nieużyte pozycje">
-            @if (hasAnyLeftovers()) {
+            @if (leftoversCount()) {
             <app-button (click)="downloadLeftovers()">
                 <span class="upload-icon material-symbols-outlined">
                     download
