@@ -1,13 +1,9 @@
-
-
 button {
-    background-color: var(--main);
     cursor: pointer;
     height: 2.25rem;
     padding: 0 1rem;
     border: none;
     border-radius: 6px;
-    color: var(--on-main);
     font-size: 0.875rem;
     letter-spacing: 0.0892857143em;
     font-weight: 500;
@@ -17,20 +13,10 @@ button {
     align-items: center;
     gap: 0.6ch;
     outline-offset: 3px;
-    
+
     transition: box-shadow 0.28s var(--timing-fn), background-color 0.2s ease, opacity 0.2s ease;
-    box-shadow: var(--simple-shadow);
-    
-    &:hover,
-    &:focus {
-        box-shadow: var(--simple-shadow2);
-    }
-    &:active {
-        box-shadow: var(--simple-shadow3);
-    }
-    
+
     .focus-overlay {
-        background-color: var(--on-main);
         position: absolute;
         left: 0;
         right: 0;
@@ -48,12 +34,58 @@ button {
         opacity: 16%;
     }
 
-    &[disabled] {
-        opacity: 50%;
-        background-color: #888;
+    &:hover .focus-overlay {
+        opacity: 8%;
+    }
+    &:active .focus-overlay {
+        opacity: 16%;
+    }
+
+    //! appearances
+    &.appearance-raised {
+        background-color: var(--main);
+        color: var(--on-main);
+        box-shadow: var(--simple-shadow);
 
         .focus-overlay {
-            opacity: 0;
+            background-color: var(--on-main);
+        }
+
+        &:hover,
+        &:focus {
+            box-shadow: var(--simple-shadow2);
+        }
+        &:active {
+            box-shadow: var(--simple-shadow3);
+        }
+
+        &[disabled] {
+            opacity: 50%;
+            background-color: #888;
+
+            .focus-overlay {
+                opacity: 0;
+            }
+        }
+    }
+    &.appearance-transparent {
+        background-color: transparent;
+        color: rgba(0, 0, 0, 87%);
+        outline: none;
+
+        .focus-overlay {
+            background-color: black;
+        }
+        &:focus-visible .focus-overlay {
+            opacity: 22%;
+        }
+
+        &[disabled] {
+            opacity: 50%;
+
+            .focus-overlay {
+                opacity: 4%;
+            }
         }
     }
 }

@@ -20,7 +20,7 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
+import { ExcelService, FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
 import { randomBetween, sleep } from '@utils';
 import { Subscription } from 'rxjs';
 import { IconComponent } from 'src/app/components/icon/icon.component';
@@ -54,6 +54,7 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
     private readonly _viewportObserver = inject(ArdiumViewportObserverService);
     public readonly faktoringService = inject(FaktoringService);
     private readonly fileSystem = inject(FileSystemService);
+    private readonly excelService = inject(ExcelService);
 
     constructor() {
         effect(() => {
@@ -192,7 +193,7 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
             // notify the user there is no data generated
             if (!processedData) {
                 this.tableData.set(null);
-                this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
+                this._leftovers.set(null);
                 this.leftoversCount.set(null);
                 return;
             }
@@ -203,11 +204,11 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
             //! leftovers
             // if there are no unused entries, display the appropriate message
             if (leftovers.length == 0) {
-                this.leftovers.set(NO_UNUSED_NEGATIVES_MESSAGE);
+                this._leftovers.set(null);
                 this.leftoversCount.set(null);
             } else {
                 // there are some unused entries - allow for them to be downloaded
-                this.leftovers.set(JSON.stringify(leftovers));
+                this._leftovers.set(leftovers);
                 this.leftoversCount.set(leftovers.length);
             }
             //! do accounts match alert
@@ -223,40 +224,13 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
     }
 
     readonly tableData = signal<FinalFaktoringObject[] | null>(null);
-    readonly leftovers = signal<string>(NO_UNUSED_NEGATIVES_MESSAGE);
+    private readonly _leftovers = signal<FaktoringObject[] | null>(null);
     readonly leftoversCount = signal<number | null>(null);
-    readonly hasAnyLeftovers = computed(() => {
-        return this.leftovers() != NO_UNUSED_NEGATIVES_MESSAGE;
-    });
-
-    private jsonToCsv(jsonString: string): string {
-        const jsonData = JSON.parse(jsonString);
-
-        if (!Array.isArray(jsonData) || jsonData.length === 0) {
-            return '';
-        }
-        const headers = Object.keys(jsonData[0]);
-        const csvData = [];
-        csvData.push(headers.join(';'));
-        csvData.push(
-            ...jsonData.map(row =>
-                headers
-                    .map(fieldName =>
-                        JSON.stringify(row[fieldName], (_, value) =>
-                            typeof value === 'string' ? value.replace(/"/g, '') : typeof value === 'number' ? value.toFixed(2) : value
-                        )
-                    )
-                    .join(';')
-                    .replace(/"/g, '')
-            )
-        );
-
-        return csvData.join('\r\n');
-    }
 
     downloadLeftovers(): void {
-        if (!this.hasAnyLeftovers()) return;
-        const csvData = this.jsonToCsv(this.leftovers());
+        const leftovers = this._leftovers();
+        if (!leftovers) return;
+        const csvData = this.excelService.jsonToCsv(leftovers);
         const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
 
         this.fileSystem.saveAs(blob, {
