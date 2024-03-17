@@ -69,6 +69,7 @@ export class FinalTableComponent {
         if (this.isDetailsShown()) {
             headers.push(
                 ...[
+                    '',
                     'Referencja',
                     'Kwota dod. (PLN)',
                     'Kwota uj. (PLN)',
@@ -89,6 +90,7 @@ export class FinalTableComponent {
                 '0d00',
                 `RK ${row.referencjaKG}`,
                 `${formatNumber(-row.currencyCorrection || 0)}`,
+                '',
                 row.konto,
                 row.subkonto,
                 row.mpk,
@@ -99,6 +101,7 @@ export class FinalTableComponent {
             if (this.isDetailsShown()) {
                 retArr.push(
                     ...[
+                        '',
                         row.details.otherReference,
                         formatNumber(row.details.positiveAmount, 3),
                         formatNumber(row.details.negativeAmount, 3),
@@ -118,10 +121,13 @@ export class FinalTableComponent {
             .map(v => `<tr>${v}</tr>`)
             .join('')}</tbody></table>`;
 
+        const plaintextBlob = new Blob([tableString], { type: 'text/plain' });
+        const htmlBlob = new Blob([tableString], { type: 'text/html' });
+
         window.navigator.clipboard.write([
             new ClipboardItem({
-                'text/plain': tableString,
-                'text/html': tableString,
+                'text/plain': plaintextBlob,
+                'text/html': htmlBlob,
             }),
         ]);
 
