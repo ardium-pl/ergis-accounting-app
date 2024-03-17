@@ -40,7 +40,7 @@
             [class.visible]="isSkipToTableVisible()"
             (click)="onSkipToTableClick()"
         ><app-icon>north</app-icon></app-icon-button>
-
+  
         <app-section header="Generuj rozliczenie kursów">
             <div class="button-container">
                 <app-button [disabled]="!faktoringService.hasPrn() || !faktoringService.hasCsv()"
