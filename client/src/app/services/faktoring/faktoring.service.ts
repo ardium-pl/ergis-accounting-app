@@ -125,7 +125,7 @@ export class FaktoringService {
 
         // filter out corrections & sort entries into positives and negatives
         for (const obj of fromPrn) {
-            if(obj.korekta === true){
+            if(obj.korekta){
                 continue;
             } 
             if (obj.kwotaWZl < 0) {
