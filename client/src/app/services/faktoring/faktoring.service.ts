@@ -125,6 +125,9 @@ export class FaktoringService {
 
         // filter out corrections & sort entries into positives and negatives
         for (const obj of fromPrn) {
+            if(obj.korekta){
+                continue;
+            } 
             if (obj.kwotaWZl < 0) {
                 negatives.push(obj);
                 continue;
@@ -207,7 +210,7 @@ export class FaktoringService {
         const allCurrencyCorrections: FinalFaktoringObject[] = [];
         let leftoversFlag: LeftoversFlag = LeftoversFlag.NoneLeft;
 
-        while ((positives.length > 0 || !isNaN(positiveAmount)) && negatives.length > 0) {
+        while ((positives.length > 0 || !isNaN(positiveAmount)) && (negatives.length > 0 || !isNaN(negativeAmount))) {
             const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
             const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
 
