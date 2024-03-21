@@ -11,7 +11,7 @@ export class PlnPipe implements PipeTransform {
                 minimumFractionDigits: fractionDigits,
                 maximumFractionDigits: fractionDigits,
                 useGrouping: true,
-            }) + ' PLN'
+            })
         );
     }
 }

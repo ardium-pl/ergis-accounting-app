@@ -71,12 +71,12 @@ export class FinalTableComponent {
                 ...[
                     '',
                     'Referencja',
-                    'Kwota dod. (PLN)',
-                    'Kwota uj. (PLN)',
+                    'Kwota dod.',
+                    'Kwota uj.',
                     'Korekta',
-                    'Waluta - dod. (PLN)',
-                    'Waluta - uj. (PLN)',
-                    'Różnica kursów (PLN)',
+                    'Waluta - dod.',
+                    'Waluta - uj.',
+                    'Różnica kursów',
                 ]
             );
         }
