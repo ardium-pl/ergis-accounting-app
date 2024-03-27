@@ -1,9 +1,10 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, ViewEncapsulation, computed } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ButtonComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
+import { ButtonComponent, ErrorBoxComponent, FileDisplayComponent, FileDropZoneComponent, SectionComponent } from '@components';
 import { FileStorageService, PolymerscanService } from '@services';
 import { MarkdownModule, provideMarkdown } from 'ngx-markdown';
+import { isDefined } from 'simple-bool';
 
 @Component({
     selector: '_polymerscan-page',
@@ -16,6 +17,7 @@ import { MarkdownModule, provideMarkdown } from 'ngx-markdown';
         MatProgressSpinnerModule,
         DecimalPipe,
         MarkdownModule,
+        ErrorBoxComponent,
     ],
     templateUrl: './polymerscan.page.html',
     styleUrl: './polymerscan.page.scss',
@@ -48,13 +50,26 @@ export class PolymerscanPage {
             return '';
         }
         if (!res.success) {
-            if (res.error === 'NO_DATA_ERR') {
-                return 'Model AI nie zwrócił żadnych danych.'
-            }
             console.error('Polymerscan response error: ', res);
             return '';
         }
         return res.response.replace('\\n', '\n');
+    });
+
+    readonly shouldShowWarning = computed<boolean>(() => {
+        const res = this.polymerscanService.response();
+        console.log(res);
+        return isDefined(res) && !res.success && res.error === 'NO_DATA_ERR';
+    });
+    readonly warningFoundAmount = computed<number | null>(() => {
+        const res = this.polymerscanService.response();
+        if (!isDefined(res) || res.success || res.error !== 'NO_DATA_ERR') return null;
+        return res.found ?? null;
+    });
+    readonly warningRequiredAmount = computed<number | null>(() => {
+        const res = this.polymerscanService.response();
+        if (!isDefined(res) || res.success || res.error !== 'NO_DATA_ERR') return null;
+        return res.required ?? null;
     });
 
     onGenerateButtonClick(): void {
