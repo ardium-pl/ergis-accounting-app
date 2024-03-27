@@ -7,27 +7,27 @@
         </app-section>
         <app-section required header="Generuj dane">
             <div class="button-container">
-                <app-button [disabled]="isButtonDisabled()"
-                    (click)="onGenerateButtonClick()">Generuj</app-button>
+                <app-button [disabled]="isButtonDisabled()" (click)="onGenerateButtonClick()">Generuj</app-button>
                 @if (areResultsLoading()) {<mat-spinner diameter="36"></mat-spinner>}
             </div>
         </app-section>
         <app-section header="Przeczytaj odpowiedź">
             @if (areResultsLoading()) {
-                <p>
-                    @if (uploadProgress() < 100) {
-                        Wysyłanie pliku PDF... ({{ uploadProgress() | number: '1.0-0' }}%)
+            <p>
+                @if (uploadProgress() < 100) { Wysyłanie pliku PDF... ({{ uploadProgress() | number: '1.0-0' }}%) }
+                    @else { Oczekiwanie na odpowiedź... } </p>
+                    } @else if (shouldShowWarning()) {
+                    <app-error-box type="warning">
+                        W dokumencie nie znaleziono wystarczającej liczby słów kluczowych. Znaleziono {{
+                        warningFoundAmount() }}/{{ warningRequiredAmount() }}
+                    </app-error-box>
                     } @else {
-                        Oczekiwanie na odpowiedź...
+                    <div class="markdown-container">
+                        <markdown>
+                            {{ formattedResponse() }}
+                        </markdown>
+                    </div>
                     }
-                </p>
-            } @else {
-                <div class="markdown-container">
-                    <markdown>
-                        {{ formattedResponse() }}
-                    </markdown>
-                </div>
-            }
         </app-section>
     </div>
 </main>
