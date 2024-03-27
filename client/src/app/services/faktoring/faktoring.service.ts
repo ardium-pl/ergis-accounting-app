@@ -215,30 +215,36 @@ export class FaktoringService {
             const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
            
             const positiveDate = this.getReferencesDate(positiveObject.referencjaKG);
-            const negativeDate = this.getReferencesDate(negativeObject.referencjaKG)
+            const negativeDate = this.getReferencesDate(negativeObject.referencjaKG);
+            let switchMode: boolean = false; 
             
-            if(faktoringMode == FaktoringMode.Positive ){
-                if(negativeDate>positiveDate){
-                    console.log("Error here");
-                    console.log(positiveObject.referencjaKG);
-                    console.log(negativeObject.referencjaKG);
-                    faktoringMode = FaktoringMode.Negative;
-                }
-            }
 
-            if(faktoringMode == FaktoringMode.Negative ){
-                if(positiveDate>negativeDate){
-                    console.log("Error here");
-                    console.log(positiveObject.referencjaKG);
-                    console.log(negativeObject.referencjaKG);
-                    faktoringMode = FaktoringMode.Positive;
-                }
-            }
+            // if(negativeDate >= positiveDate){
+            //     console.log("positive date bigger or equal");
 
-            if(negativeDate.getDate() === positiveDate.getDate()){
-                console.log("Dates equal here");
+            //     console.log(positiveObject.referencjaKG + " : " + positiveDate.toTimeString());
+            //     console.log(negativeObject.referencjaKG+ " : " + negativeDate.toTimeString());
+
+            // }
+
+            if (faktoringMode === FaktoringMode.Positive &&
+                positiveDate > negativeDate  &&
+                positiveAmount > negativeAmount) {
+                
+                console.log("Error here: switched to negative");
                 console.log(positiveObject.referencjaKG);
-                console.log(negativeObject.referencjaKG);  
+                console.log(negativeObject.referencjaKG);
+                faktoringMode = FaktoringMode.Negative;
+            }
+
+            if (faktoringMode === FaktoringMode.Negative &&
+                negativeDate > positiveDate &&
+                negativeAmount > positiveAmount){
+
+                console.log("Error here: switched to positive");
+                console.log(positiveObject.referencjaKG);
+                console.log(negativeObject.referencjaKG);
+                faktoringMode = FaktoringMode.Positive;    
             }
             
             const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG; //This is the line that I have to modify
@@ -256,9 +262,6 @@ export class FaktoringService {
             const lookUpNegativeReference: string = negativeObject.referencjaKG;
 
             if (positiveAmount > negativeAmount) {
-                console.log("pos");
-                console.log(positiveObject.referencjaKG);
-                console.log(negativeObject.referencjaKG);
                 // negative is the valid correction amount - remove one entry and subtract from the positive total
                 correctionAmount = negativeAmount;
                 positiveAmount -= negativeAmount;
@@ -268,9 +271,6 @@ export class FaktoringService {
 
                 leftoversFlag = LeftoversFlag.Positive;
             } else if (positiveAmount < negativeAmount) {
-                console.log("neg");
-                console.log(positiveObject.referencjaKG);
-                console.log(negativeObject.referencjaKG);
                 // positive is the valid correction amount - remove one entry and subtract from the negative total
                 correctionAmount = positiveAmount;
                 negativeAmount -= positiveAmount;
@@ -280,9 +280,6 @@ export class FaktoringService {
 
                 leftoversFlag = LeftoversFlag.Negative;
             } else {
-                console.log("eaq");
-                console.log(positiveObject.referencjaKG);
-                console.log(negativeObject.referencjaKG);
                 // both types are the valid correction amounts - remove one entry from both and set new totals
                 correctionAmount = positiveAmount;
 
