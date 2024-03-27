@@ -66,7 +66,7 @@ export class FaktoringService {
     public readonly csvFile = computed(() => this._csvFile());
     private readonly _csvArray = signal<FaktoringObject[]>([]);
     public readonly csvArray = computed(() => this._csvArray());
-    public readonly hasCsv = computed(() => this._csvArray().length > 0);
+    public readonly hasCsv = computed(() => this._csvArray().length > 0); //change this for diffrent CSV handeling
 
     public setCsvFile(file: File): boolean {
         if (file.size > 10 * 1024 * 1024) {
@@ -213,8 +213,35 @@ export class FaktoringService {
         while ((positives.length > 0 || !isNaN(positiveAmount)) && (negatives.length > 0 || !isNaN(negativeAmount))) {
             const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
             const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
+           
+            const positiveDate = this.getReferencesDate(positiveObject.referencjaKG);
+            const negativeDate = this.getReferencesDate(negativeObject.referencjaKG)
+            
+            if(faktoringMode == FaktoringMode.Positive ){
+                if(negativeDate>positiveDate){
+                    console.log("Error here");
+                    console.log(positiveObject.referencjaKG);
+                    console.log(negativeObject.referencjaKG);
+                    faktoringMode = FaktoringMode.Negative;
+                }
+            }
 
-            const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG;
+            if(faktoringMode == FaktoringMode.Negative ){
+                if(positiveDate>negativeDate){
+                    console.log("Error here");
+                    console.log(positiveObject.referencjaKG);
+                    console.log(negativeObject.referencjaKG);
+                    faktoringMode = FaktoringMode.Positive;
+                }
+            }
+
+            if(negativeDate.getDate() === positiveDate.getDate()){
+                console.log("Dates equal here");
+                console.log(positiveObject.referencjaKG);
+                console.log(negativeObject.referencjaKG);  
+            }
+            
+            const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG; //This is the line that I have to modify
             const konto = faktoringMode == FaktoringMode.Positive ? positiveObject.konto : negativeObject.konto;
             const subkonto = faktoringMode == FaktoringMode.Positive ? positiveObject.subkonto : negativeObject.subkonto;
             const mpk = faktoringMode == FaktoringMode.Positive ? positiveObject.mpk : negativeObject.mpk;
@@ -229,6 +256,9 @@ export class FaktoringService {
             const lookUpNegativeReference: string = negativeObject.referencjaKG;
 
             if (positiveAmount > negativeAmount) {
+                console.log("pos");
+                console.log(positiveObject.referencjaKG);
+                console.log(negativeObject.referencjaKG);
                 // negative is the valid correction amount - remove one entry and subtract from the positive total
                 correctionAmount = negativeAmount;
                 positiveAmount -= negativeAmount;
@@ -238,6 +268,9 @@ export class FaktoringService {
 
                 leftoversFlag = LeftoversFlag.Positive;
             } else if (positiveAmount < negativeAmount) {
+                console.log("neg");
+                console.log(positiveObject.referencjaKG);
+                console.log(negativeObject.referencjaKG);
                 // positive is the valid correction amount - remove one entry and subtract from the negative total
                 correctionAmount = positiveAmount;
                 negativeAmount -= positiveAmount;
@@ -247,6 +280,9 @@ export class FaktoringService {
 
                 leftoversFlag = LeftoversFlag.Negative;
             } else {
+                console.log("eaq");
+                console.log(positiveObject.referencjaKG);
+                console.log(negativeObject.referencjaKG);
                 // both types are the valid correction amounts - remove one entry from both and set new totals
                 correctionAmount = positiveAmount;
 
@@ -282,7 +318,7 @@ export class FaktoringService {
         }
 
         // determine which type of objects to return
-        if (leftoversFlag == LeftoversFlag.Negative) {
+        if (leftoversFlag == LeftoversFlag.Negative || (leftoversFlag == LeftoversFlag.NoneLeft && negativeAmount)) {
             // make all negative entries negative again
             negatives = negatives.map(v => ({
                 ...v,
@@ -304,7 +340,7 @@ export class FaktoringService {
 
             return [allCurrencyCorrections, negatives];
         }
-        if (leftoversFlag == LeftoversFlag.Positive) {
+        if (leftoversFlag == LeftoversFlag.Positive || (leftoversFlag == LeftoversFlag.NoneLeft && positiveAmount)) {
             const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
             positives = this._retrieveUnusedElement(
                 positiveAmount,
@@ -322,6 +358,22 @@ export class FaktoringService {
         return [allCurrencyCorrections, []];
     }
 
+    private getReferencesDate(referenceNumber: string,){
+        if(referenceNumber.length < 14){
+            throw new Error(`Invalid reference number format at ${referenceNumber}`);
+        }
+
+        const year = "20" + referenceNumber.substring(2,4);
+        const month = referenceNumber.substring(4,6);
+        const day = referenceNumber.substring(6,8);
+        
+        const date = new Date(`${year}-${month}-${day}`);
+        if (isNaN(date.getTime())) {
+            throw new Error("Invalid date components. Conversion failed.");
+        }
+        return date;
+    }
+
     private _retrieveUnusedElement(
         currencyAmount: number,
         leftoverArray: FaktoringObject[],
@@ -332,7 +384,6 @@ export class FaktoringService {
         subkonto: string,
         mpk: string
     ) {
-        // TODO: dodać możliwość oddawania nie wykorzystanych plusów
         const kwotaWZl = exchangeRate * currencyAmount;
 
         leftoverArray.unshift({

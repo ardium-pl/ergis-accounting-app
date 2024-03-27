@@ -45,6 +45,7 @@
             <div class="button-container">
                 <app-button [disabled]="!faktoringService.hasPrn() || !faktoringService.hasCsv()"
                     (click)="onGenerateButtonClick()" htmlId="generate-btn">Generuj</app-button>
+                    <!--This disables empty CSVs from running-->
                 @if (areResultsLoading()) {<mat-spinner />}
             </div>
         </app-section>
@@ -59,6 +60,12 @@
                 }
                 <app-final-table [data]="tableData()" />
             } @else {
+                @if (mismatchedAccountMessage()) {
+                    <app-error-box type="warning" class="mismatched-accounts">
+                        <p>Numer konta lub subkonta nie zgadza się pomiędzy plikami!</p>
+                        <p [innerHTML]="this.mismatchedAccountMessage()"></p>
+                    </app-error-box>
+                    }
                 Nie udało się dopasować żadnych pozycji.
             }
         </app-section>
