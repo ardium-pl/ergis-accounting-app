@@ -216,35 +216,18 @@ export class FaktoringService {
            
             const positiveDate = this.getReferencesDate(positiveObject.referencjaKG);
             const negativeDate = this.getReferencesDate(negativeObject.referencjaKG);
-            let switchMode: boolean = false; 
-            
 
-            // if(negativeDate >= positiveDate){
-            //     console.log("positive date bigger or equal");
-
-            //     console.log(positiveObject.referencjaKG + " : " + positiveDate.toTimeString());
-            //     console.log(negativeObject.referencjaKG+ " : " + negativeDate.toTimeString());
-
-            // }
-
-            if (faktoringMode === FaktoringMode.Positive &&
-                positiveDate > negativeDate  &&
-                positiveAmount > negativeAmount) {
-                
-                console.log("Error here: switched to negative");
-                console.log(positiveObject.referencjaKG);
-                console.log(negativeObject.referencjaKG);
+            if(positiveDate > negativeDate){
+                faktoringMode = FaktoringMode.Positive;
+            }
+            if(negativeDate > positiveDate){
                 faktoringMode = FaktoringMode.Negative;
             }
-
-            if (faktoringMode === FaktoringMode.Negative &&
-                negativeDate > positiveDate &&
-                negativeAmount > positiveAmount){
-
-                console.log("Error here: switched to positive");
-                console.log(positiveObject.referencjaKG);
-                console.log(negativeObject.referencjaKG);
-                faktoringMode = FaktoringMode.Positive;    
+            if(positiveDate.getDate() == negativeDate.getDate() && positiveAmount < negativeAmount){
+                faktoringMode = FaktoringMode.Positive;
+            }
+            if(positiveDate.getDate() == negativeDate.getDate() && negativeAmount < positiveAmount){
+                faktoringMode = FaktoringMode.Negative; 
             }
             
             const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG; //This is the line that I have to modify
