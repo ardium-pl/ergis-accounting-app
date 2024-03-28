@@ -3,7 +3,7 @@ import { Injectable, computed, effect, signal } from '@angular/core';
 import { Subscription, catchError } from 'rxjs';
 import { FileStorageService } from '../file-storage/file-storage.service';
 
-type _ResponseType = { success: false, error: string; } | { success: true, response: string; };
+type _ResponseType = { success: false, error: string; found?: number; required?: number } | { success: true, response: string; };
 
 @Injectable({
     providedIn: 'root',
@@ -35,9 +35,10 @@ export class PolymerscanService {
             })
             .pipe(
                 catchError((err, caught) => {
-                    console.error('Polymerscan API error: ', err);
+                    console.error('Polymerscan API error: ', err['error']);
                     this.sub?.unsubscribe();
                     this._resetSignals();
+                    this._response.set(err['error'] as _ResponseType);
                     return caught;
                 })
             )

@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import fs from 'fs';
 import { PdfReader } from "pdfreader";
 
-const PHRASES = ['European LDPE', 'European polypropylene','Platts European and Turkish PVC'];
+const PHRASES = ['European LDPE', 'European polypropylene', 'Platts European and Turkish PVC'];
 
 export default async (req, res) => {
     const pdfFile = req.files[0];
@@ -18,10 +18,15 @@ export default async (req, res) => {
         new PdfReader(null).parseBuffer(pdfBuffer, (err, item) => {
             if (err) {
                 reject(err);
-            } else if (!item) {
+                return;
+            }
+            if (!item) {
                 // End of buffer
                 resolve(results);
-            } else if (item.page) {
+                return;
+            }
+            if (item.page) {
+                if (remainingPhrases.size === 0) return;
                 // Handle page processing as in the original method
                 remainingPhrases.forEach(phrase => {
                     const indexInPrevPage = previousPageText.indexOf(phrase);
@@ -37,14 +42,16 @@ export default async (req, res) => {
 
                 previousPageText = currentPageText;
                 currentPageText = '';
-            } else if (item.text) {
+                return;
+            }
+            if (item.text) {
                 currentPageText += item.text + ' ';
             }
         });
     });
 
-    if (!polymerScanRawData || polymerScanRawData.length < 2) {
-        return res.status(400).send({ success: false, error: 'NO_DATA_ERR' });
+    if (!polymerScanRawData || polymerScanRawData.length !== PHRASES.length) {
+        return res.status(200).json({ success: false, error: 'NO_DATA_ERR', found: polymerScanRawData?.length ?? 0, required: PHRASES.length });
     }
 
     const messagePrefix = `As a business analyst with 10 years of experience based on the attached document 
@@ -75,7 +82,7 @@ export default async (req, res) => {
             timeout: 180 * 1000, // 3min
         });
 
-        const promises = [messageLDPE, messagePP, messagePVC].map(message => 
+        const promises = [messageLDPE, messagePP, messagePVC].map(message =>
             openai.chat.completions.create({
                 model: 'gpt-4-0125-preview',
                 messages: [{ role: 'user', content: message }],
@@ -87,11 +94,11 @@ export default async (req, res) => {
 
         const results = await Promise.all(promises);
 
-        console.info(`Polymerscan OpenAI requests successful. Completed in ${Date.now() - startDate.valueOf()}ms`);
+        console.info(`Polymerscan OpenAI request successful. Completed in ${Date.now() - startDate.valueOf()}ms`);
 
         const combinedResponseText = results.reduce((acc, result) => {
             if (result && result.choices && result.choices.length > 0) {
-                return acc + result.choices[0].message.content + "\n\n"; 
+                return acc + result.choices[0].message.content + "\n\n";
             } else {
                 return acc + 'NO_AI_RESPONSE\n\n';
             }
@@ -102,6 +109,6 @@ export default async (req, res) => {
         console.error('Error occurred:', error.message);
         console.error('Stack Trace:', error.stack);
 
-        res.status(500).send({ success: false, error: 'INTERNAL_ERR' });
+        res.status(500).json({ success: false, error: 'INTERNAL_ERR' });
     }
 };
