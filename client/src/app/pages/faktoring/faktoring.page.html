@@ -45,7 +45,6 @@
             <div class="button-container">
                 <app-button [disabled]="!faktoringService.hasPrn() "
                     (click)="onGenerateButtonClick()" htmlId="generate-btn">Generuj</app-button>
-                    <!--This disables empty CSVs from running: || !faktoringService.hasCsv()-->
                 @if (areResultsLoading()) {<mat-spinner />}
             </div>
         </app-section>
