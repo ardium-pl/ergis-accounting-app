@@ -117,11 +117,18 @@ export class FaktoringService {
         const fromPrn = this._mapPrnObjectsToFaktoringObjects(this._prnArray());
         const pastEntries = this._csvArray();
 
-        const positives: FaktoringObject[] = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
-        const negatives: FaktoringObject[] = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];
+        let positives: FaktoringObject[] = [];
+        let negatives: FaktoringObject[]= [];
+        let faktoringMode: FaktoringMode = FaktoringMode.Positive;
 
-        //Setting faktoring mode dynamically based on the type of past entrie
-        const faktoringMode: FaktoringMode = pastEntries[0].kwotaWWalucie > 0 ? FaktoringMode.Negative : FaktoringMode.Positive;
+        //Assign values from CSV if it's not
+        if(this._csvArray().length != 0){
+            positives = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
+            negatives = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];  
+            
+            //Setting faktoring mode dynamically based on the type of past entrie
+            faktoringMode = pastEntries[0].kwotaWWalucie > 0 ? FaktoringMode.Negative : FaktoringMode.Positive;
+        }
 
         // filter out corrections & sort entries into positives and negatives
         for (const obj of fromPrn) {
