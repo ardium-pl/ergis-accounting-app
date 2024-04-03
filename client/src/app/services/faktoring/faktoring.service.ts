@@ -220,21 +220,22 @@ export class FaktoringService {
         while ((positives.length > 0 || !isNaN(positiveAmount)) && (negatives.length > 0 || !isNaN(negativeAmount))) {
             const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
             const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
-           
-            const positiveDate = this.getReferencesDate(positiveObject.referencjaKG);
-            const negativeDate = this.getReferencesDate(negativeObject.referencjaKG);
 
-            if(positiveDate > negativeDate){
+            //const positiveDate = this.getReferencesDate(positiveObject.referencjaKG);
+            const positiveDate = this.getReferencesDate(positiveObject.naDzien);
+            const negativeDate = this.getReferencesDate(negativeObject.naDzien);
+
+            if (positiveDate > negativeDate) {
                 faktoringMode = FaktoringMode.Positive;
-            }
-            if(negativeDate > positiveDate){
+            } else if (negativeDate > positiveDate) {
                 faktoringMode = FaktoringMode.Negative;
-            }
-            if(positiveDate.getDate() == negativeDate.getDate() && positiveAmount < negativeAmount){
-                faktoringMode = FaktoringMode.Positive;
-            }
-            if(positiveDate.getDate() == negativeDate.getDate() && negativeAmount < positiveAmount){
-                faktoringMode = FaktoringMode.Negative; 
+            } else if (positiveDate.getDate() == negativeDate.getDate()) {
+                const positiveObjectIndex = this.getPrnIndex(positiveObject.referencjaKG);
+                const negativeObjectIndex = this.getPrnIndex(negativeObject.referencjaKG);
+
+                if (positiveObjectIndex > negativeObjectIndex) {
+                    faktoringMode = FaktoringMode.Positive;
+                } else faktoringMode = FaktoringMode.Negative;
             }
             
             const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG; //This is the line that I have to modify
@@ -345,20 +346,25 @@ export class FaktoringService {
         return [allCurrencyCorrections, []];
     }
 
-    private getReferencesDate(referenceNumber: string,){
-        if(referenceNumber.length < 14){
+    private getReferencesDate(referenceNumber: string){
+        if(referenceNumber.length < 8){
             throw new Error(`Invalid reference number format at ${referenceNumber}`);
         }
 
-        const year = "20" + referenceNumber.substring(2,4);
-        const month = referenceNumber.substring(4,6);
+        const year = "20" + referenceNumber.substring(0,2);
+        const month = referenceNumber.substring(3,5);
         const day = referenceNumber.substring(6,8);
-        
+
         const date = new Date(`${year}-${month}-${day}`);
         if (isNaN(date.getTime())) {
             throw new Error("Invalid date components. Conversion failed.");
         }
         return date;
+    }
+
+    private getPrnIndex(referenceNumber:string){
+        const prnArray = this._mapPrnObjectsToFaktoringObjects(this._prnArray());
+       return prnArray.findIndex((obj) => obj.referencjaKG === referenceNumber);
     }
 
     private _retrieveUnusedElement(
