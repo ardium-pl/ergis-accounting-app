@@ -66,7 +66,7 @@ export class FaktoringService {
     public readonly csvFile = computed(() => this._csvFile());
     private readonly _csvArray = signal<FaktoringObject[]>([]);
     public readonly csvArray = computed(() => this._csvArray());
-    public readonly hasCsv = computed(() => this._csvArray().length > 0); //change this for diffrent CSV handeling
+    public readonly hasCsv = computed(() => this._csvArray().length > 0);
 
     public setCsvFile(file: File): boolean {
         if (file.size > 10 * 1024 * 1024) {
