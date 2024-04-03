@@ -233,7 +233,7 @@ export class FaktoringService {
                 const positiveObjectIndex = this.getPrnIndex(positiveObject.referencjaKG);
                 const negativeObjectIndex = this.getPrnIndex(negativeObject.referencjaKG);
 
-                if (positiveObjectIndex > negativeObjectIndex) {
+                if (positiveObjectIndex && negativeObjectIndex && positiveObjectIndex > negativeObjectIndex) {
                     faktoringMode = FaktoringMode.Positive;
                 } else faktoringMode = FaktoringMode.Negative;
             }
