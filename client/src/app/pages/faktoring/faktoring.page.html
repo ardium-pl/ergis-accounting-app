@@ -43,7 +43,7 @@
   
         <app-section header="Generuj rozliczenie kursów">
             <div class="button-container">
-                <app-button [disabled]="!faktoringService.hasPrn() || !faktoringService.hasCsv()"
+                <app-button [disabled]="!faktoringService.hasPrn() "
                     (click)="onGenerateButtonClick()" htmlId="generate-btn">Generuj</app-button>
                 @if (areResultsLoading()) {<mat-spinner />}
             </div>
@@ -59,6 +59,12 @@
                 }
                 <app-final-table [data]="tableData()" />
             } @else {
+                @if (mismatchedAccountMessage()) {
+                    <app-error-box type="warning" class="mismatched-accounts">
+                        <p>Numer konta lub subkonta nie zgadza się pomiędzy plikami!</p>
+                        <p [innerHTML]="this.mismatchedAccountMessage()"></p>
+                    </app-error-box>
+                    }
                 Nie udało się dopasować żadnych pozycji.
             }
         </app-section>
