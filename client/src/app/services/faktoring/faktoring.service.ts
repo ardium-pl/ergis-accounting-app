@@ -110,10 +110,6 @@ export class FaktoringService {
     }
 
     public processData() {
-        // if (this._csvArray().some(v => v.kwotaWWalucie == 0)) {
-        //     throw 'ZERO_AMOUNT_ERR';
-        // }
-
         const fromPrn = this._mapPrnObjectsToFaktoringObjects(this._prnArray());
         const pastEntries = this._csvArray();
 
