@@ -181,15 +181,10 @@ export class FaktoringService {
     }
 
     private _sameSignsInGroup(group: FaktoringObject[]): boolean {
-        let sum: number = 0;
-        let sumAbs: number = 0;
+        const isMinus = (amount: number) => amount < 0;
+        const isPlus = (amount: number) => amount > 0;
 
-        group.forEach(obj => {
-            sum += obj.kwotaWWalucie;
-            sumAbs += Math.abs(obj.kwotaWWalucie);
-        });
-
-        return sum === sumAbs || sum === -sumAbs;
+        return group.every(item => isMinus(item.kwotaWWalucie)) || group.every(item => isPlus(item.kwotaWWalucie));
     }
 
     private _mergeGroupOfFaktoringObjects(group: FaktoringObject[]): FaktoringObject {
@@ -199,7 +194,7 @@ export class FaktoringService {
 
         group.forEach(obj => {
             mergedKwotaWWalucie += obj.kwotaWWalucie;
-            mergedKwotaWZl  += obj.kwotaWZl;
+            mergedKwotaWZl += obj.kwotaWZl;
         });
 
         return {
