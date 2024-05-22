@@ -110,27 +110,27 @@ export class FaktoringService {
     }
 
     public processData() {
-        const fromPrn = this._mapPrnObjectsToFaktoringObjects(this._prnArray());
+        const fromPrn = this._deleteSameDocumentTransactions(this._mapPrnObjectsToFaktoringObjects(this._prnArray()));
         const pastEntries = this._csvArray();
 
         let positives: FaktoringObject[] = [];
-        let negatives: FaktoringObject[]= [];
+        let negatives: FaktoringObject[] = [];
         let faktoringMode: FaktoringMode = FaktoringMode.Positive;
 
         //Assign values from CSV if it's not
-        if(this._csvArray().length != 0){
+        if (this._csvArray().length != 0) {
             positives = pastEntries[0].kwotaWWalucie > 0 ? [...pastEntries] : [];
-            negatives = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];  
-            
+            negatives = pastEntries[0].kwotaWWalucie < 0 ? [...pastEntries] : [];
+
             //Setting faktoring mode dynamically based on the type of past entrie
             faktoringMode = pastEntries[0].kwotaWWalucie > 0 ? FaktoringMode.Negative : FaktoringMode.Positive;
         }
 
         // filter out corrections & sort entries into positives and negatives
         for (const obj of fromPrn) {
-            if(obj.korekta){
+            if (obj.korekta) {
                 continue;
-            } 
+            }
             if (obj.kwotaWZl < 0) {
                 negatives.push(obj);
                 continue;
@@ -157,6 +157,54 @@ export class FaktoringService {
         return rawObjects.map(this._mapRawPrnObject).filter(obj => !obj.korekta && obj.kwotaWWalucie != 0);
     }
 
+    private _deleteSameDocumentTransactions(faktoringObjects: FaktoringObject[]): FaktoringObject[] {
+        const modifiedArray: FaktoringObject[] = [];
+        const groupsArrayJSON: string[] = [];
+
+        faktoringObjects.forEach(obj => {
+            const searchedDocument = obj.document;
+
+            const group = faktoringObjects.filter(obj => obj.document === searchedDocument);
+            const groupJSON = JSON.stringify(group);
+
+            if (group.length === 1 || this._sameSignsInGroup(group)) {
+                modifiedArray.push(obj);
+                return;
+            }
+            if (groupsArrayJSON.includes(groupJSON)) {
+                return;
+            }
+            const mergedFaktoringObj = this._mergeGroupOfFaktoringObjects(group);
+            modifiedArray.push(mergedFaktoringObj);
+            groupsArrayJSON.push(groupJSON);
+        });
+        return modifiedArray;
+    }
+
+    private _sameSignsInGroup(group: FaktoringObject[]): boolean {
+        const isMinus = (amount: number) => amount < 0;
+        const isPlus = (amount: number) => amount > 0;
+
+        return group.every(item => isMinus(item.kwotaWWalucie)) || group.every(item => isPlus(item.kwotaWWalucie));
+    }
+
+    private _mergeGroupOfFaktoringObjects(group: FaktoringObject[]): FaktoringObject {
+        let mergedKwotaWWalucie: number = 0;
+        let mergedKwotaWZl: number = 0;
+        const firstObj = group[0];
+
+        group.forEach(obj => {
+            mergedKwotaWWalucie += obj.kwotaWWalucie;
+            mergedKwotaWZl += obj.kwotaWZl;
+        });
+
+        return {
+            ...firstObj,
+            kwotaWWalucie: mergedKwotaWWalucie,
+            kwotaWZl: mergedKwotaWZl,
+        };
+    }
+
     private _mapRawPrnObject(rawObject: PrnObject): FaktoringObject {
         return {
             referencjaKG: rawObject['ReferencjaKG'],
@@ -167,6 +215,7 @@ export class FaktoringService {
             konto: rawObject['Konto'],
             subkonto: rawObject['Subkonto'],
             mpk: rawObject['MPK'],
+            document: rawObject['Dokument'],
         };
     }
     private _mapRawCsvObject(rawObject: CsvObject<keyof FaktoringObject>): FaktoringObject {
@@ -183,6 +232,7 @@ export class FaktoringService {
             konto: rawObject.konto ?? '',
             subkonto: rawObject.subkonto ?? '',
             mpk: rawObject.mpk ?? '',
+            document: '', //CSV doesn't contain a document
         };
     }
 
@@ -194,8 +244,8 @@ export class FaktoringService {
         //handle no negatives
         if (negatives.length == 0) return [[], positives];
         //handle no positives
-        if (positives.length == 0) return [[],negatives];
-        
+        if (positives.length == 0) return [[], negatives];
+
         // make negative entries positive for easier logic
         negatives = negatives.map(v => ({
             ...v,
@@ -233,7 +283,7 @@ export class FaktoringService {
                     faktoringMode = FaktoringMode.Positive;
                 } else faktoringMode = FaktoringMode.Negative;
             }
-            
+
             const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG; //This is the line that I have to modify
             const konto = faktoringMode == FaktoringMode.Positive ? positiveObject.konto : negativeObject.konto;
             const subkonto = faktoringMode == FaktoringMode.Positive ? positiveObject.subkonto : negativeObject.subkonto;
@@ -342,25 +392,25 @@ export class FaktoringService {
         return [allCurrencyCorrections, []];
     }
 
-    private getReferencesDate(referenceNumber: string){
-        if(referenceNumber.length < 8){
+    private getReferencesDate(referenceNumber: string) {
+        if (referenceNumber.length < 8) {
             throw new Error(`Invalid reference number format at ${referenceNumber}`);
         }
 
-        const year = "20" + referenceNumber.substring(0,2);
-        const month = referenceNumber.substring(3,5);
-        const day = referenceNumber.substring(6,8);
+        const year = '20' + referenceNumber.substring(0, 2);
+        const month = referenceNumber.substring(3, 5);
+        const day = referenceNumber.substring(6, 8);
 
         const date = new Date(`${year}-${month}-${day}`);
         if (isNaN(date.getTime())) {
-            throw new Error("Invalid date components. Conversion failed.");
+            throw new Error('Invalid date components. Conversion failed.');
         }
         return date;
     }
 
-    private getPrnIndex(referenceNumber:string){
+    private getPrnIndex(referenceNumber: string) {
         const prnArray = this._mapPrnObjectsToFaktoringObjects(this._prnArray());
-       return prnArray.findIndex((obj) => obj.referencjaKG === referenceNumber);
+        return prnArray.findIndex(obj => obj.referencjaKG === referenceNumber);
     }
 
     private _retrieveUnusedElement(
@@ -374,8 +424,10 @@ export class FaktoringService {
         mpk: string
     ) {
         const kwotaWZl = exchangeRate * currencyAmount;
+        const document = '';
 
         leftoverArray.unshift({
+            // TODO: add a document here
             referencjaKG,
             naDzien,
             kwotaWWalucie: currencyAmount,
@@ -384,6 +436,7 @@ export class FaktoringService {
             konto,
             subkonto,
             mpk,
+            document,
         });
         return leftoverArray;
     }

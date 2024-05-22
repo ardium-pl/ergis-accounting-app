@@ -10,6 +10,7 @@ export type FaktoringObject = {
     konto: string;
     subkonto: string;
     mpk: string;
+    document: string,
 }
 
 export type FinalFaktoringObject = {
