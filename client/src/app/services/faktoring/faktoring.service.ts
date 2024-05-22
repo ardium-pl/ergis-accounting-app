@@ -165,17 +165,18 @@ export class FaktoringService {
             const searchedDocument = obj.document;
 
             const group = faktoringObjects.filter(obj => obj.document === searchedDocument);
+            const groupJSON = JSON.stringify(group);
 
             if (group.length === 1 || this._sameSignsInGroup(group)) {
                 modifiedArray.push(obj);
                 return;
             }
-            if (groupsArrayJSON.includes(JSON.stringify(group))) {
+            if (groupsArrayJSON.includes(groupJSON)) {
                 return;
             }
             const mergedFaktoringObj = this._mergeGroupOfFaktoringObjects(group);
             modifiedArray.push(mergedFaktoringObj);
-            groupsArrayJSON.push(JSON.stringify(group));
+            groupsArrayJSON.push(groupJSON);
         });
         return modifiedArray;
     }
@@ -198,15 +199,9 @@ export class FaktoringService {
         });
 
         return {
-            referencjaKG: firstObj.referencjaKG,
-            naDzien: firstObj.naDzien,
+            ...firstObj,
             kwotaWWalucie: mergedKwotaWWalucie,
             kwotaWZl: mergedKwotaWZl,
-            korekta: firstObj.korekta,
-            konto: firstObj.konto,
-            subkonto: firstObj.subkonto,
-            mpk: firstObj.mpk,
-            document: firstObj.document,
         };
     }
 
