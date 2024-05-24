@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { Component, LOCALE_ID } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FaktoringPage, MainPage } from '@pages';
@@ -13,7 +12,6 @@ import { PolymerscanService } from './services/polymerscan/polymerscan.service';
     imports: [
         CommonModule,
         RouterOutlet,
-        HttpClientModule,
         //pages
         MainPage,
         FaktoringPage,
