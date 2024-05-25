@@ -1,8 +1,15 @@
 <main>
-    <h1>JPK</h1>
-    <div class="sections-wrapper">
-        <mat-card>
-            <mat-card-header>Dodaj wymagane pliki</mat-card-header>
-        </mat-card>
-    </div>
+  <h1>Sprawdzenie JPK</h1>
+  <div class="sections-wrapper">
+    <mat-card>
+      <mat-card-header>Dodaj wymagane pliki</mat-card-header>
+      <mat-card-content>
+        <div class="upload-card-columns">
+          <div class="file-drop-zone-container">
+            <app-file-drop-zone maxFiles="6" [accept]="['.prn', '.csv', '.xml']" />
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </main>
