@@ -1,15 +1,22 @@
 <main>
   <h1>Sprawdzenie JPK</h1>
   <div class="sections-wrapper">
-    <mat-card>
+    <mat-card class="upload-card">
       <mat-card-header>Dodaj wymagane pliki</mat-card-header>
       <mat-card-content>
         <div class="upload-card-columns">
           <div class="file-drop-zone-container">
             <app-file-drop-zone maxFiles="6" [accept]="['.prn', '.csv', '.xml']" (upload)="onFilesUpload($event)" />
           </div>
+          <div class="uploaded-container">
+            @for (file of jpkService.files; track $index) {
+            <app-jpk-file [jpkFile]="file" />
+            }
+          </div>
         </div>
       </mat-card-content>
     </mat-card>
+    <app-button [disabled]="!jpkService.areAllFilesOK()" (click)="onGenerateButtonClick()"
+      [matTooltip]="jpkService.areAllFilesOK() ? '' : 'Wszystkie pliki muszą być gotowe, zanim będzie można wygenerować zestawienie.'">Generuj</app-button>
   </div>
 </main>

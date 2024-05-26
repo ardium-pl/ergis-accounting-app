@@ -1,10 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 import { Tuple, sleep } from '@utils';
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { ExcelService } from '../excel/excel.service';
 
 const JpkFileName = {
-  XML: 'V72405...',
+  XML: 'Plik JPK_VAT',
   WeryfikacjaVAT: 'Weryfikacja VAT',
   RejZ: 'RejZ',
   PZN: 'PZN',
@@ -53,6 +53,10 @@ export class JpkService {
     new JpkFile(JpkFileType.PRN, JpkFileName.MAPZ),
   ];
 
+  readonly areAllFilesOK = computed(() => {
+    return this.files.every(file => file.state() === JpkFileState.OK);
+  });
+
   async handleFilesUpload(files: File[]): Promise<boolean[]> {
     const promises: Promise<boolean>[] = [];
     for (const file of files) {
@@ -96,6 +100,10 @@ export class JpkService {
         break;
     }
 
+    this.files[fileIndex].fileName.set(null);
+    this.files[fileIndex].fileSize.set(null);
+    this.files[fileIndex].fileContent.set(null);
+    this.files[fileIndex].validationData.set(false);
     this.files[fileIndex].state.set(JpkFileState.Loading);
 
     const sleepModifier = Math.sqrt(fileContent.length);

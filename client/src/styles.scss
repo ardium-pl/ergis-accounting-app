@@ -17,6 +17,7 @@
   --detail-light: rgba(0, 0, 0, .1);
   --border: #333;
   --text2: rgba(0, 0, 0, 0.87);
+  --text3: rgba(0, 0, 0, 0.6);
   --bg: #f1f1f1;
   --bg2: #fafafa;
   --bg3: #cacaca;
@@ -25,8 +26,9 @@
 
   --main-font: "Outfit", sans-serif;
 
-  --red: rgb(239, 53, 29);
-  --green: rgb(68, 162, 72);
+  --red: rgb(229, 46, 22);
+  --green: rgb(41, 177, 47);
+  --yellow: rgb(231, 154, 61);
 
   --main: #c36;
   --on-main: white;
@@ -154,6 +156,13 @@ a[href], a[routerLink], .link {
 
 mat-spinner {
   --mdc-circular-progress-active-indicator-color: var(--main);
+}
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24
 }
 app-icon {
   font-size: 1.5em;

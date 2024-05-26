@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, Output, computed, input, viewChild } from '@angular/core';
-import { coerceArrayProperty, coerceNumberProperty } from '@ardium-ui/devkit';
+import { coerceArrayProperty, coerceBooleanProperty, coerceNumberProperty } from '@ardium-ui/devkit';
 import { IconComponent } from '../icon/icon.component';
 
 @Component({

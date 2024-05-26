@@ -1,0 +1,45 @@
+<div class="jpk-file">
+  <div class="icon-container">
+    @if (jpkFile().state() === _states.NoFile) {
+    <div class="no-file-icon">
+      {{ jpkFile().fileType | uppercase }}
+    </div>
+    } @else if (jpkFile().state() === _states.Loading) {
+    <mat-spinner diameter="40" />
+    } @else if (jpkFile().state() === _states.Error) {
+    <span class="material-symbols-outlined error-icon">
+      cancel
+    </span>
+    } @else if (jpkFile().state() === _states.OK) {
+    <span class="material-symbols-outlined ok-icon">
+      check_circle
+    </span>
+    } @else if (jpkFile().state() === _states.Warning) {
+    <span class="material-symbols-outlined warning-icon">
+      exclamation
+    </span>
+    }
+  </div>
+  <div class="text-container">
+    <div class="strong-text">{{ jpkFile().fileDisplayName }}</div>
+    <div class="sub-text">
+      @if (jpkFile().state() === _states.NoFile) {
+      Plik jeszcze nie został dodany
+      } @else if (jpkFile().state() === _states.Loading) {
+      Weryfikowanie...
+      } @else if (jpkFile().state() === _states.Error) {
+      {{ jpkFile().validationData() }}
+      } @else if (jpkFile().state() === _states.OK) {
+      Gotowy!
+      } @else if (jpkFile().state() === _states.Warning) {
+      Sprawdź, czy dodany plik na pewno jest odpowiedni.
+      }
+    </div>
+  </div>
+  <div class="file-container">
+    <div class="file-name">{{ jpkFile().fileName() }}</div>
+    @if (jpkFile().fileSize()) {
+    <div class="file-size">{{ jpkFile().fileSize()! | filesize }}</div>
+    }
+  </div>
+</div>
