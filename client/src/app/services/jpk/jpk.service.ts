@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { Tuple } from '@utils';
-import { JpkFile, JpkFileType } from './jpk-file';
+import { Tuple, sleep } from '@utils';
+import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { ExcelService } from '../excel/excel.service';
 
 const JpkFileName = {
@@ -42,7 +42,6 @@ const REQUIRED_VERIFICATION_COLUMNS = [
   providedIn: 'root',
 })
 export class JpkService {
-
   readonly excelService = inject(ExcelService);
 
   readonly files: Tuple<JpkFile, 6> = [
@@ -68,26 +67,46 @@ export class JpkService {
     if (!determinedName) {
       return false;
     }
+    let validation: string | false;
+    let fileIndex: number;
     switch (determinedName) {
       case JpkFileName.XML:
-        this._handleXmlFile(file, fileContent);
+        validation = this._validateXmlFile(fileContent);
+        fileIndex = 0;
         break;
       case JpkFileName.WeryfikacjaVAT:
-        this._handleVerificationFile(file, fileContent);
+        validation = this._validateVerificationFile(fileContent);
+        fileIndex = 1;
         break;
       case JpkFileName.RejZ:
-        this._handleRejZFile(file, fileContent);
+        validation = this._validateRejZFile(fileContent);
+        fileIndex = 2;
         break;
       case JpkFileName.PZN:
-        this._handlePZNFile(file, fileContent);
+        validation = this._validatePZNFile(fileContent);
+        fileIndex = 3;
         break;
       case JpkFileName.WNPZ:
-        this._handleWNPZFile(file, fileContent);
+        validation = this._validateWNPZFile(fileContent);
+        fileIndex = 4;
         break;
       case JpkFileName.MAPZ:
-        this._handleMAPZFile(file, fileContent);
+        validation = this._validateMAPZFile(fileContent);
+        fileIndex = 5;
         break;
     }
+
+    this.files[fileIndex].state.set(JpkFileState.Loading);
+
+    const sleepModifier = Math.sqrt(fileContent.length);
+    const sleepAmount = sleepModifier + Math.random() * sleepModifier;
+    await sleep(sleepAmount);
+
+    this.files[fileIndex].fileName.set(file.name);
+    this.files[fileIndex].fileSize.set(file.size);
+    this.files[fileIndex].fileContent.set(fileContent);
+    this.files[fileIndex].validationData.set(validation);
+    this.files[fileIndex].state.set(validation ? JpkFileState.Error : JpkFileState.OK);
 
     return true;
   }
@@ -118,23 +137,11 @@ export class JpkService {
     }
     return null;
   }
-  private _handleXmlFile(file: File, content: string): void {
-    const validation = this._validateXmlFile(content);
-
-    this.files[0].fileName.set(file.name);
-    this.files[0].fileSize.set(file.size);
-  }
   private _validateXmlFile(content: string): false | string {
     if (!/<tns:KodFormularza.*?>JPK_VAT<\/tns:KodFormularza>/.test(content)) {
       return 'Dodany plik nie wygląda na poprawny plik JPK. Upewnij się, że dodajesz plik wygenerowany przez formularz JPK_VAT.';
     }
     return false;
-  }
-  private _handleVerificationFile(file: File, content: string): void {
-    const validation = this._validateVerificationFile(content);
-
-    this.files[1].fileName.set(file.name);
-    this.files[1].fileSize.set(file.size);
   }
   private _validateVerificationFile(content: string): false | string {
     const requiredHeaders = new Set<string>(REQUIRED_VERIFICATION_COLUMNS);
@@ -153,42 +160,16 @@ export class JpkService {
     }
     return false;
   }
-  private _handleRejZFile(file: File, content: string): void {
-    const validation = this._validateRejZFile(content);
-
-    this.files[2].fileName.set(file.name);
-    this.files[2].fileSize.set(file.size);
-  }
   private _validateRejZFile(content: string): false | string {
     return false;
-  }
-  private _handlePZNFile(file: File, content: string): void {
-    const validation = this._validatePZNFile(content);
-
-    this.files[3].fileName.set(file.name);
-    this.files[3].fileSize.set(file.size);
   }
   private _validatePZNFile(content: string): false | string {
     return false;
   }
-  private _handleWNPZFile(file: File, content: string): void {
-    const validation = this._validateWNPZFile(content);
-
-    this.files[4].fileName.set(file.name);
-    this.files[4].fileSize.set(file.size);
-  }
   private _validateWNPZFile(content: string): false | string {
     return false;
-  }
-  private _handleMAPZFile(file: File, content: string): void {
-    const validation = this._validateMAPZFile(content);
-
-    this.files[5].fileName.set(file.name);
-    this.files[5].fileSize.set(file.size);
   }
   private _validateMAPZFile(content: string): false | string {
     return false;
   }
-
-  constructor() {}
 }
