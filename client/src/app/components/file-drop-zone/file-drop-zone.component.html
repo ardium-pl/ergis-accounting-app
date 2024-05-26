@@ -1,5 +1,5 @@
 <div class="file-drop-zone-wrapper">
-  <input class="file-drop-zone-input" title="Kliknij, aby wybrać" type="file" (change)="readFile($event)"
+  <input #inputEl class="file-drop-zone-input" title="Kliknij, aby wybrać" type="file" (change)="readFile($event)"
     [accept]="accept()" [multiple]="maxFiles() !== 1">
   <div class="file-drop-zone">
     <app-icon class="upload-icon">

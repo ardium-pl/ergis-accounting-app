@@ -42,7 +42,7 @@ const REQUIRED_VERIFICATION_COLUMNS = [
   providedIn: 'root',
 })
 export class JpkService {
-  readonly excelService = inject(ExcelService);
+  private readonly excelService = inject(ExcelService);
 
   readonly files: Tuple<JpkFile, 6> = [
     new JpkFile(JpkFileType.XML, JpkFileName.XML),

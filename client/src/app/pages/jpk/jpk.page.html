@@ -6,7 +6,7 @@
       <mat-card-content>
         <div class="upload-card-columns">
           <div class="file-drop-zone-container">
-            <app-file-drop-zone maxFiles="6" [accept]="['.prn', '.csv', '.xml']" />
+            <app-file-drop-zone maxFiles="6" [accept]="['.prn', '.csv', '.xml']" (upload)="onFilesUpload($event)" />
           </div>
         </div>
       </mat-card-content>
