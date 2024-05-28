@@ -13,6 +13,17 @@ export type FaktoringObject = {
     document: string,
 }
 
+export type LeftOverObject = {
+    referencjaKG: string;
+    naDzien: string;
+    kwotaWWalucie: number;
+    kwotaWZl: number;
+    korekta: boolean;
+    konto: string;
+    subkonto: string;
+    mpk: string;
+}
+
 export type FinalFaktoringObject = {
     referencjaKG: string;
     currencyCorrection: number;
