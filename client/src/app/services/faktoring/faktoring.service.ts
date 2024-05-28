@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { parseNumber, parseYesNo } from './../../utils/helpers';
-import { FaktoringDetails, FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag } from './faktoring.types';
+import { FaktoringDetails, FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag , LeftOverObject} from './faktoring.types';
 import { CsvObject, ExcelService, PrnObject, PrnReaderService } from '@services';
 
 @Injectable({
@@ -240,7 +240,7 @@ export class FaktoringService {
         positives: FaktoringObject[],
         negatives: FaktoringObject[],
         faktoringMode: FaktoringMode
-    ): [FinalFaktoringObject[], FaktoringObject[]] {
+    ): [FinalFaktoringObject[], LeftOverObject[]] {
         //handle no negatives
         if (negatives.length == 0) return [[], positives];
         //handle no positives
@@ -361,7 +361,7 @@ export class FaktoringService {
             }));
 
             const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
-            negatives = this._retrieveUnusedElement(
+            const leftOverNegatives: LeftOverObject[] = this._retrieveUnusedElement(
                 -negativeAmount,
                 negatives,
                 negativeExchangeRate,
@@ -372,11 +372,12 @@ export class FaktoringService {
                 negativeObject.mpk
             );
 
-            return [allCurrencyCorrections, negatives];
+
+            return [allCurrencyCorrections, leftOverNegatives];
         }
         if (leftoversFlag == LeftoversFlag.Positive || (leftoversFlag == LeftoversFlag.NoneLeft && positiveAmount)) {
             const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
-            positives = this._retrieveUnusedElement(
+            const leftOverPositives: LeftOverObject[] = this._retrieveUnusedElement(
                 positiveAmount,
                 positives,
                 positiveExchangeRate,
@@ -386,8 +387,7 @@ export class FaktoringService {
                 positiveObject.subkonto,
                 positiveObject.mpk
             );
-
-            return [allCurrencyCorrections, positives];
+            return [allCurrencyCorrections, leftOverPositives];
         }
         return [allCurrencyCorrections, []];
     }
@@ -415,7 +415,7 @@ export class FaktoringService {
 
     private _retrieveUnusedElement(
         currencyAmount: number,
-        leftoverArray: FaktoringObject[],
+        leftoverArray: LeftOverObject[],
         exchangeRate: number,
         referencjaKG: string,
         naDzien: string,
@@ -427,7 +427,6 @@ export class FaktoringService {
         const document = '';
 
         leftoverArray.unshift({
-            // TODO: add a document here
             referencjaKG,
             naDzien,
             kwotaWWalucie: currencyAmount,
@@ -436,7 +435,6 @@ export class FaktoringService {
             konto,
             subkonto,
             mpk,
-            document,
         });
         return leftoverArray;
     }

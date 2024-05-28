@@ -20,7 +20,7 @@ import {
     SectionComponent,
     SelectComponent,
 } from '@components';
-import { ExcelService, FaktoringObject, FaktoringService, FinalFaktoringObject } from '@services';
+import { ExcelService, FaktoringObject, FaktoringService, FinalFaktoringObject, LeftOverObject } from '@services';
 import { randomBetween, sleep } from '@utils';
 import { Subscription } from 'rxjs';
 import { IconComponent } from 'src/app/components/icon/icon.component';
@@ -224,7 +224,7 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
     }
 
     readonly tableData = signal<FinalFaktoringObject[] | null>(null);
-    private readonly _leftovers = signal<FaktoringObject[] | null>(null);
+    private readonly _leftovers = signal<LeftOverObject[] | null>(null);
     readonly leftoversCount = signal<number | null>(null);
 
     downloadLeftovers(): void {
