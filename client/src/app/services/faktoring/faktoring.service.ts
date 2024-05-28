@@ -393,6 +393,7 @@ export class FaktoringService {
     }
 
     private getReferencesDate(referenceNumber: string) {
+        //TODO: Add an error message visible to the user
         if (referenceNumber.length < 8) {
             throw new Error(`Invalid reference number format at ${referenceNumber}`);
         }
