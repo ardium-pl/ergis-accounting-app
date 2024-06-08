@@ -8,3 +8,7 @@ export function formatNumber(num: number, fractionDigits: number = 2): string {
         useGrouping: false,
     });
 }
+
+export function parseNumberWithThousandSeparator(num: string, sep: string = ','): number {
+  return Number(num.replaceAll(sep, ''));
+}
