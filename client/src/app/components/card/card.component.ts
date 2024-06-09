@@ -5,8 +5,8 @@ import { Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './card.component.html',
-  styleUrl: './card.component.scss'
+  styleUrl: './card.component.scss',
 })
 export class CardComponent {
-    readonly header = input.required<string>();
+  readonly header = input.required<string>();
 }
