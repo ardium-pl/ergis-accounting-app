@@ -27,16 +27,17 @@ import { isDefined } from 'simple-bool';
 export class PolymerscanPage {
     constructor(public fileStorage: FileStorageService, private polymerscanService: PolymerscanService) {}
 
-    onFileUpload(file: File): void {
-        if (file.size > 10 * 1024 * 1024) {
+    onFileUpload(file: File | File[]): void {
+        let singleFile = file as File;
+        if (singleFile.size > 10 * 1024 * 1024) {
             alert('Plik musi być mniejszy niż 10 MB');
             return;
         }
-        if (!file.name.toLowerCase().endsWith('.pdf')) {
+        if (!singleFile.name.toLowerCase().endsWith('.pdf')) {
             alert('Plik musi być typu .pdf');
             return;
         }
-        this.fileStorage.setFile(file);
+        this.fileStorage.setFile(singleFile);
     }
 
     readonly areResultsLoading = computed(() => this.polymerscanService.isPending());

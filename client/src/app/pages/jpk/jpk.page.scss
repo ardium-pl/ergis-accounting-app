@@ -1,0 +1,33 @@
+$gap: 32px;
+
+.sections-wrapper {
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: center;
+}
+.upload-card {
+  width: 100%;
+  max-width: 1200px;
+  
+  mat-card-header {
+    display: flex;
+    justify-content: center;
+  }
+}
+.upload-card-columns {
+  display: flex;
+  gap: $gap;
+  align-items: center;
+}
+.file-drop-zone-container {
+  height: 100%;
+}
+.uploaded-container {
+  padding-left: $gap;
+  border-left: 1px solid var(--detail);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
