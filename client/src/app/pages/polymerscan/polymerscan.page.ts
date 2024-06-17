@@ -60,7 +60,6 @@ export class PolymerscanPage {
 
   readonly shouldShowWarning = computed<boolean>(() => {
     const res = this.polymerscanService.response();
-    console.log(res);
     return isDefined(res) && !res.success && res.error === 'NO_DATA_ERR';
   });
   readonly warningFoundAmount = computed<number | null>(() => {

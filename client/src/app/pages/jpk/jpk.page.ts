@@ -33,8 +33,6 @@ export class JpkPage {
   async onFilesUpload(files: File | File[]) {
     const failedFiles = await this.jpkService.handleFilesUpload(files as File[]);
 
-    console.log(failedFiles);
-
     const dialogRef = this.dialog.open(JpkChooseTypeDialogComponent, {
       data: { files: failedFiles },
     });
