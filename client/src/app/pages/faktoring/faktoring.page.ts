@@ -20,12 +20,11 @@ import {
   SectionComponent,
   SelectComponent,
 } from '@components';
-import { ExcelService, FaktoringObject, FaktoringService, FinalFaktoringObject, LeftOverObject } from '@services';
+import { ExcelService } from '@services/excel';
+import { FaktoringObject, FaktoringService, FinalFaktoringObject, LeftOverObject } from '@services/faktoring';
 import { randomBetween, sleep } from '@utils';
 import { Subscription } from 'rxjs';
 import { IconComponent } from 'src/app/components/icon/icon.component';
-
-const NO_UNUSED_NEGATIVES_MESSAGE = '\nWszystkie pozycje zostały wykorzystane!';
 
 @Component({
   selector: '_faktoring-page',

@@ -1,0 +1,11 @@
+
+mat-dialog-content {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 1.5rem 4rem;
+}
+mat-dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}

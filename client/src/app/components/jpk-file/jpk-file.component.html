@@ -7,32 +7,26 @@
     } @else if (jpkFile().state() === _states.Loading) {
     <mat-spinner diameter="40" />
     } @else if (jpkFile().state() === _states.Error) {
-    <span class="material-symbols-outlined error-icon">
-      cancel
-    </span>
+    <span class="material-symbols-outlined error-icon">cancel</span>
     } @else if (jpkFile().state() === _states.OK) {
-    <span class="material-symbols-outlined ok-icon">
-      check_circle
-    </span>
+    <span class="material-symbols-outlined ok-icon">check_circle</span>
     } @else if (jpkFile().state() === _states.Warning) {
-    <span class="material-symbols-outlined warning-icon">
-      exclamation
-    </span>
+    <span class="material-symbols-outlined warning-icon">exclamation</span>
     }
   </div>
   <div class="text-container">
     <div class="strong-text">{{ jpkFile().fileDisplayName }}</div>
     <div class="sub-text">
       @if (jpkFile().state() === _states.NoFile) {
-      Plik jeszcze nie został dodany
+      <span>Plik jeszcze nie został dodany</span>
       } @else if (jpkFile().state() === _states.Loading) {
-      Weryfikowanie...
+      <span>Weryfikowanie...</span>
       } @else if (jpkFile().state() === _states.Error) {
-      {{ jpkFile().validationData() }}
+      <span>{{ validationDataString() }}</span>
       } @else if (jpkFile().state() === _states.OK) {
-      Gotowy!
+      <span>Gotowy!</span>
       } @else if (jpkFile().state() === _states.Warning) {
-      Sprawdź, czy dodany plik na pewno jest odpowiedni.
+      <span>Sprawdź, czy dodany plik na pewno jest odpowiedni.</span>
       }
     </div>
   </div>

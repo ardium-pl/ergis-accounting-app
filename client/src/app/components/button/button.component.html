@@ -1,6 +1,6 @@
 <button
     [disabled]="disabled()"
-    [tabIndex]="disabled() ? -1 : 0"
+    [tabIndex]="disabled() ? -1 : undefined"
     [class.no-pointer]="disabled()"
     [id]="htmlId()"
     [className]="classes()"
