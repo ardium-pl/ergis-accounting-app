@@ -90,7 +90,6 @@ export class JpkService {
         validation = this._validateVerificationFile(fileContent);
         if(!validation){
         csvObjects = this.excelService.readAsCsv(fileContent);
-        console.log(csvObjects);
         }
         fileIndex = 1;
         break;
@@ -202,7 +201,6 @@ export class JpkService {
       };
 
       const result = await parseStringPromise(xmlContent, options);
-      console.log('Parsed XML:', result);
       return result;
     } catch (err) {
       console.error('Error parsing XML:', err);
