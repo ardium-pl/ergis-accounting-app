@@ -87,7 +87,6 @@ export class FaktoringService {
                 const faktoringObjects = csvObjects.map(this._mapRawCsvObject);
                 this._csvArray.set(faktoringObjects);
                 this._csvFile.set(file);
-                console.log(csvObjects);
             } catch (error) {
                 if (error === 'EMPTY_CSV_ERR') {
                     alert('Dodano plik CSV bez zawartości!');
