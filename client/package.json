@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "ngg-page": "ng g c --type=page --standalone"
+    "ngg-page": "ng g c --type=page --standalone",
+    "prettier": "npx prettier --write"
   },
   "private": true,
   "dependencies": {
