@@ -10,6 +10,9 @@
     "ngg-page": "ng g c --type=page --standalone",
     "prettier": "npx prettier --write"
   },
+  "browser": {
+    "timers": "timers-browserify"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.0.0",
@@ -32,6 +35,7 @@
     "pdfjs-dist": "^4.0.379",
     "rxjs": "~7.8.0",
     "simple-bool": "^3.0.1",
+    "timers-browserify": "^2.0.12",
     "tslib": "^2.3.0",
     "xml2js": "^0.6.2",
     "zone.js": "~0.14.2"
