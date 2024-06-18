@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "ngg-page": "ng g c --type=page --standalone"
+    "ngg-page": "ng g c --type=page --standalone",
+    "prettier": "npx prettier --write"
   },
   "private": true,
   "dependencies": {
@@ -21,17 +22,18 @@
     "@angular/platform-browser": "^18.0.0",
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/router": "^18.0.0",
-    "@ardium-ui/devkit": "^1.3.6",
+    "@ardium-ui/devkit": "^1.3.10",
     "@types/exceljs": "^1.3.0",
     "dotenv": "^16.3.1",
     "exceljs": "^4.4.0",
     "marked": "^9.0.0",
-    "ngx-markdown": "^17.1.1",
+    "ngx-markdown": "^18.0.0",
     "ngxtension": "^2.0.0",
     "pdfjs-dist": "^4.0.379",
     "rxjs": "~7.8.0",
     "simple-bool": "^3.0.1",
     "tslib": "^2.3.0",
+    "xml2js": "^0.6.2",
     "zone.js": "~0.14.2"
   },
   "devDependencies": {
@@ -39,6 +41,7 @@
     "@angular/cli": "^18.0.1",
     "@angular/compiler-cli": "^18.0.0",
     "@types/jasmine": "~5.1.0",
+    "@types/xml2js": "^0.4.14",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

@@ -1,7 +1,9 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Tuple, sleep } from '@utils';
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { ExcelService } from '../excel/excel.service';
+import { FaktoringService } from '../faktoring/faktoring.service';
+import { parseStringPromise } from 'xml2js';
 
 const JpkFileName = {
   XML: 'Plik JPK_VAT',
@@ -43,6 +45,8 @@ const REQUIRED_VERIFICATION_COLUMNS = [
 })
 export class JpkService {
   private readonly excelService = inject(ExcelService);
+  private readonly faktoringService = inject(FaktoringService);
+
 
   readonly files: Tuple<JpkFile, 6> = [
     new JpkFile(JpkFileType.XML, JpkFileName.XML),
@@ -73,13 +77,21 @@ export class JpkService {
     }
     let validation: string | false;
     let fileIndex: number;
+    let csvObjects: object;
+    let xmlObjects: object;
     switch (determinedName) {
       case JpkFileName.XML:
         validation = this._validateXmlFile(fileContent);
+        if(!validation){
+        xmlObjects = await this.parseXML(fileContent);
+        }
         fileIndex = 0;
         break;
       case JpkFileName.WeryfikacjaVAT:
         validation = this._validateVerificationFile(fileContent);
+        if(!validation){
+        csvObjects = this.excelService.readAsCsv(fileContent);
+        }
         fileIndex = 1;
         break;
       case JpkFileName.RejZ:
@@ -179,5 +191,22 @@ export class JpkService {
   }
   private _validateMAPZFile(content: string): false | string {
     return false;
+  }
+  
+  private async parseXML(xmlContent: string): Promise<any> {
+    try {
+      const options = {
+        explicitArray: false, 
+        mergeAttrs: true,     
+        trim: true,           
+        normalizeTags: true, 
+      };
+
+      const result = await parseStringPromise(xmlContent, options);
+      return result;
+    } catch (err) {
+      console.error('Error parsing XML:', err);
+      throw err; 
+    }
   }
 }
