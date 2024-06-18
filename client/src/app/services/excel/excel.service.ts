@@ -64,6 +64,7 @@ export class ExcelService {
     }
 
     return ";";
+
   }
 
   jsonToCsv(jsonData: Record<string, any>[]): string {

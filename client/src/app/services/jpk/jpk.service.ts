@@ -47,6 +47,7 @@ export class JpkService {
   private readonly excelService = inject(ExcelService);
   private readonly faktoringService = inject(FaktoringService);
 
+
   readonly files: Tuple<JpkFile, 6> = [
     new JpkFile(JpkFileType.XML, JpkFileName.XML),
     new JpkFile(JpkFileType.CSV, JpkFileName.WeryfikacjaVAT),
@@ -191,6 +192,7 @@ export class JpkService {
   private _validateMAPZFile(content: string): false | string {
     return false;
   }
+  
   private async parseXML(xmlContent: string): Promise<any> {
     try {
       const options = {
