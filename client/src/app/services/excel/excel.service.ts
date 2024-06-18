@@ -63,7 +63,7 @@ export class ExcelService {
       }
     }
 
-    return ";";
+    throw 'SEPARATOR_ERR';
   }
 
   jsonToCsv(jsonData: Record<string, any>[]): string {
