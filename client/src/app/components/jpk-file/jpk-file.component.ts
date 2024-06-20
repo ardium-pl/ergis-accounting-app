@@ -1,5 +1,5 @@
 import { UpperCasePipe } from '@angular/common';
-import { Component, computed, input } from '@angular/core';
+import { Component, ViewEncapsulation, computed, input } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { JpkFile, JpkFileState } from 'src/app/services/jpk/jpk-file';
@@ -11,6 +11,7 @@ import { ArdiumFilesizePipeModule } from '@ardium-ui/devkit';
   imports: [UpperCasePipe, MatProgressSpinnerModule, MatIconModule, ArdiumFilesizePipeModule],
   templateUrl: './jpk-file.component.html',
   styleUrl: './jpk-file.component.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class JpkFileComponent {
   readonly jpkFile = input.required<JpkFile>();

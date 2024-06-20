@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ViewEncapsulation, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,6 +25,7 @@ import { JpkFileComponent } from 'src/app/components/jpk-file/jpk-file.component
   ],
   templateUrl: './jpk.page.html',
   styleUrl: './jpk.page.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class JpkPage {
   readonly jpkService = inject(JpkService);
