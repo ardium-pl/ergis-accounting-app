@@ -25,5 +25,5 @@ export class JpkFile {
   readonly fileSize = signal<number | null>(null);
   readonly fileContent = signal<string | null>(null);
 
-  readonly validationData = signal<string | false | null>(null);
+  readonly validationData = signal<[string, string] | false | null>(null);
 }

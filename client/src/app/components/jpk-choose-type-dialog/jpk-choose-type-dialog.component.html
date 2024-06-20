@@ -1,0 +1,11 @@
+<h2 mat-dialog-title>Nie udało się dopasować plików</h2>
+<mat-dialog-content>
+  @for (file of data.files; track $index) {
+  <app-file-display [file]="file" />
+  <app-select [options]="fileNameOptions" width="160" (change)="onChooseValue($event.target!, $index)" />
+  }
+</mat-dialog-content>
+<mat-dialog-actions>
+  <app-button appearance="transparent" (click)="onSkipClick()">Pomiń pliki</app-button>
+  <app-button [disabled]="isOKButtonDisabled()" [mat-dialog-close]="chosenValues()">Dodaj pliki</app-button>
+</mat-dialog-actions>

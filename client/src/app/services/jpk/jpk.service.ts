@@ -2,10 +2,12 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Tuple, sleep } from '@utils';
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { ExcelService } from '../excel/excel.service';
+import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { FaktoringService } from '../faktoring/faktoring.service';
 import { parseStringPromise } from 'xml2js';
 
-const JpkFileName = {
+
+export const JpkFileName = {
   XML: 'Plik JPK_VAT',
   WeryfikacjaVAT: 'Weryfikacja VAT',
   RejZ: 'RejZ',
@@ -13,7 +15,7 @@ const JpkFileName = {
   WNPZ: 'WNPZ',
   MAPZ: 'MAPZ',
 } as const;
-type JpkFileName = (typeof JpkFileName)[keyof typeof JpkFileName];
+export type JpkFileName = (typeof JpkFileName)[keyof typeof JpkFileName];
 
 const REQUIRED_VERIFICATION_COLUMNS = [
   'Lp',
@@ -61,21 +63,23 @@ export class JpkService {
     return this.files.every(file => file.state() === JpkFileState.OK);
   });
 
-  async handleFilesUpload(files: File[]): Promise<boolean[]> {
-    const promises: Promise<boolean>[] = [];
-    for (const file of files) {
-      promises.push(this._handleSingleFileUpload(file));
+  async handleFilesUpload(files: File[], forcedTypes?: JpkFileName[]): Promise<File[]> {
+    const promises: Promise<false | File>[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const forcedName = forcedTypes?.[i];
+      promises.push(this._handleSingleFileUpload(file, forcedName));
     }
-    return Promise.all(promises);
+    return (await Promise.all(promises)).filter(v => v) as File[];
   }
-  private async _handleSingleFileUpload(file: File): Promise<boolean> {
+  private async _handleSingleFileUpload(file: File, forcedName?: JpkFileName): Promise<false | File> {
     const fileContent = await file.text();
-    const determinedName = await this._determineFileName(file, fileContent);
+    const determinedName = forcedName ?? await this._determineFileName(file, fileContent);
 
     if (!determinedName) {
-      return false;
+      return file;
     }
-    let validation: string | false;
+    let validation: [string, string] | false;
     let fileIndex: number;
     let csvObjects: object;
     let xmlObjects: object;
@@ -128,7 +132,7 @@ export class JpkService {
     this.files[fileIndex].validationData.set(validation);
     this.files[fileIndex].state.set(validation ? JpkFileState.Error : JpkFileState.OK);
 
-    return true;
+    return false;
   }
 
   private async _determineFileName(file: File, content: string): Promise<JpkFileName | null> {
@@ -143,10 +147,10 @@ export class JpkService {
     if (!fileName.endsWith('.prn')) {
       return null;
     }
-    if (/Rejestr VAT: go zakupy got�wkowe/.test(content)) {
+    if (/Rejestr VAT: go zakupy got.wkowe/.test(content)) {
       return JpkFileName.RejZ;
     }
-    if (/Raport przyj�cia zakup�w/.test(content)) {
+    if (/Raport przyj.cia zakup.w/.test(content)) {
       return JpkFileName.PZN;
     }
     if (/Rejestr VAT: WN WNT/.test(content)) {
@@ -157,13 +161,13 @@ export class JpkService {
     }
     return null;
   }
-  private _validateXmlFile(content: string): false | string {
+  private _validateXmlFile(content: string): false | [string, string] {
     if (!/<tns:KodFormularza.*?>JPK_VAT<\/tns:KodFormularza>/.test(content)) {
-      return 'Dodany plik nie wygląda na poprawny plik JPK. Upewnij się, że dodajesz plik wygenerowany przez formularz JPK_VAT.';
+      return ['Dodany plik nie wygląda na poprawny plik JPK. Upewnij się, że dodajesz plik wygenerowany przez formularz JPK_VAT.', 'VLD_XML_0'];
     }
     return false;
   }
-  private _validateVerificationFile(content: string): false | string {
+  private _validateVerificationFile(content: string): false | [string, string] {
     const requiredHeaders = new Set<string>(REQUIRED_VERIFICATION_COLUMNS);
 
     const fileHeaders = this.excelService.readHeaderAsCsv(content);
@@ -176,21 +180,38 @@ export class JpkService {
 
     if (requiredHeaders.size > 0) {
       const missingHeaders = Array.from(requiredHeaders);
-      return missingHeaders.join(', ');
+      return [missingHeaders.join(', '), 'VLD_CSV_0'];
     }
     return false;
   }
-  private _validateRejZFile(content: string): false | string {
+  private _runPatternBasedValidation(patterns: RegExp[], content: string, errorFactory: (patternIndex: number) => string): false | string {
+    for (let i = 0; i < patterns.length; i++) {
+      const pattern = patterns[i];
+      if (!pattern.test(content)) {
+        return errorFactory(i);
+      }
+    }
     return false;
   }
-  private _validatePZNFile(content: string): false | string {
-    return false;
+  private _validateRejZFile(content: string): false | [string, string] {
+    const validationResults = this._runPatternBasedValidation(RejZValidationPatterns, content, (i) => `VLD_REJZ_${i}`);
+    if (!validationResults) return false;
+    return ['Dodany plik nie wygląda na poprawny plik RejZ. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
   }
-  private _validateWNPZFile(content: string): false | string {
-    return false;
+  private _validatePZNFile(content: string): false | [string, string] {
+    const validationResults = this._runPatternBasedValidation(PZNValidationPatterns, content, i => `VLD_PZN_${i}`);
+    if (!validationResults) return false;
+    return ['Dodany plik nie wygląda na poprawny plik PZN. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
   }
-  private _validateMAPZFile(content: string): false | string {
-    return false;
+  private _validateWNPZFile(content: string): false | [string, string] {
+    const validationResults = this._runPatternBasedValidation(WNPZValidationPatterns, content, i => `VLD_WNPZ_${i}`);
+    if (!validationResults) return false;
+    return ['Dodany plik nie wygląda na poprawny plik WNPZ. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
+  }
+  private _validateMAPZFile(content: string): false | [string, string] {
+    const validationResults = this._runPatternBasedValidation(MAPZValidationPatterns, content, i => `VLD_MAPZ_${i}`);
+    if (!validationResults) return false;
+    return ['Dodany plik nie wygląda na poprawny plik MAPZ. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
   }
   
   private async parseXML(xmlContent: string): Promise<any> {

@@ -11,6 +11,7 @@
         [id]="htmlId()"
         [ngModel]="value()"
         (ngModelChange)="onValueChange($event)"
+        [style]="'width:'+this.width()+'px'"
     >
         @for (opt of options(); track $index) {
             <option [value]="opt.value">{{ opt.label }}</option>

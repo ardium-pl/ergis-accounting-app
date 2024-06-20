@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, ViewEncapsulation, effect, input, signal } from '@angular/core';
 import { ArdiumClickOutsideEventModule } from '@ardium-ui/devkit';
 import { NumberPipe, PlnPipe } from '@pipes';
-import { FinalFaktoringObject } from '@services';
+import { FinalFaktoringObject } from '@services/faktoring';
 import { ButtonComponent } from '../button/button.component';
 import { IconComponent } from '../icon/icon.component';
 import { formatNumber } from 'src/app/utils/number';

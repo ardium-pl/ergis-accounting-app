@@ -1,7 +1,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { parseNumber, parseYesNo } from './../../utils/helpers';
 import { FaktoringDetails, FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftoversFlag , LeftOverObject} from './faktoring.types';
-import { CsvObject, ExcelService, PrnObject, PrnReaderService } from '@services';
+import { PrnReaderService } from './../prn-reader/prn-reader.service';
+import { CsvObject, ExcelService } from '@services/excel';
+import { PrnObject } from '@services/prn-reader';
 
 @Injectable({
     providedIn: 'root',

@@ -41,6 +41,10 @@ button {
         opacity: 16%;
     }
 
+    &[disabled] {
+        pointer-events: none;
+    }
+
     //! appearances
     &.appearance-raised {
         background-color: var(--main);
