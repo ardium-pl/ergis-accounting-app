@@ -5,7 +5,8 @@ import { ExcelService } from '../excel/excel.service';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { FaktoringService } from '../faktoring/faktoring.service';
 import { parseStringPromise } from 'xml2js';
-
+import { readyVerifRecord, csvVerifRecord, rejzObject, rejzPrnData } from './jpk.types';
+import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 
 export const JpkFileName = {
   XML: 'Plik JPK_VAT',
@@ -48,7 +49,7 @@ const REQUIRED_VERIFICATION_COLUMNS = [
 export class JpkService {
   private readonly excelService = inject(ExcelService);
   private readonly faktoringService = inject(FaktoringService);
-
+  private readonly prnReaderService = inject(WeirdPrnReaderService);
 
   readonly files: Tuple<JpkFile, 6> = [
     new JpkFile(JpkFileType.XML, JpkFileName.XML),
@@ -74,7 +75,7 @@ export class JpkService {
   }
   private async _handleSingleFileUpload(file: File, forcedName?: JpkFileName): Promise<false | File> {
     const fileContent = await file.text();
-    const determinedName = forcedName ?? await this._determineFileName(file, fileContent);
+    const determinedName = forcedName ?? (await this._determineFileName(file, fileContent));
 
     if (!determinedName) {
       return file;
@@ -86,20 +87,27 @@ export class JpkService {
     switch (determinedName) {
       case JpkFileName.XML:
         validation = this._validateXmlFile(fileContent);
-        if(!validation){
-        xmlObjects = await this.parseXML(fileContent);
+        if (!validation) {
+          xmlObjects = await this.parseXML(fileContent);
+          // console.log('XML');
+          // console.log(xmlObjects);
         }
         fileIndex = 0;
         break;
       case JpkFileName.WeryfikacjaVAT:
         validation = this._validateVerificationFile(fileContent);
-        if(!validation){
-        csvObjects = this.excelService.readAsCsv(fileContent);
+        if (!validation) {
+          csvObjects = this.excelService.readAsCsv(fileContent);
         }
         fileIndex = 1;
         break;
       case JpkFileName.RejZ:
         validation = this._validateRejZFile(fileContent);
+        if (!validation) {
+          const prnObjects = this.prnReaderService.readRejZ(fileContent);
+          console.log('RejZ');
+          console.log(prnObjects);
+        }
         fileIndex = 2;
         break;
       case JpkFileName.PZN:
@@ -163,7 +171,10 @@ export class JpkService {
   }
   private _validateXmlFile(content: string): false | [string, string] {
     if (!/<tns:KodFormularza.*?>JPK_VAT<\/tns:KodFormularza>/.test(content)) {
-      return ['Dodany plik nie wygląda na poprawny plik JPK. Upewnij się, że dodajesz plik wygenerowany przez formularz JPK_VAT.', 'VLD_XML_0'];
+      return [
+        'Dodany plik nie wygląda na poprawny plik JPK. Upewnij się, że dodajesz plik wygenerowany przez formularz JPK_VAT.',
+        'VLD_XML_0',
+      ];
     }
     return false;
   }
@@ -194,7 +205,7 @@ export class JpkService {
     return false;
   }
   private _validateRejZFile(content: string): false | [string, string] {
-    const validationResults = this._runPatternBasedValidation(RejZValidationPatterns, content, (i) => `VLD_REJZ_${i}`);
+    const validationResults = this._runPatternBasedValidation(RejZValidationPatterns, content, i => `VLD_REJZ_${i}`);
     if (!validationResults) return false;
     return ['Dodany plik nie wygląda na poprawny plik RejZ. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
   }
@@ -213,21 +224,59 @@ export class JpkService {
     if (!validationResults) return false;
     return ['Dodany plik nie wygląda na poprawny plik MAPZ. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
   }
-  
+
   private async parseXML(xmlContent: string): Promise<any> {
     try {
       const options = {
-        explicitArray: false, 
-        mergeAttrs: true,     
-        trim: true,           
-        normalizeTags: true, 
+        explicitArray: false,
+        mergeAttrs: true,
+        trim: true,
+        normalizeTags: true,
       };
 
       const result = await parseStringPromise(xmlContent, options);
       return result;
     } catch (err) {
       console.error('Error parsing XML:', err);
-      throw err; 
+      throw err;
     }
+  }
+
+  private _prepareVatValidationData(csvContent: Array<csvVerifRecord>): Array<readyVerifRecord> {
+    console.log(csvContent);
+    return csvContent.map(vatRecord => ({
+      ['NIP i numer']: vatRecord.NIP + vatRecord['Numer faktury'].substring(0, 20),
+      ...vatRecord,
+    }));
+  }
+
+  private _parseRejzData(rejzObjectsArray: Array<rejzPrnData>): Array<rejzObject> {
+    const rejzDataArray: Array<rejzObject> = [];
+    rejzObjectsArray.forEach(obj => {
+      const num = obj.num;
+      const reference = obj.reference;
+      const packageVar = obj.package;
+      const type = obj.type;
+      const supplier = obj.supplier;
+      const invoice = obj.invoice;
+      const invoiceDate = obj.invoiceDate;
+
+      obj.vatItems.forEach(vatItem => {
+        rejzDataArray.push({
+          num: num,
+          reference: reference,
+          package: packageVar,
+          type: type,
+          supplier: supplier,
+          netValue: vatItem.netValue,
+          vatCode: vatItem.vat,
+          vatPercent: vatItem.vatPercent,
+          vatValue: vatItem.vatValue,
+          invoice: invoice,
+          invoiceDate: invoiceDate,
+        });
+      });
+    });
+    return rejzDataArray;
   }
 }
