@@ -48,5 +48,7 @@ export class JpkPage {
 
   onGenerateButtonClick() {
     console.log('Generating excel file');
+    console.log('Parsed RejZ Data:', this.jpkService.rejzData);
+    console.log('Prepared VAT Validation Data:', this.jpkService.vatValidationData);
   }
 }

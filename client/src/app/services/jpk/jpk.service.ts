@@ -64,6 +64,18 @@ export class JpkService {
     return this.files.every(file => file.state() === JpkFileState.OK);
   });
 
+
+  private _rejzData: Array<rejzObject> = [];
+  private _vatValidationData: Array<readyVerifRecord> = [];
+
+  get rejzData(): Array<rejzObject> {
+    return this._rejzData;
+  }
+
+  get vatValidationData(): Array<readyVerifRecord> {
+    return this._vatValidationData;
+  }
+
   async handleFilesUpload(files: File[], forcedTypes?: JpkFileName[]): Promise<File[]> {
     const promises: Promise<false | File>[] = [];
     for (let i = 0; i < files.length; i++) {
@@ -82,7 +94,7 @@ export class JpkService {
     }
     let validation: [string, string] | false;
     let fileIndex: number;
-    let csvObjects: object;
+    let csvObjects: csvVerifRecord[];
     let xmlObjects: object;
     switch (determinedName) {
       case JpkFileName.XML:
@@ -97,7 +109,9 @@ export class JpkService {
       case JpkFileName.WeryfikacjaVAT:
         validation = this._validateVerificationFile(fileContent);
         if (!validation) {
-          csvObjects = this.excelService.readAsCsv(fileContent);
+          const csvData = this.excelService.readAsCsv<keyof csvVerifRecord>(fileContent);
+          csvObjects = csvData.filter(this._isCsvVerifRecord);
+          this._parseVatValidationData(csvObjects); 
         }
         fileIndex = 1;
         break;
@@ -105,8 +119,7 @@ export class JpkService {
         validation = this._validateRejZFile(fileContent);
         if (!validation) {
           const prnObjects = this.prnReaderService.readRejZ(fileContent);
-          console.log('RejZ');
-          console.log(prnObjects);
+          this._parseRejzData(prnObjects);
         }
         fileIndex = 2;
         break;
@@ -242,41 +255,41 @@ export class JpkService {
     }
   }
 
-  private _prepareVatValidationData(csvContent: Array<csvVerifRecord>): Array<readyVerifRecord> {
-    console.log(csvContent);
-    return csvContent.map(vatRecord => ({
+  private _parseVatValidationData(csvContent: Array<csvVerifRecord>): void {
+    this._vatValidationData = csvContent.map(vatRecord => ({
       ['NIP i numer']: vatRecord.NIP + vatRecord['Numer faktury'].substring(0, 20),
       ...vatRecord,
     }));
   }
 
-  private _parseRejzData(rejzObjectsArray: Array<rejzPrnData>): Array<rejzObject> {
-    const rejzDataArray: Array<rejzObject> = [];
-    rejzObjectsArray.forEach(obj => {
-      const num = obj.num;
-      const reference = obj.reference;
-      const packageVar = obj.package;
-      const type = obj.type;
-      const supplier = obj.supplier;
-      const invoice = obj.invoice;
-      const invoiceDate = obj.invoiceDate;
-
-      obj.vatItems.forEach(vatItem => {
-        rejzDataArray.push({
-          num: num,
-          reference: reference,
-          package: packageVar,
-          type: type,
-          supplier: supplier,
-          netValue: vatItem.netValue,
-          vatCode: vatItem.vat,
-          vatPercent: vatItem.vatPercent,
-          vatValue: vatItem.vatValue,
-          invoice: invoice,
-          invoiceDate: invoiceDate,
-        });
-      });
-    });
-    return rejzDataArray;
+  private _parseRejzData(rejzObjectsArray: Array<rejzPrnData>): void {
+    this._rejzData = rejzObjectsArray.flatMap(({ num, reference, package: packageVar, type, supplier, invoice, invoiceDate, vatItems }) =>
+      vatItems.map(vatItem => ({
+        num,
+        reference,
+        package: packageVar,
+        type,
+        supplier,
+        netValue: vatItem.netValue,
+        vatCode: vatItem.vat,
+        vatPercent: vatItem.vatPercent,
+        vatValue: vatItem.vatValue,
+        invoice,
+        invoiceDate,
+      }))
+    );
   }
+ 
+  private _isCsvVerifRecord(record: any): record is csvVerifRecord {
+    const requiredKeys = [
+      'Data płatności', 'Data płatności ze skontem', 'Kompensaty', 'Kontrahent', 'Lp',
+      'NIP', 'Numer faktury', 'Numer faktury korygowanej', 'Numer referencyjny',
+      'Numer wewnętrzny', 'Numer własny', 'Opis', 'Opis (dekretacja)', 'Przedpłaty',
+      'Rejestr', 'Skonto', 'Status płatności', 'Termin płatności', 'Typ faktury',
+      'Waluta', 'Wartość skonta', 'ZalacznikiTest'
+    ];
+    return requiredKeys.every(key => key in record);
+  }
+
+
 }
