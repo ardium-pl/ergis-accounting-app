@@ -37,6 +37,7 @@ export class PZNSubitem {
   public readonly wylKosztKG!: number;
   public readonly zewnPodatekZZ!: number;
   public readonly odchKGZZ!: number;
+  public readonly opcjaERS!: string;
   
   public readonly currencyInfo?: PZNCurrencyData;
 
@@ -46,6 +47,7 @@ export class PZNSubitem {
 
     this.specNum = line0[0];
     this.num = parseNumberWithThousandSeparator(line0[1]);
+    this.opcjaERS = line0[2];
     this.sendDate = new Date('20' + line0[3]);
 
     const receiveDateIndex = line1.findIndex((v, i) => i !== 0 && /^\d\d\/\d\d\/\d\d$/.test(v));

@@ -9,6 +9,8 @@ export class MAPZItem extends _ModelBase {
 
   public readonly pzItems: PZItem[] = [];
 
+  public override readonly vatNumber!: string;
+
   constructor(contentLines: string[], vatLines: string[]) {
     super(contentLines, vatLines);
     

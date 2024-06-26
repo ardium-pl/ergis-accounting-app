@@ -46,7 +46,7 @@ export class WeirdPrnReaderService {
     const extractedVatItems = items.map(this._extractVatInfo);
     return extractedVatItems.map(data => new WNPZItem(data[0], data[1]));
   }
-  readPZN(rawPrnData: string): any {
+  readPZN(rawPrnData: string): PZNItem[] {
     let lines = this._splitIntoLines(rawPrnData);
     lines = this._removeLinesBetween(lines, /^\s*.?ERGIS/, /^Strona:/);
     lines = this._removePZNTableHeaders(lines);
