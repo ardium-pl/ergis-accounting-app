@@ -41,15 +41,15 @@ type VatSummary = {
 };
 
 export type rejzPrnData = {
-  num: number; 
-  reference: string; 
-  package: string; 
-  type: string; 
+  num: number;
+  reference: string;
+  package: string;
+  type: string;
   vatNumber: string;
-  supplier: string; 
-  invoice: string; 
-  invoiceDate: Date; 
-  vatItems: VatItem[]; 
+  supplier: string;
+  invoice: string;
+  invoiceDate: Date;
+  vatItems: VatItem[];
   vatSummary: VatSummary;
 };
 
@@ -77,10 +77,38 @@ export type pznPrnData = {
   zewnPodatekZZ: number;
   odchKGZZ: number;
   currencyInfo: PZNCurrencyData;
-}
+};
 
 type PZNCurrencyData = {
   original: string;
   target: string;
   rate: number;
+};
+
+export type wnpzPrnData = {
+  num: number;
+  reference: string;
+  type: string;
+  vatNumber: string;
+  supplier: string;
+  dataPod: Date;
+  naDzien: Date;
+  dataWplywu: Date;
+  pzItems: PZItem[];
+  vatItems: VatItem[];
+  invoice: string;
+  invoiceDate: Date;
+};
+
+type PZItem = {
+  code: string;
+  deliveryDate: Date;
+  PZAmount: number;
+  PZAmountUnit: string;
+  invoiceAmount: number;
+};
+
+
+export type wnpzObject = {
+  
 }
