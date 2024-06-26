@@ -41,17 +41,16 @@ type VatSummary = {
 };
 
 export type rejzPrnData = {
-  num: number; // Lp
-  reference: string; // Referencja
-  package: string; // Paczka
-  type: string; // Typ
-  vatNumber: string; // Numer VAT
-  supplier: string; // Dostawca
-  invoice: string; // Faktura
-  invoiceDate: Date; // Data fak
-  vatItems: VatItem[]; // podsumowanie finansowe (po prawej stronie każdego itemu)
+  num: number; 
+  reference: string; 
+  package: string; 
+  type: string; 
+  vatNumber: string;
+  supplier: string; 
+  invoice: string; 
+  invoiceDate: Date; 
+  vatItems: VatItem[]; 
   vatSummary: VatSummary;
-  //_invoiceDateIndex!: number;
 };
 
 export type rejzObject = {
@@ -67,3 +66,21 @@ export type rejzObject = {
   invoice: string;
   invoiceDate: Date;
 };
+
+export type pznPrnData = {
+  num: number;
+  specNum: string;
+  sendDate: string;
+  receiveDate: Date;
+  dokDost: number;
+  wylKosztKG: number;
+  zewnPodatekZZ: number;
+  odchKGZZ: number;
+  currencyInfo: PZNCurrencyData;
+}
+
+type PZNCurrencyData = {
+  original: string;
+  target: string;
+  rate: number;
+}

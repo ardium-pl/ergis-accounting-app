@@ -5,7 +5,7 @@ import { ExcelService } from '../excel/excel.service';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { FaktoringService } from '../faktoring/faktoring.service';
 import { parseStringPromise } from 'xml2js';
-import { readyVerifRecord, csvVerifRecord, rejzObject, rejzPrnData } from './jpk.types';
+import { readyVerifRecord, csvVerifRecord, rejzObject, rejzPrnData, pznPrnData } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 
 export const JpkFileName = {
@@ -125,14 +125,26 @@ export class JpkService {
         break;
       case JpkFileName.PZN:
         validation = this._validatePZNFile(fileContent);
+        if(!validation){
+          const pznObjects = this.prnReaderService.readPZN(fileContent);
+          console.log(pznObjects);
+        }
         fileIndex = 3;
         break;
       case JpkFileName.WNPZ:
         validation = this._validateWNPZFile(fileContent);
+        if(!validation){
+          const wnpzObjects = this.prnReaderService.readWNPZ(fileContent);
+          console.log(wnpzObjects);
+        }
         fileIndex = 4;
         break;
       case JpkFileName.MAPZ:
         validation = this._validateMAPZFile(fileContent);
+        if(!validation){
+          const mapzObjects = this.prnReaderService.readMAPZ(fileContent);
+          console.log(mapzObjects);
+        }
         fileIndex = 5;
         break;
     }
@@ -262,6 +274,17 @@ export class JpkService {
     }));
   }
 
+    private _isCsvVerifRecord(record: any): record is csvVerifRecord {
+    const requiredKeys = [
+      'Data płatności', 'Data płatności ze skontem', 'Kompensaty', 'Kontrahent', 'Lp',
+      'NIP', 'Numer faktury', 'Numer faktury korygowanej', 'Numer referencyjny',
+      'Numer wewnętrzny', 'Numer własny', 'Opis', 'Opis (dekretacja)', 'Przedpłaty',
+      'Rejestr', 'Skonto', 'Status płatności', 'Termin płatności', 'Typ faktury',
+      'Waluta', 'Wartość skonta', 'ZalacznikiTest'
+    ];
+    return requiredKeys.every(key => key in record);
+  }
+
   private _parseRejzData(rejzObjectsArray: Array<rejzPrnData>): void {
     this._rejzData = rejzObjectsArray.flatMap(({ num, reference, package: packageVar, type, supplier, invoice, invoiceDate, vatItems }) =>
       vatItems.map(vatItem => ({
@@ -280,16 +303,10 @@ export class JpkService {
     );
   }
  
-  private _isCsvVerifRecord(record: any): record is csvVerifRecord {
-    const requiredKeys = [
-      'Data płatności', 'Data płatności ze skontem', 'Kompensaty', 'Kontrahent', 'Lp',
-      'NIP', 'Numer faktury', 'Numer faktury korygowanej', 'Numer referencyjny',
-      'Numer wewnętrzny', 'Numer własny', 'Opis', 'Opis (dekretacja)', 'Przedpłaty',
-      'Rejestr', 'Skonto', 'Status płatności', 'Termin płatności', 'Typ faktury',
-      'Waluta', 'Wartość skonta', 'ZalacznikiTest'
-    ];
-    return requiredKeys.every(key => key in record);
+  private _parsePznData(pznObjectsArray: pznPrnData[]):void{
+
   }
+
 
 
 }
