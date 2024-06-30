@@ -322,7 +322,7 @@ export class JpkService {
 
   private _parsePznData(pznObjectsArray: pznPrnData[]): void {}
 
-  private _parseWnpzData(wnpzObjectsArray: wnpzPrnData[]): void {
-
-  }
+  // private _parseWnpzData(wnpzObjectsArray: wnpzPrnData[]): void {
+  //   this._wnpzData = wnpzObjectsArray.
+  // }
 }

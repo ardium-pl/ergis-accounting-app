@@ -88,6 +88,7 @@ type PZNCurrencyData = {
 export type wnpzPrnData = {
   num: number;
   reference: string;
+  package: string;
   type: string;
   vatNumber: string;
   supplier: string;
@@ -98,6 +99,7 @@ export type wnpzPrnData = {
   vatItems: VatItem[];
   invoice: string;
   invoiceDate: Date;
+  vatSummary: VatSummary;
 };
 
 type PZItem = {
@@ -110,5 +112,10 @@ type PZItem = {
 
 
 export type wnpzObject = {
+  num: number;
+  reference: string;
+  type: string;
+  vatNumber: string;
+  supplier: string;
   
 }
