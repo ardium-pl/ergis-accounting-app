@@ -1,12 +1,15 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, importProvidersFrom, inject, signal } from '@angular/core';
 import { Tuple, sleep } from '@utils';
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { ExcelService } from '../excel/excel.service';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { FaktoringService } from '../faktoring/faktoring.service';
 import { parseStringPromise } from 'xml2js';
-import { readyVerifRecord, csvVerifRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject } from './jpk.types';
+import { readyVerifRecord, csvVerifRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
+import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
+import { PZNSubitem } from '@services/weird-prn-reader/pzn';
+import { PZItem } from '@services/weird-prn-reader/pz-item';
 
 export const JpkFileName = {
   XML: 'Plik JPK_VAT',
@@ -65,8 +68,10 @@ export class JpkService {
   });
 
   private _rejzData: rejzObject[] = [];
+  private _pznData: pznObject[] = [];
   private _vatValidationData: readyVerifRecord[] = [];
   private _wnpzData: wnpzObject[] = [];
+  private _mapzData: mapzObject[] = [];
 
   get rejzData(): Array<rejzObject> {
     return this._rejzData;
@@ -119,7 +124,9 @@ export class JpkService {
         validation = this._validateRejZFile(fileContent);
         if (!validation) {
           const prnObjects = this.prnReaderService.readRejZ(fileContent);
+          console.log(prnObjects)
           this._parseRejzData(prnObjects);
+          console.log(this._rejzData)
         }
         fileIndex = 2;
         break;
@@ -128,6 +135,8 @@ export class JpkService {
         if (!validation) {
           const pznObjects = this.prnReaderService.readPZN(fileContent);
           console.log(pznObjects);
+          this._parsePznData(pznObjects)
+          console.log(this._pznData)
         }
         fileIndex = 3;
         break;
@@ -136,6 +145,8 @@ export class JpkService {
         if (!validation) {
           const wnpzObjects = this.prnReaderService.readWNPZ(fileContent);
           console.log(wnpzObjects);
+          this._parseWnpzData(wnpzObjects)
+          console.log(this._wnpzData)
         }
         fileIndex = 4;
         break;
@@ -144,6 +155,8 @@ export class JpkService {
         if (!validation) {
           const mapzObjects = this.prnReaderService.readMAPZ(fileContent);
           console.log(mapzObjects);
+          this._parseMapzData(mapzObjects)
+          console.log(this._mapzData)
         }
         fileIndex = 5;
         break;
@@ -320,9 +333,79 @@ export class JpkService {
     );
   }
 
-  private _parsePznData(pznObjectsArray: pznPrnData[]): void {}
+  private _parsePznData(pznObjectsArray: Array<pznPrnData>): void {
+    this._pznData = pznObjectsArray.flatMap(({ commission, subitems, supplierName, supplierNumber}) =>
+      subitems.map(PZNSubitem => ({
+        commission,
+        dokDost: PZNSubitem.dokDost,
+        num: PZNSubitem.num,
+        odchKGZZ: PZNSubitem.odchKGZZ,
+        receiveDate: PZNSubitem.receiveDate,
+        sendDate: PZNSubitem.sendDate,
+        specNum: PZNSubitem.specNum,
+        wylKosztKG: PZNSubitem.wylKosztKG,
+        zewnPodatekZZ: PZNSubitem.zewnPodatekZZ,
+        supplierName,
+        supplierNumber,
+      }))
+    );
+  }
 
-  // private _parseWnpzData(wnpzObjectsArray: wnpzPrnData[]): void {
-  //   this._wnpzData = wnpzObjectsArray.
-  // }
+
+  private _parseWnpzData(wnpzObjectsArray: Array<wnpzPrnData>): void {
+    this._wnpzData = wnpzObjectsArray.flatMap(({ num, reference, package: packageVar, type, vatNumber, supplier, dataPod, naDzien, dataWplywu, pzItems, vatItems, invoice, invoiceDate, vatSummary }) =>
+      pzItems.map(PZItem => ({
+        num,
+        reference,
+        package: packageVar,
+        type,
+        vatNumber,
+        supplier,
+        dataPod,
+        naDzien,
+        dataWplywu,
+        code: PZItem.code,
+        deliveryDate: PZItem.deliveryDate,
+        PZAmount: PZItem.PZAmount,
+        PZAmountUnit: PZItem.PZAmountUnit,
+        invoiceAmount: PZItem.invoiceAmount,
+        netValue: vatItems[0].netValue,
+        vat: vatItems[0].vat,
+        vatPercent: vatItems[0].vatPercent,
+        vatValue: vatItems[0].vatValue,
+        invoice,
+        invoiceDate,
+        grossValue: vatSummary.grossValue
+      }))
+    );
+  }
+
+  private _parseMapzData(mapzObjectsArray: Array<mapzPrnData>): void {
+    this._mapzData = mapzObjectsArray.flatMap(({dataPod, dataWplywu, invoice, invoiceDate, naDzien, num, package: packageVar, pzItems, reference, supplier, type, vatItems, vatNumber, vatSummary }) =>
+      pzItems.map(PZItem => ({
+        dataPod,
+        dataWplywu,
+        invoice,
+        invoiceDate,
+        naDzien,
+        num,
+        package: packageVar,
+        code: PZItem.code,
+        deliveryDate: PZItem.deliveryDate,
+        PZAmount: PZItem.PZAmount,
+        PZAmountUnit: PZItem.PZAmountUnit,
+        invoiceAmount: PZItem.invoiceAmount,
+        reference,
+        supplier,
+        type,
+        netValue: vatItems[0].netValue,
+        vat: vatItems[0].vat,
+        vatPercent: vatItems[0].vatPercent,
+        vatValue: vatItems[0].vatValue,
+        vatNumber,
+        grossValue: vatSummary.grossValue,
+      }))
+    );
+  }
+
 }
