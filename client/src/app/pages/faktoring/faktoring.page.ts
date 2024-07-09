@@ -25,6 +25,7 @@ import { FaktoringObject, FaktoringService, FinalFaktoringObject, LeftOverObject
 import { randomBetween, sleep } from '@utils';
 import { Subscription } from 'rxjs';
 import { IconComponent } from 'src/app/components/icon/icon.component';
+import { MixpanelService } from '@services/mixpanel/mixpanel.service';
 
 @Component({
   selector: '_faktoring-page',
@@ -55,7 +56,7 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
   private readonly fileSystem = inject(FileSystemService);
   private readonly excelService = inject(ExcelService);
 
-  constructor() {
+  constructor(private mixpanelService: MixpanelService) {
     effect(() => {
       if (this.faktoringService.hasPrn()) {
         setTimeout(() => {
@@ -69,7 +70,7 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
         this._tableObserver?.destroy();
         this._tableObserver = undefined;
       }
-    });
+    });   
   }
   ngAfterViewInit(): void {
     this._generateObserver = this._viewportObserver.observeById('generate-btn', { margin: -50 });
@@ -165,6 +166,8 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
   });
 
   async onGenerateButtonClick(): Promise<void> {
+    this.mixpanelService.track('faktoring');
+
     if (!this.faktoringService.hasPrn()) return;
 
     this.areResultsLoading.set(true);
