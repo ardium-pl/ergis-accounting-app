@@ -67,18 +67,30 @@ export class JpkService {
     return this.files.every(file => file.state() === JpkFileState.OK);
   });
 
+  private _vatValidationData: readyVerifRecord[] = [];
   private _rejzData: rejzObject[] = [];
   private _pznData: pznObject[] = [];
-  private _vatValidationData: readyVerifRecord[] = [];
   private _wnpzData: wnpzObject[] = [];
   private _mapzData: mapzObject[] = [];
+
+  get vatValidationData(): Array<readyVerifRecord> {
+    return this._vatValidationData;
+  }
 
   get rejzData(): Array<rejzObject> {
     return this._rejzData;
   }
 
-  get vatValidationData(): Array<readyVerifRecord> {
-    return this._vatValidationData;
+  get pznData(): Array<pznObject> {
+    return this._pznData;
+  }
+
+  get wnpzData(): Array<wnpzObject> {
+    return this._wnpzData;
+  }
+
+  get mapzData(): Array<mapzObject> {
+    return this._mapzData;
   }
 
   async handleFilesUpload(files: File[], forcedTypes?: JpkFileName[]): Promise<File[]> {
