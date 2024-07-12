@@ -9,6 +9,8 @@ import { ButtonComponent, FileDropZoneComponent } from '@components';
 import { JpkService } from '@services/jpk';
 import { JpkChooseTypeDialogComponent } from 'src/app/components/jpk-choose-type-dialog/jpk-choose-type-dialog.component';
 import { JpkFileComponent } from 'src/app/components/jpk-file/jpk-file.component';
+import { GenerateExcelService } from '@services/excel/generate-excel.service';
+
 
 @Component({
   selector: '_jpk-page',
@@ -29,6 +31,7 @@ import { JpkFileComponent } from 'src/app/components/jpk-file/jpk-file.component
 })
 export class JpkPage {
   readonly jpkService = inject(JpkService);
+  readonly excelService = inject(GenerateExcelService); // Inject the Excel service
   readonly dialog = inject(MatDialog);
 
   async onFilesUpload(files: File | File[]) {
@@ -50,5 +53,16 @@ export class JpkPage {
     console.log('Generating excel file');
     console.log('Parsed RejZ Data:', this.jpkService.rejzData);
     console.log('Prepared VAT Validation Data:', this.jpkService.vatValidationData);
+    if (!this.jpkService.areAllFilesOK()) {
+      console.log("Not all files are ready for generation.");
+      return;
+    }
+    const data = {
+      rejz: this.jpkService.rejzData,
+      pzn: this.jpkService.pznData,
+      wnpz: this.jpkService.wnpzData,
+      mapz: this.jpkService.mapzData
+    };
+    this.excelService.generateExcel(data);
   }
 }

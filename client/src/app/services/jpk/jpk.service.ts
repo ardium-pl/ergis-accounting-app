@@ -102,6 +102,7 @@ export class JpkService {
     }
     return (await Promise.all(promises)).filter(v => v) as File[];
   }
+
   private async _handleSingleFileUpload(file: File, forcedName?: JpkFileName): Promise<false | File> {
     const fileContent = await file.text();
     const determinedName = forcedName ?? (await this._determineFileName(file, fileContent));
@@ -113,6 +114,7 @@ export class JpkService {
     let fileIndex: number;
     let csvObjects: csvVerifRecord[];
     let xmlObjects: object;
+
     switch (determinedName) {
       case JpkFileName.XML:
         validation = this._validateXmlFile(fileContent);
@@ -379,7 +381,7 @@ export class JpkService {
         code: PZItem.code,
         deliveryDate: PZItem.deliveryDate,
         PZAmount: PZItem.PZAmount,
-        PZAmountUnit: PZItem.PZAmountUnit,
+        // PZAmountUnit: PZItem.PZAmountUnit, //uuu
         invoiceAmount: PZItem.invoiceAmount,
         netValue: vatItems[0].netValue,
         vat: vatItems[0].vat,
@@ -387,7 +389,7 @@ export class JpkService {
         vatValue: vatItems[0].vatValue,
         invoice,
         invoiceDate,
-        grossValue: vatSummary.grossValue
+        // grossValue: vatSummary.grossValue // uuu
       }))
     );
   }
@@ -405,7 +407,6 @@ export class JpkService {
         code: PZItem.code,
         deliveryDate: PZItem.deliveryDate,
         PZAmount: PZItem.PZAmount,
-        PZAmountUnit: PZItem.PZAmountUnit,
         invoiceAmount: PZItem.invoiceAmount,
         reference,
         supplier,
@@ -415,7 +416,6 @@ export class JpkService {
         vatPercent: vatItems[0].vatPercent,
         vatValue: vatItems[0].vatValue,
         vatNumber,
-        grossValue: vatSummary.grossValue,
       }))
     );
   }

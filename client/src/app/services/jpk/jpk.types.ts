@@ -144,7 +144,7 @@ export type wnpzObject = {
   code: string;
   deliveryDate: Date;
   PZAmount: number;
-  PZAmountUnit: string;
+  // PZAmountUnit: string;
   invoiceAmount: number;
   netValue: number;
   vat: string;
@@ -152,7 +152,7 @@ export type wnpzObject = {
   vatValue: number;
   invoice: string;
   invoiceDate: Date;
-  grossValue: number;
+  // grossValue: number;
 }
 
 export type mapzPrnData = {
@@ -183,7 +183,6 @@ export type mapzObject = {
   code: string;
   deliveryDate: Date;
   PZAmount: number;
-  PZAmountUnit: string;
   invoiceAmount: number;
   reference: string;
   supplier: string;
@@ -193,5 +192,4 @@ export type mapzObject = {
   vatPercent: number;
   vatValue: number;
   vatNumber: string;
-  grossValue: number;
 }
