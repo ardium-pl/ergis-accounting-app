@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { RejZItem } from './rejz';
 import { MAPZItem } from './mapz';
-import { WNPZItem } from './wnpz';
 import { PZNItem } from './pzn';
+import { RejZItem } from './rejz';
+import { WNPZItem } from './wnpz';
 
 @Injectable({
   providedIn: 'root',
