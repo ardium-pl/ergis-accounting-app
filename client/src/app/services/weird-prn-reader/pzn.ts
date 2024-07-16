@@ -1,5 +1,4 @@
-import { parseNumberWithThousandSeparator } from "@utils";
-
+import { parseNumberWithThousandSeparator } from '@utils';
 
 export class PZNItem {
   public readonly commission!: string;
@@ -37,7 +36,7 @@ export class PZNSubitem {
   public readonly wylKosztKG!: number;
   public readonly zewnPodatekZZ!: number;
   public readonly odchKGZZ!: number;
-  
+
   public readonly currencyInfo?: PZNCurrencyData;
 
   constructor(lines: string[]) {
@@ -52,9 +51,12 @@ export class PZNSubitem {
     this.receiveDate = new Date('20' + line1[receiveDateIndex]);
 
     this.dokDost = parseNumberWithThousandSeparator(line0[4]);
-    this.wylKosztKG = parseNumberWithThousandSeparator(line0[6]);
-    this.zewnPodatekZZ = parseNumberWithThousandSeparator(line0[7]);
-    this.odchKGZZ = parseNumberWithThousandSeparator(line0[8]);
+
+    const offsetIfWAIsPresent = line0.length === 10 ? 1 : 0;
+
+    this.wylKosztKG = parseNumberWithThousandSeparator(line0[6 + offsetIfWAIsPresent]);
+    this.zewnPodatekZZ = parseNumberWithThousandSeparator(line0[7 + offsetIfWAIsPresent]);
+    this.odchKGZZ = parseNumberWithThousandSeparator(line0[8 + offsetIfWAIsPresent]);
 
     if (lines[2]) {
       this.currencyInfo = new PZNCurrencyData(lines[2]);
@@ -70,7 +72,7 @@ export class PZNCurrencyData {
   constructor(currencyLine: string) {
     currencyLine = currencyLine.trim().replace('Kurs wym:', '').replace('= ', '');
     const parts = currencyLine.split(' ');
-    
+
     this.original = parts[0].toUpperCase();
     this.target = parts[2].toUpperCase();
     this.rate = parseNumberWithThousandSeparator(parts[3]);
