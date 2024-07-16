@@ -6,7 +6,7 @@ export abstract class _ModelBase {
   public readonly reference!: string; // Referencja
   public readonly package!: string; // Paczka
   public readonly type!: string; // Typ
-  public readonly vatNumber!: string; // Numer VAT
+  public readonly vatNumber!: string | null; // Numer VAT
   public readonly supplier!: string; // Dostawca
 
   public readonly invoice!: string; // Faktura
@@ -18,15 +18,21 @@ export abstract class _ModelBase {
   protected _invoiceDateIndex!: number;
 
   constructor(contentLines: string[], vatLines: string[]) {
-    const line0 = contentLines[0].split(' ');
-    const line1 = contentLines[1].split(' ');
+    const line0 = contentLines[0].split(/ +/);
+    const line1 = contentLines[1].split(/ +/);
 
     this.num = parseNumberWithThousandSeparator(line0[0]);
     this.reference = line0[1];
     this.package = line0[2];
     this.type = line0[3];
-    this.vatNumber = line0[4];
-    this.supplier = line0[5];
+
+    if (line0.length === 6) {
+      this.vatNumber = line0[4];
+      this.supplier = line0[5];
+    } else {
+      this.vatNumber = null;
+      this.supplier = line0[4];
+    }
 
     this._invoiceDateIndex = line1.findIndex((v, i) => i !== 0 && /^\d\d\/\d\d\/\d\d$/.test(v));
 
