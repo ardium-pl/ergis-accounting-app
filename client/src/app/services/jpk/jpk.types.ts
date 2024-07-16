@@ -45,7 +45,7 @@ export type rejzPrnData = {
   reference: string;
   package: string;
   type: string;
-  vatNumber: string;
+  vatNumber: string | null;
   supplier: string;
   invoice: string;
   invoiceDate: Date;
@@ -74,6 +74,7 @@ type PZNSubitem = {
   receiveDate: Date;
   sendDate: Date;
   specNum: string;
+  opcjaERS: string;
   wylKosztKG: number;
   zewnPodatekZZ: number;
 }
@@ -94,6 +95,7 @@ export type pznObject = {
   receiveDate: Date;
   sendDate: Date;
   specNum: string;
+  opcjaERS: string,
   wylKosztKG: number;
   zewnPodatekZZ: number;
   supplierName: string;

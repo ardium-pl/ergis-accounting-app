@@ -22,12 +22,12 @@ export class GenerateExcelService {
   ];
 
   private headersPzn = [
-    'Lp', 'Zlecenie', 'Numer dostawcy', 'Nazwa dostawcy', 'Numer spec',
+    'Lp', 'Zlecenie', 'Numer dostawcy', 'Nazwa dostawcy', 'Numer spec', 'Opcja ERS',
     'Data wys', 'Data przyjęcia', 'Dok dost', 'Wyl koszt KG', 'Zewn podatek ZZ', 'Odch KG-ZZ'
   ];
 
   private headersRejz = [
-    'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kwota opodatkowania',
+    'Lp', 'Referencja', 'Paczka', 'Typ Numer VAT', 'Dostawca', 'Kwota opodatkowania',
     'VAT', '%VAT', 'Kwota VAT', 'Faktura', 'Data faktury'
   ];
 

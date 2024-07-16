@@ -355,6 +355,7 @@ export class JpkService {
         supplierNumber,
         supplierName,
         specNum: PZNSubitem.specNum,
+        opcjaERS: PZNSubitem.opcjaERS,
         sendDate: PZNSubitem.sendDate,
         receiveDate: PZNSubitem.receiveDate,
         dokDost: PZNSubitem.dokDost,
