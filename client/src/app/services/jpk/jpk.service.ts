@@ -350,17 +350,17 @@ export class JpkService {
   private _parsePznData(pznObjectsArray: Array<pznPrnData>): void {
     this._pznData = pznObjectsArray.flatMap(({ commission, subitems, supplierName, supplierNumber}) =>
       subitems.map(PZNSubitem => ({
-        commission,
-        dokDost: PZNSubitem.dokDost,
         num: PZNSubitem.num,
-        odchKGZZ: PZNSubitem.odchKGZZ,
-        receiveDate: PZNSubitem.receiveDate,
-        sendDate: PZNSubitem.sendDate,
+        commission,
+        supplierNumber,
+        supplierName,
         specNum: PZNSubitem.specNum,
+        sendDate: PZNSubitem.sendDate,
+        receiveDate: PZNSubitem.receiveDate,
+        dokDost: PZNSubitem.dokDost,
         wylKosztKG: PZNSubitem.wylKosztKG,
         zewnPodatekZZ: PZNSubitem.zewnPodatekZZ,
-        supplierName,
-        supplierNumber,
+        odchKGZZ: PZNSubitem.odchKGZZ,
       }))
     );
   }
@@ -375,21 +375,19 @@ export class JpkService {
         type,
         vatNumber,
         supplier,
-        dataPod,
-        naDzien,
-        dataWplywu,
-        code: PZItem.code,
-        deliveryDate: PZItem.deliveryDate,
-        PZAmount: PZItem.PZAmount,
-        // PZAmountUnit: PZItem.PZAmountUnit, //uuu
-        invoiceAmount: PZItem.invoiceAmount,
         netValue: vatItems[0].netValue,
         vat: vatItems[0].vat,
         vatPercent: vatItems[0].vatPercent,
         vatValue: vatItems[0].vatValue,
         invoice,
         invoiceDate,
-        // grossValue: vatSummary.grossValue // uuu
+        dataPod,
+        naDzien,
+        dataWplywu,
+        code: PZItem.code,
+        deliveryDate: PZItem.deliveryDate,
+        PZAmount: PZItem.PZAmount,
+        invoiceAmount: PZItem.invoiceAmount,
       }))
     );
   }
@@ -397,25 +395,25 @@ export class JpkService {
   private _parseMapzData(mapzObjectsArray: Array<mapzPrnData>): void {
     this._mapzData = mapzObjectsArray.flatMap(({dataPod, dataWplywu, invoice, invoiceDate, naDzien, num, package: packageVar, pzItems, reference, supplier, type, vatItems, vatNumber, vatSummary }) =>
       pzItems.map(PZItem => ({
-        dataPod,
-        dataWplywu,
-        invoice,
-        invoiceDate,
-        naDzien,
         num,
-        package: packageVar,
-        code: PZItem.code,
-        deliveryDate: PZItem.deliveryDate,
-        PZAmount: PZItem.PZAmount,
-        invoiceAmount: PZItem.invoiceAmount,
         reference,
-        supplier,
+        package: packageVar,
         type,
+        vatNumber,
+        supplier,
         netValue: vatItems[0].netValue,
         vat: vatItems[0].vat,
         vatPercent: vatItems[0].vatPercent,
         vatValue: vatItems[0].vatValue,
-        vatNumber,
+        invoice,
+        invoiceDate,
+        dataPod,
+        naDzien,
+        dataWplywu,
+        code: PZItem.code,
+        deliveryDate: PZItem.deliveryDate,
+        PZAmount: PZItem.PZAmount,
+        invoiceAmount: PZItem.invoiceAmount,
       }))
     );
   }
