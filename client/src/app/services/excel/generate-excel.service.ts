@@ -8,9 +8,8 @@ export class GenerateExcelService {
 
   constructor() { }
 
-  // Nagłówki dla każdego arkusza
   private headersMapz = [
-    'Lp', 'Referencja', 'Paczka', 'Typ Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT', 
+    'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT', 
     '%VAT', 'Kwota VAT', 'Faktura', 'Data fak', 'Data pod', 'Na dzień', 'Data wpływu',
     'Kod PZ', 'Data dostawy', 'Ilość PZ', 'Ilość Faktura'
   ];
@@ -23,22 +22,21 @@ export class GenerateExcelService {
 
   private headersPzn = [
     'Lp', 'Zlecenie', 'Numer dostawcy', 'Nazwa dostawcy', 'Numer spec', 'Opcja ERS',
-    'Data wys', 'Data przyjęcia', 'Dok dost', 'Wyl koszt KG', 'Zewn podatek ZZ', 'Odch KG-ZZ'
+    'Data wys', 'Data przyjęcia', 'Dok dost', 'Wyl koszt KG', 'Zewn podatek ZZ', 'Odch KG-ZZ/Partia dostawcy'
   ];
 
   private headersRejz = [
-    'Lp', 'Referencja', 'Paczka', 'Typ Numer VAT', 'Dostawca', 'Kwota opodatkowania',
+    'Lp', 'Referencja', 'Paczka', 'Numer VAT', 'Dostawca', 'Kwota opodatkowania',
     'VAT', '%VAT', 'Kwota VAT', 'Faktura', 'Data faktury'
   ];
 
-  // Metoda do generowania pliku Excel
   public generateExcel(data: { rejz: any[], pzn: any[], wnpz: any[], mapz: any[] }): void {
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
 
     Object.entries(data).forEach(([sheetName, records]) => {
-        const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(records, {skipHeader: true});
-        
-        // Dodawanie nagłówków odpowiednio do każdego arkusza
+        const cleanedRecords = this.cleanData(records);
+        const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
+
         if (sheetName === 'mapz') {
             XLSX.utils.sheet_add_aoa(ws, [this.headersMapz], {origin: 'A1'});
         } else if (sheetName === 'wnpz') {
@@ -49,25 +47,33 @@ export class GenerateExcelService {
             XLSX.utils.sheet_add_aoa(ws, [this.headersRejz], {origin: 'A1'});
         }
 
-        // Ustawienie szerokości kolumn
-        const colWidths = this.calculateColumnWidths(records);
+        XLSX.utils.sheet_add_json(ws, cleanedRecords, {skipHeader: true, origin: 'A2'});
+
+        const colWidths = this.calculateColumnWidths(cleanedRecords);
         ws['!cols'] = colWidths.map(width => ({ wch: width }));
-        
-        // Dodawanie arkusza do książki
+
         XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
 
-    // Zapis pliku
     const wbout: ArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     this.saveExcelFile(wbout, 'jpk_data.xlsx');
   }
 
-  // Metoda do obliczania szerokości kolumn
-  private calculateColumnWidths(records: any[]): number[] {
-    return records.map(record => record.toString().length); // Prosta logika; dostosuj wg potrzeb
+  private cleanData(records: any[]): any[] {
+    return records.map(record => {
+        Object.keys(record).forEach(key => {
+            if (key === 'Wyl koszt KG' && isNaN(record[key])) {
+                record[key] = 0;
+            }
+        });
+        return record;
+    });
   }
 
-  // Metoda do zapisywania pliku Excel
+  private calculateColumnWidths(records: any[]): number[] {
+    return records.map(record => record.toString().length);
+  }
+
   private saveExcelFile(buffer: ArrayBuffer, filename: string): void {
     const data: Blob = new Blob([buffer], { type: 'application/octet-stream' });
     const url: string = window.URL.createObjectURL(data);
