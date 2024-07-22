@@ -1,4 +1,4 @@
-export type csvVerifRecord = {
+export type csvVerificationRecord = {
   'Data płatności': string;
   'Data płatności ze skontem': string;
   Kompensaty: string;
@@ -25,7 +25,9 @@ export type csvVerifRecord = {
 
 export type readyVerifRecord = {
   'NIP i numer': string;
-} & csvVerifRecord;
+} & csvVerificationRecord;
+
+
 
 type VatItem = {
   netValue: number;

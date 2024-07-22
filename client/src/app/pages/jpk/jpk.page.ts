@@ -52,7 +52,7 @@ export class JpkPage {
   onGenerateButtonClick() {
     console.log('Generating excel file');
     console.log('Parsed RejZ Data:', this.jpkService.rejzData);
-    console.log('Prepared VAT Validation Data:', this.jpkService.vatValidationData);
+    console.log('Prepared VAT Validation Data:', this.jpkService.vatVerificationData);
     if (!this.jpkService.areAllFilesOK()) {
       console.log("Not all files are ready for generation.");
       return;

@@ -5,7 +5,7 @@ import { ExcelService } from '../excel/excel.service';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { FaktoringService } from '../faktoring/faktoring.service';
 import { parseStringPromise } from 'xml2js';
-import { readyVerifRecord, csvVerifRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
+import { readyVerifRecord, csvVerificationRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
 import { PZNSubitem } from '@services/weird-prn-reader/pzn';
@@ -67,14 +67,14 @@ export class JpkService {
     return this.files.every(file => file.state() === JpkFileState.OK);
   });
 
-  private _vatValidationData: readyVerifRecord[] = [];
+  private _vatVerificationData: readyVerifRecord[] = [];
   private _rejzData: rejzObject[] = [];
   private _pznData: pznObject[] = [];
   private _wnpzData: wnpzObject[] = [];
   private _mapzData: mapzObject[] = [];
 
-  get vatValidationData(): Array<readyVerifRecord> {
-    return this._vatValidationData;
+  get vatVerificationData(): Array<readyVerifRecord> {
+    return this._vatVerificationData;
   }
 
   get rejzData(): Array<rejzObject> {
@@ -112,7 +112,7 @@ export class JpkService {
     }
     let validation: [string, string] | false;
     let fileIndex: number;
-    let csvObjects: csvVerifRecord[];
+    let csvObjects: csvVerificationRecord[];
     let xmlObjects: object;
 
     switch (determinedName) {
@@ -128,18 +128,20 @@ export class JpkService {
       case JpkFileName.WeryfikacjaVAT:
         validation = this._validateVerificationFile(fileContent);
         if (!validation) {
-          const csvData = this.excelService.readAsCsv<keyof csvVerifRecord>(fileContent);
-          csvObjects = csvData.filter(this._isCsvVerifRecord);
-          this._parseVatValidationData(csvObjects);
+          const csvData = this.excelService.readAsCsv<keyof csvVerificationRecord>(fileContent);
+          const csvObjects = csvData.filter(this._isCsvVerifRecord);
+          console.log(csvObjects)
+          this._parseVatVerificationData(csvObjects);
+          console.log(this._vatVerificationData)
         }
         fileIndex = 1;
         break;
       case JpkFileName.RejZ:
         validation = this._validateRejZFile(fileContent);
         if (!validation) {
-          const prnObjects = this.prnReaderService.readRejZ(fileContent);
-          console.log(prnObjects)
-          this._parseRejzData(prnObjects);
+          const rejzObjects = this.prnReaderService.readRejZ(fileContent);
+          console.log(rejzObjects)
+          this._parseRejzData(rejzObjects);
           console.log(this._rejzData)
         }
         fileIndex = 2;
@@ -294,14 +296,35 @@ export class JpkService {
     }
   }
 
-  private _parseVatValidationData(csvContent: Array<csvVerifRecord>): void {
-    this._vatValidationData = csvContent.map(vatRecord => ({
+  private _parseVatVerificationData(csvContent: Array<csvVerificationRecord>): void {
+    this._vatVerificationData = csvContent.map(vatRecord => ({
       ['NIP i numer']: vatRecord.NIP + vatRecord['Numer faktury'].substring(0, 20),
-      ...vatRecord,
+      Lp: vatRecord.Lp,
+      'Numer faktury': vatRecord['Numer faktury'],
+      Kontrahent: vatRecord.Kontrahent,
+      NIP: vatRecord.NIP,
+      'Numer wewnętrzny': vatRecord['Numer wewnętrzny'],
+      'Numer referencyjny': vatRecord['Numer referencyjny'],
+      Rejestr: vatRecord.Rejestr,
+      Waluta: vatRecord.Waluta,
+      'Typ faktury': vatRecord['Typ faktury'],
+      'Opis (dekretacja)': vatRecord['Opis (dekretacja)'],
+      'Status płatności': vatRecord['Status płatności'],
+      'Data płatności': vatRecord['Data płatności'],
+      'Termin płatności': vatRecord['Termin płatności'],
+      'Data płatności ze skontem': vatRecord['Data płatności ze skontem'],
+      'Wartość skonta': vatRecord['Wartość skonta'],
+      Skonto: vatRecord.Skonto,
+      Kompensaty: vatRecord.Kompensaty,
+      Przedpłaty: vatRecord.Przedpłaty,
+      'Numer faktury korygowanej': vatRecord['Numer faktury korygowanej'],
+      Opis: vatRecord.Opis,
+      'Numer własny': vatRecord['Numer własny'],
+      'ZalacznikiTest': vatRecord['ZalacznikiTest']
     }));
   }
 
-  private _isCsvVerifRecord(record: any): record is csvVerifRecord {
+  private _isCsvVerifRecord(record: any): record is csvVerificationRecord {
     const requiredKeys = [
       'Data płatności',
       'Data płatności ze skontem',
