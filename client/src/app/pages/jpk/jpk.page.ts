@@ -26,7 +26,7 @@ import { GenerateExcelService } from '@services/excel/generate-excel.service';
     MatTooltipModule,
   ],
   templateUrl: './jpk.page.html',
-  styleUrl: './jpk.page.scss',
+  styleUrls: ['./jpk.page.scss'],
   encapsulation: ViewEncapsulation.None,
 })
 export class JpkPage {
@@ -46,7 +46,7 @@ export class JpkPage {
     dialogRef.afterClosed().subscribe(result => {
       if (!result) return;
       this.jpkService.handleFilesUpload(failedFiles, result);
-    })
+    });
   }
 
   onGenerateButtonClick() {
@@ -61,7 +61,8 @@ export class JpkPage {
       rejz: this.jpkService.rejzData,
       pzn: this.jpkService.pznData,
       wnpz: this.jpkService.wnpzData,
-      mapz: this.jpkService.mapzData
+      mapz: this.jpkService.mapzData,
+      vatVerification: this.jpkService.vatVerificationData
     };
     this.excelService.generateExcel(data);
   }

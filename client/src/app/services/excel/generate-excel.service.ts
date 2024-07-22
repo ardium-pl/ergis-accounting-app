@@ -1,16 +1,15 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx';
-import { wnpzObject, pznObject, mapzObject } from '../jpk/jpk.types';
+import { wnpzObject, pznObject, mapzObject, readyVerifRecord } from '../jpk/jpk.types';
 
 type CellValue = string | number | { f: string };
-
 type ErrorCheckRow = CellValue[];
-
 type HeadersType = {
   mapz: string[];
   wnpz: string[];
   pzn: string[];
   rejz: string[];
+  weryfikacjaVat: string[];
 };
 
 @Injectable({
@@ -38,19 +37,35 @@ export class GenerateExcelService {
     rejz: [
       'Lp', 'Referencja', 'Paczka', 'Numer VAT', 'Dostawca', 'Kwota opodatkowania',
       'VAT', '%VAT', 'Kwota VAT', 'Faktura', 'Data faktury'
+    ],
+    weryfikacjaVat: [
+      'NIP i numer', 'Lp', 'Numer faktury', 'Kontrahent', 'NIP', 'Numer wewnętrzny', 'Numer referencyjny', 
+      'Rejestr', 'Waluta', 'Typ faktury', 'Opis (dekretacja)', 'Status płatności', 'Data płatności', 
+      'Termin płatności', 'Data płatności ze skontem', 'Wartość skonta', 'Skonto', 'Kompensaty', 
+      'Przedpłaty', 'Numer faktury korygowanej', 'Opis', 'Numer własny', 'ZalacznikiTest'
     ]
   };
 
-  public generateExcel(data: { rejz: any[], pzn: pznObject[], wnpz: wnpzObject[], mapz: mapzObject[] }): void {
+  public generateExcel(data: { rejz: any[], pzn: pznObject[], wnpz: wnpzObject[], mapz: mapzObject[], vatVerification: readyVerifRecord[] }): void {
+    if (!data) {
+      console.error('Data is undefined or null');
+      return;
+    }
+
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
 
     Object.entries(data).forEach(([sheetName, records]) => {
+      if (!records || !this.headers[sheetName as keyof HeadersType]) {
+        console.error(`Records or headers for sheet ${sheetName} are undefined`);
+        return;
+      }
+
       const cleanedRecords = this.cleanData(records);
       const recordsWithFormulas = this.addFormulas(cleanedRecords, sheetName);
       const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
 
-      XLSX.utils.sheet_add_aoa(ws, [this.headers[sheetName as keyof HeadersType]], {origin: 'A1'});
-      XLSX.utils.sheet_add_json(ws, recordsWithFormulas, {skipHeader: true, origin: 'A2'});
+      XLSX.utils.sheet_add_aoa(ws, [this.headers[sheetName as keyof HeadersType]], { origin: 'A1' });
+      XLSX.utils.sheet_add_json(ws, recordsWithFormulas, { skipHeader: true, origin: 'A2' });
 
       ws['!cols'] = this.calculateColumnWidths(recordsWithFormulas);
 
@@ -69,6 +84,29 @@ export class GenerateExcelService {
 
     const errorCheckSheet = this.createErrorCheckSheet(data);
     XLSX.utils.book_append_sheet(wb, errorCheckSheet, 'ErrorCheck');
+
+    // Dodanie arkusza weryfikacjaVat
+    const vatVerificationData = data.vatVerification;
+    if (vatVerificationData && vatVerificationData.length > 0) {
+      const vatVerificationSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
+      XLSX.utils.sheet_add_aoa(vatVerificationSheet, [this.headers.weryfikacjaVat], { origin: 'A1' });
+      XLSX.utils.sheet_add_json(vatVerificationSheet, vatVerificationData, { skipHeader: true, origin: 'A2' });
+      vatVerificationSheet['!cols'] = this.calculateColumnWidths(vatVerificationData);
+
+      // Dodaj formatowanie nagłówków dla weryfikacjaVat
+      for (let C = 0; C < this.headers.weryfikacjaVat.length; C++) {
+        const cellAddress = XLSX.utils.encode_cell({ c: C, r: 0 });
+        if (!vatVerificationSheet[cellAddress]) continue;
+        vatVerificationSheet[cellAddress].s = {
+          font: { bold: true },
+          fill: { fgColor: { rgb: 'FFFF00' } }
+        };
+      }
+
+      XLSX.utils.book_append_sheet(wb, vatVerificationSheet, 'weryfikacjaVat');
+    } else {
+      console.warn('No VAT verification data available');
+    }
 
     const wbout: ArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     this.saveExcelFile(wbout, 'jpk_data.xlsx');
@@ -182,7 +220,6 @@ export class GenerateExcelService {
   
     return ws;
   }
-  
 
   private saveExcelFile(buffer: ArrayBuffer, filename: string): void {
     const data: Blob = new Blob([buffer], { type: 'application/octet-stream' });

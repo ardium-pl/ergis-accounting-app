@@ -1,3 +1,7 @@
+export type xmlRecord = {
+  
+}
+
 export type csvVerificationRecord = {
   'Data płatności': string;
   'Data płatności ze skontem': string;

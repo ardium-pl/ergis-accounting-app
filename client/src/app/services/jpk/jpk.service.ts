@@ -4,8 +4,8 @@ import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { ExcelService } from '../excel/excel.service';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { FaktoringService } from '../faktoring/faktoring.service';
-import { parseStringPromise } from 'xml2js';
-import { readyVerifRecord, csvVerificationRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
+import { parseStringPromise, processors } from 'xml2js';
+import { xmlRecord, readyVerifRecord, csvVerificationRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
 import { PZNSubitem } from '@services/weird-prn-reader/pzn';
@@ -68,10 +68,15 @@ export class JpkService {
   });
 
   private _vatVerificationData: readyVerifRecord[] = [];
+  private _xmlData: xmlRecord[] = [];
   private _rejzData: rejzObject[] = [];
   private _pznData: pznObject[] = [];
   private _wnpzData: wnpzObject[] = [];
   private _mapzData: mapzObject[] = [];
+
+  get xmlData(): Array<xmlRecord> {
+    return this._xmlData;
+  }
 
   get vatVerificationData(): Array<readyVerifRecord> {
     return this._vatVerificationData;
@@ -119,9 +124,12 @@ export class JpkService {
       case JpkFileName.XML:
         validation = this._validateXmlFile(fileContent);
         if (!validation) {
-          xmlObjects = await this.parseXML(fileContent);
-          // console.log('XML');
+          const xmlData = this.readAsXml(fileContent);
+          console.log(xmlData);
+
+          this._xmlData = this._parseXmlData(fileContent)
           // console.log(xmlObjects);
+
         }
         fileIndex = 0;
         break;
@@ -279,22 +287,26 @@ export class JpkService {
     return ['Dodany plik nie wygląda na poprawny plik MAPZ. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
   }
 
-  private async parseXML(xmlContent: string): Promise<any> {
-    try {
+  private readAsXml(xmlContent: string): Object {
       const options = {
         explicitArray: false,
         mergeAttrs: true,
         trim: true,
         normalizeTags: true,
+        explicitRoot: false,
+        tagNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw tagów
+        attrNameProcessors: [processors.stripPrefix] // Usuwa przedrostki przestrzeni nazw z nazw atrybutów
       };
-
-      const result = await parseStringPromise(xmlContent, options);
+      const result = parseStringPromise(xmlContent, options);
       return result;
-    } catch (err) {
-      console.error('Error parsing XML:', err);
-      throw err;
-    }
   }
+
+  private _parseXmlData(xmlContent): xmlRecord[] {
+    const xml: xmlRecord[] = [0, 0];
+    return xml;
+  }
+
+  
 
   private _parseVatVerificationData(csvContent: Array<csvVerificationRecord>): void {
     this._vatVerificationData = csvContent.map(vatRecord => ({
