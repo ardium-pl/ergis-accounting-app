@@ -49,10 +49,11 @@ export class JpkPage {
     });
   }
 
+  // jeśli wszystkie pliki przeszły walidacje i się wyparsowały po naciśnięciu generuj z danych tworzony jest plik excell
   onGenerateButtonClick() {
     console.log('Generating excel file');
     console.log('Parsed RejZ Data:', this.jpkService.rejzData);
-    console.log('Prepared VAT Validation Data:', this.jpkService.vatVerificationData);
+    console.log('Prepared VAT Verification Data:', this.jpkService.vatVerificationData);
     if (!this.jpkService.areAllFilesOK()) {
       console.log("Not all files are ready for generation.");
       return;
@@ -62,7 +63,8 @@ export class JpkPage {
       pzn: this.jpkService.pznData,
       wnpz: this.jpkService.wnpzData,
       mapz: this.jpkService.mapzData,
-      vatVerification: this.jpkService.vatVerificationData
+      vatVerification: this.jpkService.vatVerificationData,
+      xml: this.jpkService.xmlData
     };
     this.excelService.generateExcel(data);
   }
