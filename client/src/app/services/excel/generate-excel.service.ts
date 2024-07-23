@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';  // Use xlsx-styles instead of xlsx
 import { wnpzObject, pznObject, mapzObject, readyVerifRecord } from '../jpk/jpk.types';
+import { JsonDataStore } from '@utils';
 
 // deklaracje typów do przeniesienia do pliku types
 type CellValue = string | number | { f: string };
@@ -82,6 +83,9 @@ export class GenerateExcelService {
 
       ws['!cols'] = this.calculateColumnWidths(recordsWithCheckAmount);
 
+      // Apply alternating row styles
+      this.applyRowStyles(ws, recordsWithCheckAmount.length);
+
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
 
@@ -96,6 +100,7 @@ export class GenerateExcelService {
       XLSX.utils.sheet_add_aoa(vatVerificationSheet, [this.headers.weryfikacjaVat], { origin: 'A1' });
       XLSX.utils.sheet_add_json(vatVerificationSheet, vatVerificationData, { skipHeader: true, origin: 'A2' });
       vatVerificationSheet['!cols'] = this.calculateColumnWidths(vatVerificationData);
+      this.applyRowStyles(vatVerificationSheet, vatVerificationData.length);
       XLSX.utils.book_append_sheet(wb, vatVerificationSheet, 'weryfikacjaVat');
     } else {
       console.warn('No VAT verification data available');
@@ -108,6 +113,7 @@ export class GenerateExcelService {
       XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.daneJpkZakupy], { origin: 'A1' });
       XLSX.utils.sheet_add_json(xmlSheet, xmlData, { skipHeader: true, origin: 'A2' });
       xmlSheet['!cols'] = this.calculateColumnWidths(xmlData);
+      this.applyRowStyles(xmlSheet, xmlData.length);
       XLSX.utils.book_append_sheet(wb, xmlSheet, 'dane jpk zakupy');
     } else {
       console.warn('No XML data available');
@@ -225,9 +231,10 @@ export class GenerateExcelService {
         { f: `B${rowIndex}-D${rowIndex}-C${rowIndex}` }
       ]);
     });
-  
+    
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(errorCheckData);
     ws['!cols'] = Array(errorCheckData[0].length).fill({ wch: 20 }); // Ustawienie szerokości kolumn
+    this.applyRowStyles(ws, errorCheckData.length);
   
     return ws;
   }
@@ -240,5 +247,25 @@ export class GenerateExcelService {
     link.download = filename;
     link.click();
     window.URL.revokeObjectURL(url);
+  }
+
+  private applyRowStyles(worksheet: XLSX.WorkSheet, numRows: number): void {
+    const columnCount = worksheet['!cols']?.length || 0;  // Ensure columnCount is valid
+
+    for (let row = 1; row <= numRows; row++) {
+      const rowColor = row % 2 === 0 ? 'FFf2f2f2' : 'FFFFFFFF'; // Alternate row color
+
+      for (let col = 0; col < columnCount; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ c: col, r: row });
+        if (!worksheet[cellAddress]) continue;
+
+        worksheet[cellAddress].s = {
+          fill: {
+            patternType: "solid",
+            fgColor: { rgb: rowColor }
+          }
+        };
+      }
+    }
   }
 }
