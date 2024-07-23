@@ -5,7 +5,7 @@ import { ExcelService } from '../excel/excel.service';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { FaktoringService } from '../faktoring/faktoring.service';
 import { parseStringPromise, processors } from 'xml2js';
-import { xmlRecord, readyVerifRecord, csvVerificationRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
+import { xmlObject, xmlRecord, readyVerifRecord, csvVerificationRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
 import { PZNSubitem } from '@services/weird-prn-reader/pzn';
@@ -127,7 +127,7 @@ export class JpkService {
           const xmlData = this.readAsXml(fileContent);
           console.log(xmlData);
 
-          this._xmlData = this._parseXmlData(fileContent)
+          this._xmlData = this._parseXmlData(xmlData)
           // console.log(xmlObjects);
 
         }
@@ -301,7 +301,7 @@ export class JpkService {
       return result;
   }
 
-  private _parseXmlData(xmlContent): xmlRecord[] {
+  private _parseXmlData(xmlContent: Object): xmlRecord[] {
     const xml: xmlRecord[] = [0, 0];
     return xml;
   }
