@@ -4,7 +4,7 @@ import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { ExcelService } from '../excel/excel.service';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { FaktoringService } from '../faktoring/faktoring.service';
-import { parseStringPromise, processors } from 'xml2js';
+import { parseString, processors } from 'xml2js';
 import { xmlObject, xmlRecord, readyVerifRecord, csvVerificationRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
@@ -124,11 +124,10 @@ export class JpkService {
       case JpkFileName.XML:
         validation = this._validateXmlFile(fileContent);
         if (!validation) {
-          const xmlData = this.readAsXml(fileContent);
-          console.log(xmlData);
-
-          this._xmlData = this._parseXmlData(xmlData)
-          // console.log(xmlObjects);
+          const xmlObject = this.readAsXml(fileContent);
+          console.log(xmlObject);
+          this._xmlData = this._parseXmlData(xmlObject)
+          console.log(this._xmlData);
 
         }
         fileIndex = 0;
@@ -287,23 +286,32 @@ export class JpkService {
     return ['Dodany plik nie wygląda na poprawny plik MAPZ. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
   }
 
-  private readAsXml(xmlContent: string): Object {
-      const options = {
-        explicitArray: false,
-        mergeAttrs: true,
-        trim: true,
-        normalizeTags: true,
-        explicitRoot: false,
-        tagNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw tagów
-        attrNameProcessors: [processors.stripPrefix] // Usuwa przedrostki przestrzeni nazw z nazw atrybutów
-      };
-      const result = parseStringPromise(xmlContent, options);
-      return result;
+  private readAsXml(xmlContent: string): any {
+    const options = {
+      explicitArray: false,
+      mergeAttrs: true,
+      trim: true,
+      normalizeTags: true,
+      explicitRoot: false,
+      tagNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw tagów
+      attrNameProcessors: [processors.stripPrefix] // Usuwa przedrostki przestrzeni nazw z nazw atrybutów
+    };
+
+    let result: any;
+    parseString(xmlContent, options, (err, res) => {
+      if (err) {
+        throw new Error(`Error parsing XML: ${err.message}`);
+      }
+      result = res;
+    });
+
+    return result;
   }
 
-  private _parseXmlData(xmlContent: Object): xmlRecord[] {
-    const xml: xmlRecord[] = [0, 0];
-    return xml;
+  // parsuje obiekt odczytany z xml na listę recordów gotowych do excella
+  private _parseXmlData(xmlObject: any): xmlRecord[] {
+    const xmlArray: xmlRecord[] = xmlObject.ewidencja.zakupwiersz
+    return xmlArray;
   }
 
   
