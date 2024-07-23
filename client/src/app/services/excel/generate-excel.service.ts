@@ -50,7 +50,10 @@ export class GenerateExcelService {
     daneJpkZakupy: [
       'ns1:LpZakupu', 'ns1:KodKrajuNadaniaTIN4', 'ns1:NrDostawcy', 'ns1:NazwaDostawcy', 
       'ns1:DowodZakupu', 'ns1:DataZakupu', 'ns1:DataWplywu', 'ns1:K_40', 'ns1:K_41', 
-      'ns1:K_42', 'ns1:K_43', 'ns1:K_44', 'ns1:K_45', 'ns1:K_46', 'ns1:K_47', 'ns1:DokumentZakupu', 'Formuła'
+      'ns1:K_42', 'ns1:K_43', 'ns1:K_44', 'ns1:K_45', 'ns1:K_46', 'ns1:K_47', 'ns1:DokumentZakupu', 'ZmienionyNrDostawcy', 
+      'Formuła 1', 'Formuła 2', 'Formuła 3', 'Formuła 4', 'Formuła 5', 'Formuła 6', 'Formuła 7', 'Formuła 8', 
+      'Formuła 9', 'Formuła 10', 'Formuła 11', 'Formuła 12', 'Formuła 13', 'Formuła 14', 'Formuła 15', 'Formuła 16', 
+      'Formuła 17', 'Formuła 18', 'Formuła 19', 'Formuła 20', 'Formuła 21', 'Formuła 22'
     ]
   };
 
@@ -118,9 +121,30 @@ export class GenerateExcelService {
   private addFormulasToXmlData(xmlData: any[]): any[] {
     return xmlData.map((record, index) => {
       const rowIndex = index + 2;  // Zakładamy, że dane zaczynają się od drugiego wiersza (pierwszy wiersz to nagłówki)
-      const formula = `IF(B${rowIndex}="",C${rowIndex},IF(B${rowIndex}="AT",RIGHT(C${rowIndex},8),IF(B${rowIndex}="CY",LEFT(C${rowIndex},8),IF(B${rowIndex}="FR",RIGHT(C${rowIndex},9),IF(B${rowIndex}="EL",RIGHT(C${rowIndex},8),IF(B${rowIndex}="ES",MID(C${rowIndex},2,7),IF(B${rowIndex}="IE",LEFT(C${rowIndex},7),IF(B${rowIndex}="NL",REPLACE(C${rowIndex},10,1,""),C${rowIndex}))))))))`;
-      record['Formuła'] = { f: formula };
-      return record;
+      return [
+        ...Object.values(record),
+        { f: `IF(B${rowIndex}="",C${rowIndex},IF(B${rowIndex}="AT",RIGHT(C${rowIndex},8),IF(B${rowIndex}="CY",LEFT(C${rowIndex},8),IF(B${rowIndex}="FR",RIGHT(C${rowIndex},9),IF(B${rowIndex}="EL",RIGHT(C${rowIndex},8),IF(B${rowIndex}="ES",MID(C${rowIndex},2,7),IF(B${rowIndex}="IE",LEFT(C${rowIndex},7),IF(B${rowIndex}="NL",REPLACE(C${rowIndex},10,1,""),C${rowIndex}))))))))` },
+        { f: `VLOOKUP(M${rowIndex},WeryfikacjaVAT!A:F,6,FALSE)` },
+        { f: `WeryfikacjaVAT!G${rowIndex}` },
+        { f: `WeryfikacjaVAT!H${rowIndex}` },
+        { f: `IFERROR((J${rowIndex} + O${rowIndex}) / S${rowIndex}, "-")` },
+        { f: `WeryfikacjaVAT!I${rowIndex}` },
+        { f: `IFERROR(IF(R${rowIndex}="PLN",1,VLOOKUP(F${rowIndex}-1,kursy!E:F,2,TRUE)),"-")` },
+        { f: `WeryfikacjaVAT!J${rowIndex}` },
+        { f: `WeryfikacjaVAT!K${rowIndex}` },
+        { f: `WeryfikacjaVAT!L${rowIndex}` },
+        { f: `WeryfikacjaVAT!M${rowIndex}` },
+        { f: `WeryfikacjaVAT!N${rowIndex}` },
+        { f: `WeryfikacjaVAT!O${rowIndex}` },
+        { f: `WeryfikacjaVAT!P${rowIndex}` },
+        { f: `WeryfikacjaVAT!Q${rowIndex}` },
+        { f: `WeryfikacjaVAT!R${rowIndex}` },
+        { f: `WeryfikacjaVAT!S${rowIndex}` },
+        { f: `IFERROR(VLOOKUP(N${rowIndex},MAPZ!C:T,17,FALSE),"Nie podane w MAPZ")` },
+        { f: `IFERROR(VLOOKUP(N${rowIndex},MAPZ!C:T,18,FALSE),"Nie podane w MAPZ")` },
+        { f: `IFERROR(VLOOKUP(N${rowIndex},WNPZ!C:T,17,FALSE),"Nie podane w WNPZ")` },
+        { f: `IFERROR(VLOOKUP(N${rowIndex},WNPZ!C:T,18,FALSE),"Nie podane w WNPZ")` }
+      ];
     });
   }
 
