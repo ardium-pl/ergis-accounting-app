@@ -190,9 +190,9 @@ export class GenerateExcelService {
   
       errorCheckData.push([
         code,
-        pznSum.toString(),
-        wnpzSum.toString(),
-        mapzSum.toString(),
+        pznSum,
+        wnpzSum,
+        mapzSum,
         { f: `IF(B${rowIndex}=0,0,B${rowIndex}-C${rowIndex}-D${rowIndex})` },
         { f: `IF(B${rowIndex}=0,"Brak dostawy",D${rowIndex}-B${rowIndex})` },
         { f: `D${rowIndex}-E${rowIndex}` },
