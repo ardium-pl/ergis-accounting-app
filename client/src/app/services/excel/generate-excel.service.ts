@@ -11,6 +11,7 @@ type HeadersType = {
   pzn: string[];
   rejz: string[];
   weryfikacjaVat: string[];
+  daneJpkZakupy: string[];
 };
 
 @Injectable({
@@ -20,7 +21,7 @@ export class GenerateExcelService {
 
   constructor() { }
 
-  // nagłówki poszczególnych arkuszy w excellu
+  // nagłówki poszczególnych arkuszy w Excelu
   private headers: HeadersType = {
     mapz: [
       'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT', 
@@ -45,11 +46,16 @@ export class GenerateExcelService {
       'Rejestr', 'Waluta', 'Typ faktury', 'Opis (dekretacja)', 'Status płatności', 'Data płatności', 
       'Termin płatności', 'Data płatności ze skontem', 'Wartość skonta', 'Skonto', 'Kompensaty', 
       'Przedpłaty', 'Numer faktury korygowanej', 'Opis', 'Numer własny', 'ZalacznikiTest'
+    ],
+    daneJpkZakupy: [
+      'ns1:LpZakupu', 'ns1:KodKrajuNadaniaTIN4', 'ns1:NrDostawcy', 'ns1:NazwaDostawcy', 
+      'ns1:DowodZakupu', 'ns1:DataZakupu', 'ns1:DataWplywu', 'ns1:K_40', 'ns1:K_41', 
+      'ns1:K_42', 'ns1:K_43', 'ns1:K_44', 'ns1:K_45', 'ns1:K_46', 'ns1:K_47', 'ns1:DokumentZakupu', 'Formuła'
     ]
   };
 
-  // z wyparsowanych danych w jpk.service po naciśniciu generuj tworzy plik excell
-  public generateExcel(data: { rejz: any[], pzn: pznObject[], wnpz: wnpzObject[], mapz: mapzObject[], vatVerification: readyVerifRecord[] }): void {
+  // z wyparsowanych danych w jpk.service po naciśnięciu generuj tworzy plik Excel
+  public generateExcel(data: { rejz: any[], pzn: pznObject[], wnpz: wnpzObject[], mapz: mapzObject[], vatVerification: readyVerifRecord[], xml: any[] }): void {
     if (!data) {
       console.error('Data is undefined or null');
       return;
@@ -58,14 +64,13 @@ export class GenerateExcelService {
     // utworzenie skoroszytu
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
 
-    // iteruje po parach nazwa,dane tworząc arkusze i uzupełniając je recordami
+    // iteruje po parach nazwa, dane tworząc arkusze i uzupełniając je recordami
     Object.entries(data).forEach(([sheetName, records]) => {
       if (!records || !this.headers[sheetName as keyof HeadersType]) {
         console.error(`Records or headers for sheet ${sheetName} are undefined`);
         return;
       }
 
-      // const cleanedRecords = this.cleanData(records);
       const recordsWithCheckAmount = this.addCheckAmount(records, sheetName);
       const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
 
@@ -93,13 +98,32 @@ export class GenerateExcelService {
       console.warn('No VAT verification data available');
     }
 
-    // zapis pliku excell
+    // Dodanie arkusza dane jpk zakupy
+    const xmlData = this.addFormulasToXmlData(data.xml); // Dodanie formuł do danych XML
+    if (xmlData && xmlData.length > 0) {
+      const xmlSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
+      XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.daneJpkZakupy], { origin: 'A1' });
+      XLSX.utils.sheet_add_json(xmlSheet, xmlData, { skipHeader: true, origin: 'A2' });
+      xmlSheet['!cols'] = this.calculateColumnWidths(xmlData);
+      XLSX.utils.book_append_sheet(wb, xmlSheet, 'dane jpk zakupy');
+    } else {
+      console.warn('No XML data available');
+    }
+
+    // zapis pliku Excel
     const wbout: ArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     this.saveExcelFile(wbout, 'jpk_data.xlsx');
   }
 
-  // Do poprawy
-  // warunek przed wywołaniem metody
+  private addFormulasToXmlData(xmlData: any[]): any[] {
+    return xmlData.map((record, index) => {
+      const rowIndex = index + 2;  // Zakładamy, że dane zaczynają się od drugiego wiersza (pierwszy wiersz to nagłówki)
+      const formula = `IF(B${rowIndex}="",C${rowIndex},IF(B${rowIndex}="AT",RIGHT(C${rowIndex},8),IF(B${rowIndex}="CY",LEFT(C${rowIndex},8),IF(B${rowIndex}="FR",RIGHT(C${rowIndex},9),IF(B${rowIndex}="EL",RIGHT(C${rowIndex},8),IF(B${rowIndex}="ES",MID(C${rowIndex},2,7),IF(B${rowIndex}="IE",LEFT(C${rowIndex},7),IF(B${rowIndex}="NL",REPLACE(C${rowIndex},10,1,""),C${rowIndex}))))))))`;
+      record['Formuła'] = { f: formula };
+      return record;
+    });
+  }
+
   private addCheckAmount(records: any[], sheetName: string): any[] {
     if (sheetName === 'mapz' || sheetName === 'wnpz') {
       return records.map((record, index) => {
