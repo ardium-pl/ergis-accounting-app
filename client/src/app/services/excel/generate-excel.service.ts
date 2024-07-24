@@ -266,6 +266,12 @@ export class GenerateExcelService {
           fill: {
             patternType: "solid",
             fgColor: { rgb: rowColor }
+          },
+          border: {
+            top: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
+            bottom: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
+            left: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
+            right: { style: 'thin', color: { rgb: 'FFCCD7EE' } }
           }
         };
       }
@@ -273,11 +279,11 @@ export class GenerateExcelService {
   }
 
   private applyHeaderStyles(worksheet: XLSX.WorkSheet, columnCount: number): void {
-    const headerColor = 'FF4472C4';  // Blue background color
-    const fontColor = 'FFFFFFFF';    // White font color
+    const headerColor = 'FF4472C4'; 
+    const fontColor = 'FFFFFFFF';   
 
     for (let col = 0; col < columnCount; col++) {
-      const cellAddress = XLSX.utils.encode_cell({ c: col, r: 0 });  // Headers are in the first row
+      const cellAddress = XLSX.utils.encode_cell({ c: col, r: 0 }); 
       if (!worksheet[cellAddress]) continue;
 
       worksheet[cellAddress].s = {
@@ -288,6 +294,12 @@ export class GenerateExcelService {
         font: {
           color: { rgb: fontColor },
           bold: true
+        },
+        border: {
+          top: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
+          bottom: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
+          left: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
+          right: { style: 'thin', color: { rgb: 'FFCCD7EE' } }
         }
       };
     }
