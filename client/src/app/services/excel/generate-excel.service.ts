@@ -254,9 +254,12 @@ export class GenerateExcelService {
 
   private applyRowStyles(worksheet: XLSX.WorkSheet, numRows: number): void {
     const columnCount = worksheet['!cols']?.length || 0;  // Ensure columnCount is valid
+    const borderColor = 'FFCCD7EE';
+    const borderStyle = 'thin';
+    const lightBlueColor = 'FFD9E1F2';
 
     for (let row = 1; row <= numRows; row++) {
-      const rowColor = row % 2 === 0 ? 'FFD9E1F2' : 'FFFFFFFF'; // Alternate row color
+      const rowColor = row % 2 === 0 ? lightBlueColor : 'FFFFFFFF'; // Alternate row color
 
       for (let col = 0; col < columnCount; col++) {
         const cellAddress = XLSX.utils.encode_cell({ c: col, r: row });
@@ -268,10 +271,10 @@ export class GenerateExcelService {
             fgColor: { rgb: rowColor }
           },
           border: {
-            top: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
-            bottom: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
-            left: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
-            right: { style: 'thin', color: { rgb: 'FFCCD7EE' } }
+            top: { style: borderStyle, color: { rgb: borderColor } },
+            bottom: { style: borderStyle, color: { rgb: borderColor } },
+            left: { style: borderStyle, color: { rgb: borderColor } },
+            right: { style: borderStyle, color: { rgb: borderColor } }
           }
         };
       }
@@ -281,6 +284,9 @@ export class GenerateExcelService {
   private applyHeaderStyles(worksheet: XLSX.WorkSheet, columnCount: number): void {
     const headerColor = 'FF4472C4'; 
     const fontColor = 'FFFFFFFF';   
+    const borderColor = 'FFCCD7EE';
+    const borderStyle = 'thin';
+
 
     for (let col = 0; col < columnCount; col++) {
       const cellAddress = XLSX.utils.encode_cell({ c: col, r: 0 }); 
@@ -296,10 +302,10 @@ export class GenerateExcelService {
           bold: true
         },
         border: {
-          top: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
-          bottom: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
-          left: { style: 'thin', color: { rgb: 'FFCCD7EE' } },
-          right: { style: 'thin', color: { rgb: 'FFCCD7EE' } }
+          top: { style: borderStyle, color: { rgb: borderColor } },
+          bottom: { style: borderStyle, color: { rgb: borderColor } },
+          left: { style: borderStyle, color: { rgb: borderColor } },
+          right: { style: borderStyle, color: { rgb: borderColor } }
         }
       };
     }
