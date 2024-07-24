@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import * as XLSX from 'xlsx-js-style';  // Use xlsx-styles instead of xlsx
+import * as XLSX from 'xlsx-js-style';  // Use xlsx-js-style instead of xlsx
 import { wnpzObject, pznObject, mapzObject, readyVerifRecord } from '../jpk/jpk.types';
-import { JsonDataStore } from '@utils';
 
 // deklaracje typów do przeniesienia do pliku types
 type CellValue = string | number | { f: string };
@@ -79,6 +78,7 @@ export class GenerateExcelService {
       const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
 
       XLSX.utils.sheet_add_aoa(ws, [this.headers[sheetName as keyof HeadersType]], { origin: 'A1' });
+      this.applyHeaderStyles(ws, this.headers[sheetName as keyof HeadersType].length);
       XLSX.utils.sheet_add_json(ws, recordsWithCheckAmount, { skipHeader: true, origin: 'A2' });
 
       ws['!cols'] = this.calculateColumnWidths(recordsWithCheckAmount);
@@ -98,6 +98,7 @@ export class GenerateExcelService {
     if (vatVerificationData && vatVerificationData.length > 0) {
       const vatVerificationSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
       XLSX.utils.sheet_add_aoa(vatVerificationSheet, [this.headers.weryfikacjaVat], { origin: 'A1' });
+      this.applyHeaderStyles(vatVerificationSheet, this.headers.weryfikacjaVat.length);
       XLSX.utils.sheet_add_json(vatVerificationSheet, vatVerificationData, { skipHeader: true, origin: 'A2' });
       vatVerificationSheet['!cols'] = this.calculateColumnWidths(vatVerificationData);
       this.applyRowStyles(vatVerificationSheet, vatVerificationData.length);
@@ -111,6 +112,7 @@ export class GenerateExcelService {
     if (xmlData && xmlData.length > 0) {
       const xmlSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
       XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.daneJpkZakupy], { origin: 'A1' });
+      this.applyHeaderStyles(xmlSheet, this.headers.daneJpkZakupy.length);
       XLSX.utils.sheet_add_json(xmlSheet, xmlData, { skipHeader: true, origin: 'A2' });
       xmlSheet['!cols'] = this.calculateColumnWidths(xmlData);
       this.applyRowStyles(xmlSheet, xmlData.length);
@@ -233,6 +235,7 @@ export class GenerateExcelService {
     });
     
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(errorCheckData);
+    this.applyHeaderStyles(ws, errorCheckData[0].length);
     ws['!cols'] = Array(errorCheckData[0].length).fill({ wch: 20 }); // Ustawienie szerokości kolumn
     this.applyRowStyles(ws, errorCheckData.length);
   
@@ -253,7 +256,7 @@ export class GenerateExcelService {
     const columnCount = worksheet['!cols']?.length || 0;  // Ensure columnCount is valid
 
     for (let row = 1; row <= numRows; row++) {
-      const rowColor = row % 2 === 0 ? 'FFf2f2f2' : 'FFFFFFFF'; // Alternate row color
+      const rowColor = row % 2 === 0 ? 'FFD9E1F2' : 'FFFFFFFF'; // Alternate row color
 
       for (let col = 0; col < columnCount; col++) {
         const cellAddress = XLSX.utils.encode_cell({ c: col, r: row });
@@ -266,6 +269,27 @@ export class GenerateExcelService {
           }
         };
       }
+    }
+  }
+
+  private applyHeaderStyles(worksheet: XLSX.WorkSheet, columnCount: number): void {
+    const headerColor = 'FF4472C4';  // Blue background color
+    const fontColor = 'FFFFFFFF';    // White font color
+
+    for (let col = 0; col < columnCount; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ c: col, r: 0 });  // Headers are in the first row
+      if (!worksheet[cellAddress]) continue;
+
+      worksheet[cellAddress].s = {
+        fill: {
+          patternType: "solid",
+          fgColor: { rgb: headerColor }
+        },
+        font: {
+          color: { rgb: fontColor },
+          bold: true
+        }
+      };
     }
   }
 }
