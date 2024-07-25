@@ -143,7 +143,6 @@ export class GenerateExcelService {
       const rowIndex = index + 2;  // Zakładamy, że dane zaczynają się od drugiego wiersza (pierwszy wiersz to nagłówki)
       return [
         ...Object.values(record),
-        '',
         { f: `CONCATENATE(IF(B${rowIndex}="",D${rowIndex},IF(B${rowIndex}="AT",RIGHT(D${rowIndex},8),IF(B${rowIndex}="CY",LEFT(D${rowIndex},8),IF(B${rowIndex}="FR",RIGHT(D${rowIndex},9),IF(B${rowIndex}="EL",RIGHT(D${rowIndex},8),IF(B${rowIndex}="ES",MID(D${rowIndex},2,7),IF(B${rowIndex}="IE",LEFT(D${rowIndex},7),IF(B${rowIndex}="NL",REPLACE(D${rowIndex},10,1,""),D${rowIndex})))))))),E${rowIndex})` },
         { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:F,6,FALSE)` },
         { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:G,7,FALSE)` },
