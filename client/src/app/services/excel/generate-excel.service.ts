@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx-js-style';
-import { wnpzObject, pznObject, mapzObject, csvReadyRecord } from '../jpk/jpk.types';
+import { wnpzReadyRecord, pznReadyRecord, mapzReadyRecord, csvReadyRecord } from '../jpk/jpk.types';
 
 // deklaracje typów do przeniesienia do pliku types
 type CellValue = string | number | { f: string };
@@ -58,7 +58,7 @@ export class GenerateExcelService {
   };
 
   // z wyparsowanych danych w jpk.service po naciśnięciu generuj tworzy plik Excel
-  public generateExcel(data: { rejz: any[], pzn: pznObject[], wnpz: wnpzObject[], mapz: mapzObject[], vatVerification: csvReadyRecord[], xml: any[] }): void {
+  public generateExcel(data: { rejz: any[], pzn: pznReadyRecord[], wnpz: wnpzReadyRecord[], mapz: mapzReadyRecord[], vatVerification: csvReadyRecord[], xml: any[] }): void {
     if (!data) {
       console.error('Data is undefined or null');
       return;
@@ -201,7 +201,7 @@ export class GenerateExcelService {
     return !isNaN(Date.parse(value)) && !isNaN(new Date(value).getTime());
   }
 
-  private createErrorCheckSheet(data: { rejz: any[], pzn: pznObject[], wnpz: wnpzObject[], mapz: mapzObject[] }): XLSX.WorkSheet {
+  private createErrorCheckSheet(data: { rejz: any[], pzn: pznReadyRecord[], wnpz: wnpzReadyRecord[], mapz: mapzReadyRecord[] }): XLSX.WorkSheet {
     const transactionCodes = new Set<string>();
     data.pzn.forEach(record => transactionCodes.add(record.specNum.split('/')[0]));
     data.wnpz.forEach(record => transactionCodes.add(record.code.split('/')[0]));

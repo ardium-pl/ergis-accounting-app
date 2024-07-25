@@ -83,7 +83,7 @@ type VatSummary = {
   grossValue: number;
 };
 
-export type rejzPrnData = {
+export type rejzRawRecord = {
   num: number;
   reference: string;
   package: string;
@@ -96,7 +96,7 @@ export type rejzPrnData = {
   vatSummary: VatSummary;
 };
 
-export type rejzObject = {
+export type rejzReadyRecord = {
   num: number;
   reference: string;
   package: string;
@@ -122,7 +122,7 @@ type PZNSubitem = {
   zewnPodatekZZ: number;
 }
 
-export type pznPrnData = {
+export type pznRawRecord = {
   commission: string;
   subitems: PZNSubitem[];
   supplierName: string;
@@ -130,7 +130,7 @@ export type pznPrnData = {
   // currencyInfo: PZNCurrencyData;
 };
 
-export type pznObject = {
+export type pznReadyRecord = {
   commission: string,
   dokDost: number;
   num: number;
@@ -159,7 +159,7 @@ type PZItem = {
   invoiceAmount: number;
 };
 
-export type wnpzPrnData = {
+export type wnpzRawRecord = {
   num: number;
   reference: string;
   package: string;
@@ -176,7 +176,7 @@ export type wnpzPrnData = {
   vatSummary: VatSummary;
 };
 
-export type wnpzObject = {
+export type wnpzReadyRecord = {
   num: number;
   reference: string;
   package: string;
@@ -200,7 +200,7 @@ export type wnpzObject = {
   // grossValue: number;
 }
 
-export type mapzPrnData = {
+export type mapzRawRecord = {
   dataPod: Date;
   dataWplywu: Date;
   invoice: string;
@@ -217,7 +217,7 @@ export type mapzPrnData = {
   vatSummary: VatSummary;
 }
 
-export type mapzObject = {
+export type mapzReadyRecord = {
   dataPod: Date;
   dataWplywu: Date;
   invoice: string;

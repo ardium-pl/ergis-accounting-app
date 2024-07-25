@@ -6,11 +6,12 @@ import { FaktoringService } from '../faktoring/faktoring.service';
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { parseString, processors } from 'xml2js';
-import { xmlObject, xmlRecord, csvRawRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject, csvReadyRecord } from './jpk.types';
+import { xmlObject, xmlRecord as xmlReadyRecord, csvRawRecord, rejzReadyRecord as rejzReadyRecord, rejzRawRecord, pznRawRecord, wnpzRawRecord, wnpzReadyRecord as wnpzReadyRecord, pznReadyRecord as pznReadyRecord, mapzRawRecord, mapzReadyRecord as mapzReadyRecord, csvReadyRecord } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
 import { PZNSubitem } from '@services/weird-prn-reader/pzn';
 import { PZItem } from '@services/weird-prn-reader/pz-item';
+import { map } from 'rxjs';
 
 export const JpkFileName = {
   XML: 'Plik JPK_VAT',
@@ -69,33 +70,33 @@ export class JpkService {
   });
 
   private _vatVerificationData: csvReadyRecord[] = [];
-  private _xmlData: xmlRecord[] = [];
-  private _rejzData: rejzObject[] = [];
-  private _pznData: pznObject[] = [];
-  private _wnpzData: wnpzObject[] = [];
-  private _mapzData: mapzObject[] = [];
+  private _xmlData: xmlReadyRecord[] = [];
+  private _rejzData: rejzReadyRecord[] = [];
+  private _pznData: pznReadyRecord[] = [];
+  private _wnpzData: wnpzReadyRecord[] = [];
+  private _mapzData: mapzReadyRecord[] = [];
 
-  get xmlData(): Array<xmlRecord> {
+  get xmlData(): xmlReadyRecord[] {
     return this._xmlData;
   }
 
-  get vatVerificationData(): Array<csvReadyRecord> {
+  get vatVerificationData(): csvReadyRecord[] {
     return this._vatVerificationData;
   }
 
-  get rejzData(): Array<rejzObject> {
+  get rejzData(): rejzReadyRecord[] {
     return this._rejzData;
   }
 
-  get pznData(): Array<pznObject> {
+  get pznData(): pznReadyRecord[] {
     return this._pznData;
   }
 
-  get wnpzData(): Array<wnpzObject> {
+  get wnpzData(): wnpzReadyRecord[] {
     return this._wnpzData;
   }
 
-  get mapzData(): Array<mapzObject> {
+  get mapzData(): mapzReadyRecord[] {
     return this._mapzData;
   }
 
@@ -120,66 +121,65 @@ export class JpkService {
     let fileIndex: number;
 
     switch (determinedName) {
+      // parsowanie xml
       case JpkFileName.XML:
         validation = this._validateXmlFile(fileContent);
-        if (!validation) {
-          const xmlObject = this.readAsXml(fileContent);
-          console.log(xmlObject);
-          this._xmlData = this._parseXmlData(xmlObject)
-          console.log(this._xmlData);
 
+        if (!validation) {
+          const xmlData = this.readAsXml(fileContent);
+          this._xmlData = this._parseXmlData(xmlData)
         }
         fileIndex = 0;
         break;
+
+      // parsowanie csv
       case JpkFileName.WeryfikacjaVAT:
         validation = this._validateVerificationFile(fileContent);
+
         if (!validation) {
-          const csvData = this.excelService.readAsCsv<keyof csvRawRecord>(fileContent);
-          const csvRawRecords = csvData.filter(this._isCsvVerifRecord);
-          console.log(csvRawRecords)
-          const csvReadyRecords =  this._parseVatVerificationData(csvRawRecords);
-          this._vatVerificationData = csvReadyRecords
-          console.log(this._vatVerificationData)
+          const csvRawData = this.excelService.readAsCsv<keyof csvRawRecord>(fileContent);
+          const csvData = csvRawData.filter(this._isCsvRecord);
+          this._vatVerificationData = this._parseVatVerificationData(csvData);
         }
         fileIndex = 1;
         break;
+
       case JpkFileName.RejZ:
         validation = this._validateRejZFile(fileContent);
+
         if (!validation) {
-          const rejzObjects = this.prnReaderService.readRejZ(fileContent);
-          console.log(rejzObjects)
-          this._parseRejzData(rejzObjects);
-          console.log(this._rejzData)
+          const rejzData = this.prnReaderService.readRejZ(fileContent);
+          this._rejzData = this._parseRejzData(rejzData);
         }
         fileIndex = 2;
         break;
+
       case JpkFileName.PZN:
         validation = this._validatePZNFile(fileContent);
+
         if (!validation) {
-          const pznObjects = this.prnReaderService.readPZN(fileContent);
-          console.log(pznObjects);
-          this._parsePznData(pznObjects)
-          console.log(this._pznData)
+          const pznData = this.prnReaderService.readPZN(fileContent);
+          this._pznData = this._parsePznData(pznData)
         }
         fileIndex = 3;
         break;
+
       case JpkFileName.WNPZ:
         validation = this._validateWNPZFile(fileContent);
+
         if (!validation) {
-          const wnpzObjects = this.prnReaderService.readWNPZ(fileContent);
-          console.log(wnpzObjects);
-          this._parseWnpzData(wnpzObjects)
-          console.log(this._wnpzData)
+          const wnpzData = this.prnReaderService.readWNPZ(fileContent);
+          this._wnpzData = this._parseWnpzData(wnpzData)
         }
         fileIndex = 4;
         break;
+
       case JpkFileName.MAPZ:
         validation = this._validateMAPZFile(fileContent);
+
         if (!validation) {
-          const mapzObjects = this.prnReaderService.readMAPZ(fileContent);
-          console.log(mapzObjects);
-          this._parseMapzData(mapzObjects)
-          console.log(this._mapzData)
+          const mapzData = this.prnReaderService.readMAPZ(fileContent);
+          this._mapzData = this._parseMapzData(mapzData)
         }
         fileIndex = 5;
         break;
@@ -321,13 +321,13 @@ export class JpkService {
     }
     const normalizedValue = value.replace(',', '.'); // Zamiana przecinków na kropki
     const numberValue = parseFloat(normalizedValue);
-    console.log(numberValue)
+
     return numberValue
   }
 
   // parsuje obiekt odczytany z xml na listę recordów gotowych do excella
-  private _parseXmlData(xmlObject: any): xmlRecord[] {
-    const xmlArray: xmlRecord[] = xmlObject.ewidencja.zakupwiersz;
+  private _parseXmlData(xmlObject: any): xmlReadyRecord[] {
+    const xmlArray: xmlReadyRecord[] = xmlObject.ewidencja.zakupwiersz;
 
     // Ensure dataWplywu is always present and positioned correctly
     return xmlArray.map(record => ({
@@ -378,7 +378,7 @@ export class JpkService {
     return csvReadyRecords
   }
 
-  private _isCsvVerifRecord(record: any): record is csvRawRecord {
+  private _isCsvRecord(record: any): record is csvRawRecord {
     const requiredKeys = [
       'Data płatności',
       'Data płatności ze skontem',
@@ -406,8 +406,8 @@ export class JpkService {
     return requiredKeys.every(key => key in record);
   }
 
-  private _parseRejzData(rejzObjectsArray: Array<rejzPrnData>): void {
-    this._rejzData = rejzObjectsArray.flatMap(({ num, reference, package: packageVar, type, supplier, invoice, invoiceDate, vatItems }) =>
+  private _parseRejzData(rejzData: rejzRawRecord[]): rejzReadyRecord[] {
+    const rejzReadyRecords = rejzData.flatMap(({ num, reference, package: packageVar, type, supplier, invoice, invoiceDate, vatItems }) =>
       vatItems.map(vatItem => ({
         num,
         reference,
@@ -422,10 +422,11 @@ export class JpkService {
         invoiceDate,
       }))
     );
+    return rejzReadyRecords
   }
 
-  private _parsePznData(pznObjectsArray: Array<pznPrnData>): void {
-    this._pznData = pznObjectsArray.flatMap(({ commission, subitems, supplierName, supplierNumber}) =>
+  private _parsePznData(pznData: pznRawRecord[]): pznReadyRecord[] {
+    const pznReadyRecords = pznData.flatMap(({ commission, subitems, supplierName, supplierNumber}) =>
       subitems.map(PZNSubitem => ({
         num: PZNSubitem.num,
         commission,
@@ -441,11 +442,12 @@ export class JpkService {
         odchKGZZ: PZNSubitem.odchKGZZ,
       }))
     );
+    return pznReadyRecords
   }
 
 
-  private _parseWnpzData(wnpzObjectsArray: Array<wnpzPrnData>): void {
-    this._wnpzData = wnpzObjectsArray.flatMap(({ num, reference, package: packageVar, type, vatNumber, supplier, dataPod, naDzien, dataWplywu, pzItems, vatItems, invoice, invoiceDate, vatSummary }) =>
+  private _parseWnpzData(wnpzData: wnpzRawRecord[]): wnpzReadyRecord[] {
+    const wnpzReadyRecords = wnpzData.flatMap(({ num, reference, package: packageVar, type, vatNumber, supplier, dataPod, naDzien, dataWplywu, pzItems, vatItems, invoice, invoiceDate, vatSummary }) =>
       pzItems.map(PZItem => ({
         num,
         reference,
@@ -468,10 +470,11 @@ export class JpkService {
         invoiceAmount: PZItem.invoiceAmount,
       }))
     );
+    return wnpzReadyRecords
   }
 
-  private _parseMapzData(mapzObjectsArray: Array<mapzPrnData>): void {
-    this._mapzData = mapzObjectsArray.flatMap(({dataPod, dataWplywu, invoice, invoiceDate, naDzien, num, package: packageVar, pzItems, reference, supplier, type, vatItems, vatNumber, vatSummary }) =>
+  private _parseMapzData(mapzData: mapzRawRecord[]): mapzReadyRecord[] {
+    const mapzReadyRecords = mapzData.flatMap(({dataPod, dataWplywu, invoice, invoiceDate, naDzien, num, package: packageVar, pzItems, reference, supplier, type, vatItems, vatNumber, vatSummary }) =>
       pzItems.map(PZItem => ({
         num,
         reference,
@@ -494,6 +497,7 @@ export class JpkService {
         invoiceAmount: PZItem.invoiceAmount,
       }))
     );
+    return mapzReadyRecords
   }
 
 }
