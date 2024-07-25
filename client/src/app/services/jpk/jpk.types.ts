@@ -162,12 +162,6 @@ export type pznReadyRecord = {
   supplierNumber: string;
 }
 
-type PZNCurrencyData = {
-  original: string;
-  target: string;
-  rate: number;
-};
-
 type PZItem = {
   code: string;
   deliveryDate: Date;

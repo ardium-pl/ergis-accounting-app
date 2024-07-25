@@ -1,17 +1,11 @@
-import { Injectable, computed, importProvidersFrom, inject, signal } from '@angular/core';
-import { Tuple, parseNumber, sleep } from '@utils';
-import { parseStringPromise } from 'xml2js';
-import { ExcelService } from '../excel/excel.service';
-import { FaktoringService } from '../faktoring/faktoring.service';
-import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
-import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
+import { Injectable, computed, inject } from '@angular/core';
+import { Tuple, sleep } from '@utils';
 import { parseString, processors } from 'xml2js';
-import { xmlReadyRecord, csvRawRecord, rejzReadyRecord as rejzReadyRecord, rejzRawRecord, pznRawRecord, wnpzRawRecord, wnpzReadyRecord as wnpzReadyRecord, pznReadyRecord as pznReadyRecord, mapzRawRecord, mapzReadyRecord as mapzReadyRecord, csvReadyRecord, xmlRawRecord } from './jpk.types';
+import { ExcelService } from '../excel/excel.service';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
-import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
-import { PZNSubitem } from '@services/weird-prn-reader/pzn';
-import { PZItem } from '@services/weird-prn-reader/pz-item';
-import { map } from 'rxjs';
+import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
+import { csvRawRecord, csvReadyRecord, mapzRawRecord, mapzReadyRecord, pznRawRecord, pznReadyRecord, rejzRawRecord, rejzReadyRecord, wnpzRawRecord, wnpzReadyRecord, xmlRawRecord, xmlReadyRecord } from './jpk.types';
+import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 
 export const JpkFileName = {
   XML: 'Plik JPK_VAT',
@@ -53,7 +47,6 @@ const REQUIRED_VERIFICATION_COLUMNS = [
 })
 export class JpkService {
   private readonly excelService = inject(ExcelService);
-  private readonly faktoringService = inject(FaktoringService);
   private readonly prnReaderService = inject(WeirdPrnReaderService);
 
   readonly files: Tuple<JpkFile, 6> = [
@@ -297,7 +290,6 @@ export class JpkService {
       explicitRoot: false,
       tagNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw tagów
       attrNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw atrybutów
-      // valueProcessors: [this.parseNumbersWithCommas, processors.parseBooleans] // Przetwarza wartości liczbowe i zastępuje kropki przecinkami
     };
 
     let result: any;
@@ -311,11 +303,6 @@ export class JpkService {
 
     const xmlRawRecords: xmlRawRecord[] = result.ewidencja.zakupwiersz;
     return xmlRawRecords;
-  }
-
-  // przetwarzanie danych liczbowych :)
-  private parseNumbersWithCommas(value: string): number {
-    return parseFloat(value);
   }
 
   private parseStringToFloat(value: string): number {
