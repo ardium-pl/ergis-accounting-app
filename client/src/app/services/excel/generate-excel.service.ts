@@ -48,12 +48,12 @@ export class GenerateExcelService {
       'Przedpłaty', 'Numer faktury korygowanej', 'Opis', 'Numer własny', 'ZalacznikiTest'
     ],
     daneJpkZakupy: [
-      'ns1:LpZakupu', 'ns1:KodKrajuNadaniaTIN4', 'ns1:NrDostawcy', 'ns1:NazwaDostawcy',
-      'ns1:DowodZakupu', 'ns1:DataZakupu', 'ns1:DataWplywu', 'ns1:K_40', 'ns1:K_41',
-      'ns1:K_42', 'ns1:K_43', 'ns1:K_44', 'ns1:K_45', 'ns1:K_46', 'ns1:K_47', 'ns1:DokumentZakupu', 'ZmienionyNrDostawcy',
-      'Formuła 1', 'Formuła 2', 'Formuła 3', 'Formuła 4', 'Formuła 5', 'Formuła 6', 'Formuła 7', 'Formuła 8',
-      'Formuła 9', 'Formuła 10', 'Formuła 11', 'Formuła 12', 'Formuła 13', 'Formuła 14', 'Formuła 15', 'Formuła 16',
-      'Formuła 17', 'Formuła 18', 'Formuła 19', 'Formuła 20', 'Formuła 21', 'Formuła 22'
+      'Lp Zakupu', 'Kod Kraju Nadania TIN4', 'Nazwa Dostawcy', 'Numer Dostawcy',
+      'Dowod Zakupu', 'Data Zakupu', 'Data Wplywu', 'K40', 'K41',
+      'K42', 'K43', 'K44', 'K45', 'K46', 'K47', 'Dokument Zakupu', 'NIP i Numer',
+      'Numer Wewnętrzny', 'Ref', 'Rejestr', 'Netto w wal', 'Waluta', 'kurs', 'Typ faktury', 'Opis dekretacja',
+      'Status platnosci', 'Data platnosci', 'Termin platnosci', 'Data platnosci ze skontem', 'Wartosc skonta', 'Skonto', 'Kompensaty', 'Przedplaty',
+      'Ma ilosc', 'roznica FA_PZ', 'WN ilosc', 'Roznica FA_PZ2', 'Komentarz'
     ],
   };
 
@@ -141,8 +141,9 @@ export class GenerateExcelService {
       const rowIndex = index + 2;  // Zakładamy, że dane zaczynają się od drugiego wiersza (pierwszy wiersz to nagłówki)
       return [
         ...Object.values(record),
-        { f: `IF(B${rowIndex}="",C${rowIndex},IF(B${rowIndex}="AT",RIGHT(C${rowIndex},8),IF(B${rowIndex}="CY",LEFT(C${rowIndex},8),IF(B${rowIndex}="FR",RIGHT(C${rowIndex},9),IF(B${rowIndex}="EL",RIGHT(C${rowIndex},8),IF(B${rowIndex}="ES",MID(C${rowIndex},2,7),IF(B${rowIndex}="IE",LEFT(C${rowIndex},7),IF(B${rowIndex}="NL",REPLACE(C${rowIndex},10,1,""),C${rowIndex}))))))))` },
-        { f: `VLOOKUP(M${rowIndex},WeryfikacjaVAT!A:F,6,FALSE)` },
+        '',
+        { f: `CONCATENATE(IF(B${rowIndex}="",D${rowIndex},IF(B${rowIndex}="AT",RIGHT(D${rowIndex},8),IF(B${rowIndex}="CY",LEFT(D${rowIndex},8),IF(B${rowIndex}="FR",RIGHT(D${rowIndex},9),IF(B${rowIndex}="EL",RIGHT(D${rowIndex},8),IF(B${rowIndex}="ES",MID(D${rowIndex},2,7),IF(B${rowIndex}="IE",LEFT(D${rowIndex},7),IF(B${rowIndex}="NL",REPLACE(D${rowIndex},10,1,""),D${rowIndex})))))))),E${rowIndex})` },
+        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:F,6,FALSE)` },
         { f: `WeryfikacjaVAT!G${rowIndex}` },
         { f: `WeryfikacjaVAT!H${rowIndex}` },
         { f: `IFERROR((J${rowIndex} + O${rowIndex}) / S${rowIndex}, "-")` },
@@ -233,7 +234,7 @@ export class GenerateExcelService {
         pznSum,
         wnpzSum,
         mapzSum,
-        { f: `IF(B${rowIndex}=0,0,B${rowIndex}-C${rowIndex}-D${rowIndex})` },
+        { f: `IF(B${rowIndex}=0,IF(C${rowIndex}=0,D${rowIndex},0,B${rowIndex}-C${rowIndex}-D${rowIndex})` },
         { f: `IF(B${rowIndex}=0,"Brak dostawy",D${rowIndex}-B${rowIndex})` },
         { f: `D${rowIndex}-E${rowIndex}` },
         { f: `IF(B${rowIndex}=0,"Brak dostawy",C${rowIndex}-B${rowIndex})` },
