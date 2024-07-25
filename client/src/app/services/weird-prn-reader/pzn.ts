@@ -11,7 +11,7 @@ export class PZNItem {
     const line0 = lines.shift()!.split(' ');
     this.commission = line0.shift()!;
     this.supplierNumber = line0.shift()!;
-    this.supplierName = line0.join(' ');
+    this.supplierName = line0.join(' ').replace(/\s+\*\s+kontynuu\s+\*$/i, '');
 
     for (let i = 0; i < lines.length; i++) {
       if (i === 0) continue;
