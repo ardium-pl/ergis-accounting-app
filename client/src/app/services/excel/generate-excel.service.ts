@@ -205,7 +205,7 @@ export class GenerateExcelService {
     data.pzn.forEach(record => transactionCodes.add(record.specNum.split('/')[0]));
     data.wnpz.forEach(record => transactionCodes.add(record.code.split('/')[0]));
     data.mapz.forEach(record => transactionCodes.add(record.code.split('/')[0]));
-
+  
     const errorCheckData: ErrorCheckRow[] = [
       [
         'Unikalne Kody Transakcji',
@@ -222,19 +222,21 @@ export class GenerateExcelService {
         'Tabela 13'
       ]
     ];
-
+  
     Array.from(transactionCodes).forEach(code => {
-      const rowIndex = errorCheckData.length + 1;  // Because headers take up the first 4 rows
+      const rowIndex = errorCheckData.length + 1;  // Because headers take up the first row
       const pznSum = data.pzn.filter(record => record.specNum.split('/')[0] === code).reduce((sum, record) => sum + record.dokDost, 0);
       const wnpzSum = data.wnpz.filter(record => record.code.split('/')[0] === code).reduce((sum, record) => sum + record.PZAmount, 0);
       const mapzSum = data.mapz.filter(record => record.code.split('/')[0] === code).reduce((sum, record) => sum + record.PZAmount, 0);
-
-      errorCheckData.push([
+  
+      const formula = { f: `IF(B${rowIndex}=0,IF(C${rowIndex}=0,D${rowIndex},0),B${rowIndex}-C${rowIndex}-D${rowIndex})` };
+  
+      const errorCheckRow: ErrorCheckRow = [
         code,
         pznSum,
         wnpzSum,
         mapzSum,
-        { f: `IF(B${rowIndex}=0,IF(C${rowIndex}=0,D${rowIndex},0),B${rowIndex}-C${rowIndex}-D${rowIndex})` },
+        formula,
         { f: `IF(B${rowIndex}=0,"Brak dostawy",D${rowIndex}-B${rowIndex})` },
         { f: `D${rowIndex}-E${rowIndex}` },
         { f: `IF(B${rowIndex}=0,"Brak dostawy",C${rowIndex}-B${rowIndex})` },
@@ -242,16 +244,49 @@ export class GenerateExcelService {
         { f: `IF(D${rowIndex}=0,"Nie ma MAPZ",IF(F${rowIndex}<0,"dostawy niefakturowane",IF(F${rowIndex}=0,0,IF(G${rowIndex}=0,"dostawa z poprzedniego m-ca","różnica w ilości sprawdź"))))` },
         { f: `IF(C${rowIndex}=0,"Nie ma WNPZ",IF(H${rowIndex}<0,"dostawy niefakturowane",IF(H${rowIndex}=0,0,IF(I${rowIndex}=0,"dostawa z poprzedniego m-ca","brak dostawy sprawdź"))))` },
         { f: `B${rowIndex}-D${rowIndex}-C${rowIndex}` }
-      ]);
+      ];
+  
+      errorCheckData.push(errorCheckRow);
     });
-
+  
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(errorCheckData);
     this.applyHeaderStyles(ws, errorCheckData[0].length);
     ws['!cols'] = Array(errorCheckData[0].length).fill({ wch: 20 }); // Ustawienie szerokości kolumn
     this.applyRowStyles(ws, errorCheckData.length);
     ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(errorCheckData[0].length - 1)}1` };
-
+  
+    this.applyConditionalFormatting(ws, errorCheckData.length);
+  
     return ws;
+  }
+  
+  private applyConditionalFormatting(ws: XLSX.WorkSheet, numRows: number): void {
+    const lightRedColor = 'FFFFCCCC';
+  
+    for (let row = 1; row <= numRows; row++) {
+      const columnBAddress = XLSX.utils.encode_cell({ c: 1, r: row }); // Column B
+      const columnEAddress = XLSX.utils.encode_cell({ c: 4, r: row }); // Column E
+      const cellB = ws[columnBAddress];
+      const cellE = ws[columnEAddress];
+      const borderStyle = 'thin';
+      const borderColor = 'FFCCA3A3';
+      if (!cellB || !cellE) continue;
+  
+      if (cellB.v === 0) {
+        cellE.s = {
+          fill: {
+            patternType: "solid",
+            fgColor: { rgb: lightRedColor }
+          },
+          border: {
+            top: { style: borderStyle, color: { rgb: borderColor } },
+            bottom: { style: borderStyle, color: { rgb: borderColor } },
+            left: { style: borderStyle, color: { rgb: borderColor } },
+            right: { style: borderStyle, color: { rgb: borderColor } }
+          }
+        };
+      }
+    }
   }
 
   private saveExcelFile(buffer: ArrayBuffer, filename: string): void {
