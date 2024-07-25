@@ -18,6 +18,7 @@ export type xmlRawRecord = {
   k_46: string;
   k_47: string;
   datawplywu?: string;
+  dokumentzakupu?: string
 }
 
 export type xmlReadyRecord = {
@@ -36,6 +37,7 @@ export type xmlReadyRecord = {
   k_46: number;
   k_47: number;
   datawplywu?: string;
+  dokumentzakupu: string
 }
 
 export type csvRawRecord = {

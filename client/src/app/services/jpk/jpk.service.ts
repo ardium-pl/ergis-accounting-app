@@ -346,7 +346,8 @@ export class JpkService {
         k_44: this.parseStringToFloat(record.k_44),
         k_45: this.parseStringToFloat(record.k_45),
         k_46: this.parseStringToFloat(record.k_46),
-        k_47: this.parseStringToFloat(record.k_47)
+        k_47: this.parseStringToFloat(record.k_47),
+        dokumentzakupu: record.dokumentzakupu || ''
     }));
     return xmlReadyRecords
   }
