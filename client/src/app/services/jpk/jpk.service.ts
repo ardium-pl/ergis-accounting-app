@@ -1,9 +1,11 @@
+
 import { Injectable, computed, importProvidersFrom, inject, signal } from '@angular/core';
 import { Tuple, sleep } from '@utils';
-import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
+import { parseStringPromise } from 'xml2js';
 import { ExcelService } from '../excel/excel.service';
-import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { FaktoringService } from '../faktoring/faktoring.service';
+import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
+import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { parseString, processors } from 'xml2js';
 import { xmlObject, xmlRecord, readyVerifRecord, csvVerificationRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
