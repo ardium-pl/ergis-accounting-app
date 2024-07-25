@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as XLSX from 'xlsx-js-style';  // Use xlsx-js-style instead of xlsx
+import * as XLSX from 'xlsx-js-style';
 import { wnpzObject, pznObject, mapzObject, readyVerifRecord } from '../jpk/jpk.types';
 
 // deklaracje typów do przeniesienia do pliku types
@@ -24,12 +24,12 @@ export class GenerateExcelService {
   // nagłówki poszczególnych arkuszy w Excelu
   private headers: HeadersType = {
     mapz: [
-      'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT', 
+      'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT',
       '%VAT', 'Kwota VAT', 'Faktura', 'Data fak', 'Data pod', 'Na dzień', 'Data wpływu',
       'Kod PZ', 'Data dostawy', 'Ilość PZ', 'Ilość Faktura', 'check ilość'
     ],
     wnpz: [
-      'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT', 
+      'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT',
       '%VAT', 'Kwota VAT', 'Faktura', 'Data fak', 'Data pod', 'Na dzień', 'Data wpływu',
       'Kod PZ', 'Data dostawy', 'Ilość PZ', 'Ilość Faktura', 'check ilość'
     ],
@@ -42,19 +42,19 @@ export class GenerateExcelService {
       'VAT', '%VAT', 'Kwota VAT', 'Faktura', 'Data faktury'
     ],
     weryfikacjaVat: [
-      'NIP i numer', 'Lp', 'Numer faktury', 'Kontrahent', 'NIP', 'Numer wewnętrzny', 'Numer referencyjny', 
-      'Rejestr', 'Waluta', 'Typ faktury', 'Opis (dekretacja)', 'Status płatności', 'Data płatności', 
-      'Termin płatności', 'Data płatności ze skontem', 'Wartość skonta', 'Skonto', 'Kompensaty', 
+      'NIP i numer', 'Lp', 'Numer faktury', 'Kontrahent', 'NIP', 'Numer wewnętrzny', 'Numer referencyjny',
+      'Rejestr', 'Waluta', 'Typ faktury', 'Opis (dekretacja)', 'Status płatności', 'Data płatności',
+      'Termin płatności', 'Data płatności ze skontem', 'Wartość skonta', 'Skonto', 'Kompensaty',
       'Przedpłaty', 'Numer faktury korygowanej', 'Opis', 'Numer własny', 'ZalacznikiTest'
     ],
     daneJpkZakupy: [
-      'ns1:LpZakupu', 'ns1:KodKrajuNadaniaTIN4', 'ns1:NrDostawcy', 'ns1:NazwaDostawcy', 
-      'ns1:DowodZakupu', 'ns1:DataZakupu', 'ns1:DataWplywu', 'ns1:K_40', 'ns1:K_41', 
-      'ns1:K_42', 'ns1:K_43', 'ns1:K_44', 'ns1:K_45', 'ns1:K_46', 'ns1:K_47', 'ns1:DokumentZakupu', 'ZmienionyNrDostawcy', 
-      'Formuła 1', 'Formuła 2', 'Formuła 3', 'Formuła 4', 'Formuła 5', 'Formuła 6', 'Formuła 7', 'Formuła 8', 
-      'Formuła 9', 'Formuła 10', 'Formuła 11', 'Formuła 12', 'Formuła 13', 'Formuła 14', 'Formuła 15', 'Formuła 16', 
+      'ns1:LpZakupu', 'ns1:KodKrajuNadaniaTIN4', 'ns1:NrDostawcy', 'ns1:NazwaDostawcy',
+      'ns1:DowodZakupu', 'ns1:DataZakupu', 'ns1:DataWplywu', 'ns1:K_40', 'ns1:K_41',
+      'ns1:K_42', 'ns1:K_43', 'ns1:K_44', 'ns1:K_45', 'ns1:K_46', 'ns1:K_47', 'ns1:DokumentZakupu', 'ZmienionyNrDostawcy',
+      'Formuła 1', 'Formuła 2', 'Formuła 3', 'Formuła 4', 'Formuła 5', 'Formuła 6', 'Formuła 7', 'Formuła 8',
+      'Formuła 9', 'Formuła 10', 'Formuła 11', 'Formuła 12', 'Formuła 13', 'Formuła 14', 'Formuła 15', 'Formuła 16',
       'Formuła 17', 'Formuła 18', 'Formuła 19', 'Formuła 20', 'Formuła 21', 'Formuła 22'
-    ]
+    ],
   };
 
   // z wyparsowanych danych w jpk.service po naciśnięciu generuj tworzy plik Excel
@@ -83,8 +83,10 @@ export class GenerateExcelService {
 
       ws['!cols'] = this.calculateColumnWidths(recordsWithCheckAmount);
 
-      // Apply alternating row styles
       this.applyRowStyles(ws, recordsWithCheckAmount.length);
+
+      const headerLength = this.headers[sheetName as keyof HeadersType].length;
+      ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(headerLength - 1)}1` };
 
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
@@ -102,6 +104,7 @@ export class GenerateExcelService {
       XLSX.utils.sheet_add_json(vatVerificationSheet, vatVerificationData, { skipHeader: true, origin: 'A2' });
       vatVerificationSheet['!cols'] = this.calculateColumnWidths(vatVerificationData);
       this.applyRowStyles(vatVerificationSheet, vatVerificationData.length);
+      vatVerificationSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.weryfikacjaVat.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, vatVerificationSheet, 'weryfikacjaVat');
     } else {
       console.warn('No VAT verification data available');
@@ -109,6 +112,7 @@ export class GenerateExcelService {
 
     // Dodanie arkusza dane jpk zakupy
     const xmlData = this.addFormulasToXmlData(data.xml); // Dodanie formuł do danych XML
+    console.log(xmlData);
     if (xmlData && xmlData.length > 0) {
       const xmlSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
       XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.daneJpkZakupy], { origin: 'A1' });
@@ -116,10 +120,16 @@ export class GenerateExcelService {
       XLSX.utils.sheet_add_json(xmlSheet, xmlData, { skipHeader: true, origin: 'A2' });
       xmlSheet['!cols'] = this.calculateColumnWidths(xmlData);
       this.applyRowStyles(xmlSheet, xmlData.length);
+      // Apply auto filter
+      xmlSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.daneJpkZakupy.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, xmlSheet, 'dane jpk zakupy');
     } else {
       console.warn('No XML data available');
     }
+
+    // Dodanie pustego arkusza 'kursy'
+    const kursySheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
+    XLSX.utils.book_append_sheet(wb, kursySheet, 'kursy');
 
     // zapis pliku Excel
     const wbout: ArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -194,7 +204,7 @@ export class GenerateExcelService {
     data.pzn.forEach(record => transactionCodes.add(record.specNum.split('/')[0]));
     data.wnpz.forEach(record => transactionCodes.add(record.code.split('/')[0]));
     data.mapz.forEach(record => transactionCodes.add(record.code.split('/')[0]));
-  
+
     const errorCheckData: ErrorCheckRow[] = [
       [
         'Unikalne Kody Transakcji',
@@ -211,13 +221,13 @@ export class GenerateExcelService {
         'Tabela 13'
       ]
     ];
-  
+
     Array.from(transactionCodes).forEach(code => {
       const rowIndex = errorCheckData.length + 1;  // Because headers take up the first 4 rows
       const pznSum = data.pzn.filter(record => record.specNum.split('/')[0] === code).reduce((sum, record) => sum + record.dokDost, 0);
       const wnpzSum = data.wnpz.filter(record => record.code.split('/')[0] === code).reduce((sum, record) => sum + record.PZAmount, 0);
       const mapzSum = data.mapz.filter(record => record.code.split('/')[0] === code).reduce((sum, record) => sum + record.PZAmount, 0);
-  
+
       errorCheckData.push([
         code,
         pznSum,
@@ -233,12 +243,13 @@ export class GenerateExcelService {
         { f: `B${rowIndex}-D${rowIndex}-C${rowIndex}` }
       ]);
     });
-    
+
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(errorCheckData);
     this.applyHeaderStyles(ws, errorCheckData[0].length);
     ws['!cols'] = Array(errorCheckData[0].length).fill({ wch: 20 }); // Ustawienie szerokości kolumn
     this.applyRowStyles(ws, errorCheckData.length);
-  
+    ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(errorCheckData[0].length - 1)}1` };
+
     return ws;
   }
 
@@ -253,7 +264,7 @@ export class GenerateExcelService {
   }
 
   private applyRowStyles(worksheet: XLSX.WorkSheet, numRows: number): void {
-    const columnCount = worksheet['!cols']?.length || 0;  // Ensure columnCount is valid
+    const columnCount = worksheet['!cols']?.length || 0;  //liczba kolumn w danym arkuszu
     const borderColor = 'FFCCD7EE';
     const borderStyle = 'thin';
     const lightBlueColor = 'FFD9E1F2';
@@ -282,14 +293,14 @@ export class GenerateExcelService {
   }
 
   private applyHeaderStyles(worksheet: XLSX.WorkSheet, columnCount: number): void {
-    const headerColor = 'FF4472C4'; 
-    const fontColor = 'FFFFFFFF';   
+    const headerColor = 'FF4472C4';
+    const fontColor = 'FFFFFFFF';
     const borderColor = 'FFCCD7EE';
     const borderStyle = 'thin';
 
 
     for (let col = 0; col < columnCount; col++) {
-      const cellAddress = XLSX.utils.encode_cell({ c: col, r: 0 }); 
+      const cellAddress = XLSX.utils.encode_cell({ c: col, r: 0 });
       if (!worksheet[cellAddress]) continue;
 
       worksheet[cellAddress].s = {
@@ -311,3 +322,4 @@ export class GenerateExcelService {
     }
   }
 }
+

@@ -303,6 +303,7 @@ export class JpkService {
         throw new Error(`Error parsing XML: ${err.message}`);
       }
       result = res;
+      console.log(result);
     });
 
     return result;
@@ -310,9 +311,30 @@ export class JpkService {
 
   // parsuje obiekt odczytany z xml na listę recordów gotowych do excella
   private _parseXmlData(xmlObject: any): xmlRecord[] {
-    const xmlArray: xmlRecord[] = xmlObject.ewidencja.zakupwiersz
-    return xmlArray;
-  }
+    const xmlArray: xmlRecord[] = xmlObject.ewidencja.zakupwiersz;
+
+    // Ensure dataWplywu is always present and positioned correctly
+    return xmlArray.map(record => ({
+        lpzakupu: record.lpzakupu  || '',
+        kodkrajunadaniatin: record.kodkrajunadaniatin || '',
+        nazwadostawcy: record.nazwadostawcy || '',
+        nrdostawcy: record.nrdostawcy || '',
+        dowodzakupu: record.dowodzakupu || '',
+        datazakupu: record.datazakupu || '',
+        datawplywu: record.datawplywu || '',
+        k_40: record.k_40 || '',
+        k_41: record.k_41 || '',
+        k_42: record.k_42 || '',
+        k_43: record.k_43 || '',
+        k_44: record.k_44 || '',
+        k_45: record.k_45 || '',
+        k_46: record.k_46 || '',
+        k_47: record.k_47 || ''
+    }));
+}
+
+
+
 
   
 

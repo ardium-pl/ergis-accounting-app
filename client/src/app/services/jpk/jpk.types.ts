@@ -3,7 +3,21 @@ export type xmlObject = {
 }
 
 export type xmlRecord = {
-  
+  lpzakupu: string;
+  kodkrajunadaniatin: string;
+  nazwadostawcy: string;
+  nrdostawcy: string;
+  dowodzakupu: string;
+  datazakupu: string;
+  k_40: string;
+  k_41: string;
+  k_42: string;
+  k_43: string;
+  k_44: string;
+  k_45: string;
+  k_46: string;
+  k_47: string;
+  datawplywu?: string;
 }
 
 export type csvVerificationRecord = {
