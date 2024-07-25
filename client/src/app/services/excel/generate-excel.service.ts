@@ -87,6 +87,7 @@ export class GenerateExcelService {
 
       const headerLength = this.headers[sheetName as keyof HeadersType].length;
       ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(headerLength - 1)}1` };
+      this.applyConditionalFormatting(ws, recordsWithCheckAmount.length, sheetName);
 
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
@@ -255,36 +256,54 @@ export class GenerateExcelService {
     this.applyRowStyles(ws, errorCheckData.length);
     ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(errorCheckData[0].length - 1)}1` };
   
-    this.applyConditionalFormatting(ws, errorCheckData.length);
+    this.applyConditionalFormatting(ws, errorCheckData.length, 'ErrorCheck');
   
     return ws;
   }
   
-  private applyConditionalFormatting(ws: XLSX.WorkSheet, numRows: number): void {
+  private applyConditionalFormatting(ws: XLSX.WorkSheet, numRows: number, sheetName: string): void {
     const lightRedColor = 'FFFFCCCC';
+    const borderStyle = 'thin';
+    const borderColor = 'FFCCA3A3';
+  
+    const applyCellStyle = (cell: XLSX.CellObject, fillColor: string) => {
+      cell.s = {
+        fill: {
+          patternType: 'solid',
+          fgColor: { rgb: fillColor }
+        },
+        border: {
+          top: { style: borderStyle, color: { rgb: borderColor } },
+          bottom: { style: borderStyle, color: { rgb: borderColor } },
+          left: { style: borderStyle, color: { rgb: borderColor } },
+          right: { style: borderStyle, color: { rgb: borderColor } }
+        }
+      };
+    };
   
     for (let row = 1; row <= numRows; row++) {
       const columnBAddress = XLSX.utils.encode_cell({ c: 1, r: row }); // Column B
       const columnEAddress = XLSX.utils.encode_cell({ c: 4, r: row }); // Column E
+      const columnSAddress = XLSX.utils.encode_cell({ c: 17, r: row }); // Column S
+      const columnRAddress = XLSX.utils.encode_cell({ c: 18, r: row }); // Column R
+      const columnTAddress = XLSX.utils.encode_cell({ c: 19, r: row }); // Column T
+  
+      const cellT = ws[columnTAddress];
       const cellB = ws[columnBAddress];
       const cellE = ws[columnEAddress];
-      const borderStyle = 'thin';
-      const borderColor = 'FFCCA3A3';
-      if (!cellB || !cellE) continue;
+      const cellS = ws[columnSAddress];
+      const cellR = ws[columnRAddress];
   
-      if (cellB.v === 0) {
-        cellE.s = {
-          fill: {
-            patternType: "solid",
-            fgColor: { rgb: lightRedColor }
-          },
-          border: {
-            top: { style: borderStyle, color: { rgb: borderColor } },
-            bottom: { style: borderStyle, color: { rgb: borderColor } },
-            left: { style: borderStyle, color: { rgb: borderColor } },
-            right: { style: borderStyle, color: { rgb: borderColor } }
-          }
-        };
+      if (sheetName === 'mapz' || sheetName === 'wnpz') {
+        if (cellS && cellR && cellS.v !== cellR.v) {
+          applyCellStyle(cellT, lightRedColor);
+        }
+      }
+  
+      if (sheetName === 'ErrorCheck') {
+        if (cellB && cellE && cellB.v === 0) {
+          applyCellStyle(cellE, lightRedColor);
+        }
       }
     }
   }
