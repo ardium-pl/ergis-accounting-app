@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx-js-style';
-import { wnpzObject, pznObject, mapzObject, readyVerifRecord } from '../jpk/jpk.types';
+import { wnpzObject, pznObject, mapzObject, csvReadyRecord } from '../jpk/jpk.types';
 
 // deklaracje typów do przeniesienia do pliku types
 type CellValue = string | number | { f: string };
@@ -58,7 +58,7 @@ export class GenerateExcelService {
   };
 
   // z wyparsowanych danych w jpk.service po naciśnięciu generuj tworzy plik Excel
-  public generateExcel(data: { rejz: any[], pzn: pznObject[], wnpz: wnpzObject[], mapz: mapzObject[], vatVerification: readyVerifRecord[], xml: any[] }): void {
+  public generateExcel(data: { rejz: any[], pzn: pznObject[], wnpz: wnpzObject[], mapz: mapzObject[], vatVerification: csvReadyRecord[], xml: any[] }): void {
     if (!data) {
       console.error('Data is undefined or null');
       return;
@@ -147,7 +147,7 @@ export class GenerateExcelService {
         { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:F,6,FALSE)` },
         { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:G,7,FALSE)` },
         { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:H,8,FALSE)` },
-        { f: `IFERROR((J${rowIndex} + O${rowIndex}) / S${rowIndex}, "-")` },
+        { f: `IFERROR(( H${rowIndex} + J${rowIndex}) / W${rowIndex}, "-")` },
         { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:I,9,FALSE)` },
         { f: `IFERROR(IF(R${rowIndex}="PLN",1,VLOOKUP(F${rowIndex}-1,kursy!E:F,2,TRUE)),"-")` },
         { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:J,10,FALSE)` },

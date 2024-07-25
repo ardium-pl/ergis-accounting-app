@@ -1,12 +1,12 @@
 import { Injectable, computed, importProvidersFrom, inject, signal } from '@angular/core';
-import { Tuple, sleep } from '@utils';
+import { Tuple, parseNumber, sleep } from '@utils';
 import { parseStringPromise } from 'xml2js';
 import { ExcelService } from '../excel/excel.service';
 import { FaktoringService } from '../faktoring/faktoring.service';
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { parseString, processors } from 'xml2js';
-import { xmlObject, xmlRecord, readyVerifRecord, csvVerificationRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
+import { xmlObject, xmlRecord, csvRawRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject, csvReadyRecord } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
 import { PZNSubitem } from '@services/weird-prn-reader/pzn';
@@ -68,7 +68,7 @@ export class JpkService {
     return this.files.every(file => file.state() === JpkFileState.OK);
   });
 
-  private _vatVerificationData: readyVerifRecord[] = [];
+  private _vatVerificationData: csvReadyRecord[] = [];
   private _xmlData: xmlRecord[] = [];
   private _rejzData: rejzObject[] = [];
   private _pznData: pznObject[] = [];
@@ -79,7 +79,7 @@ export class JpkService {
     return this._xmlData;
   }
 
-  get vatVerificationData(): Array<readyVerifRecord> {
+  get vatVerificationData(): Array<csvReadyRecord> {
     return this._vatVerificationData;
   }
 
@@ -118,8 +118,6 @@ export class JpkService {
     }
     let validation: [string, string] | false;
     let fileIndex: number;
-    let csvObjects: csvVerificationRecord[];
-    let xmlObjects: object;
 
     switch (determinedName) {
       case JpkFileName.XML:
@@ -136,10 +134,11 @@ export class JpkService {
       case JpkFileName.WeryfikacjaVAT:
         validation = this._validateVerificationFile(fileContent);
         if (!validation) {
-          const csvData = this.excelService.readAsCsv<keyof csvVerificationRecord>(fileContent);
-          const csvObjects = csvData.filter(this._isCsvVerifRecord);
-          console.log(csvObjects)
-          this._parseVatVerificationData(csvObjects);
+          const csvData = this.excelService.readAsCsv<keyof csvRawRecord>(fileContent);
+          const csvRawRecords = csvData.filter(this._isCsvVerifRecord);
+          console.log(csvRawRecords)
+          const csvReadyRecords =  this._parseVatVerificationData(csvRawRecords);
+          this._vatVerificationData = csvReadyRecords
           console.log(this._vatVerificationData)
         }
         fileIndex = 1;
@@ -295,7 +294,8 @@ export class JpkService {
       normalizeTags: true,
       explicitRoot: false,
       tagNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw tagów
-      attrNameProcessors: [processors.stripPrefix] // Usuwa przedrostki przestrzeni nazw z nazw atrybutów
+      attrNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw atrybutów
+      valueProcessors: [this.parseNumbersWithCommas, processors.parseBooleans] // Przetwarza wartości liczbowe i zastępuje kropki przecinkami
     };
 
     let result: any;
@@ -308,6 +308,21 @@ export class JpkService {
     });
 
     return result;
+  }
+
+  // przetwarzanie danych liczbowych :)
+  private parseNumbersWithCommas(value: string): number {
+    return parseFloat(value);
+  }
+
+  private parseStringToFloat(value: string): number {
+    if (value==='') {
+      return 0;
+    }
+    const normalizedValue = value.replace(',', '.'); // Zamiana przecinków na kropki
+    const numberValue = parseFloat(normalizedValue);
+    console.log(numberValue)
+    return numberValue
   }
 
   // parsuje obiekt odczytany z xml na listę recordów gotowych do excella
@@ -323,24 +338,19 @@ export class JpkService {
         dowodzakupu: record.dowodzakupu || '',
         datazakupu: record.datazakupu || '',
         datawplywu: record.datawplywu || '',
-        k_40: record.k_40 || '',
-        k_41: record.k_41 || '',
-        k_42: record.k_42 || '',
-        k_43: record.k_43 || '',
-        k_44: record.k_44 || '',
-        k_45: record.k_45 || '',
-        k_46: record.k_46 || '',
-        k_47: record.k_47 || ''
+        k_40: record.k_40,
+        k_41: record.k_41,
+        k_42: record.k_42,
+        k_43: record.k_43,
+        k_44: record.k_44,
+        k_45: record.k_45,
+        k_46: record.k_46,
+        k_47: record.k_47
     }));
-}
+  }
 
-
-
-
-  
-
-  private _parseVatVerificationData(csvContent: Array<csvVerificationRecord>): void {
-    this._vatVerificationData = csvContent.map(vatRecord => ({
+  private _parseVatVerificationData(csvContent: Array<csvRawRecord>): csvReadyRecord[] {
+    const csvReadyRecords = csvContent.map(vatRecord => ({
       ['NIP i numer']: vatRecord.NIP + vatRecord['Numer faktury'].substring(0, 20),
       Lp: vatRecord.Lp,
       'Numer faktury': vatRecord['Numer faktury'],
@@ -356,18 +366,19 @@ export class JpkService {
       'Data płatności': vatRecord['Data płatności'],
       'Termin płatności': vatRecord['Termin płatności'],
       'Data płatności ze skontem': vatRecord['Data płatności ze skontem'],
-      'Wartość skonta': vatRecord['Wartość skonta'],
-      Skonto: vatRecord.Skonto,
-      Kompensaty: vatRecord.Kompensaty,
-      Przedpłaty: vatRecord.Przedpłaty,
+      'Wartość skonta': this.parseStringToFloat(vatRecord['Wartość skonta']),
+      Skonto: this.parseStringToFloat(vatRecord.Skonto),
+      Kompensaty: this.parseStringToFloat(vatRecord.Kompensaty),
+      Przedpłaty: this.parseStringToFloat(vatRecord.Przedpłaty),
       'Numer faktury korygowanej': vatRecord['Numer faktury korygowanej'],
       Opis: vatRecord.Opis,
       'Numer własny': vatRecord['Numer własny'],
       'ZalacznikiTest': vatRecord['ZalacznikiTest']
     }));
+    return csvReadyRecords
   }
 
-  private _isCsvVerifRecord(record: any): record is csvVerificationRecord {
+  private _isCsvVerifRecord(record: any): record is csvRawRecord {
     const requiredKeys = [
       'Data płatności',
       'Data płatności ze skontem',

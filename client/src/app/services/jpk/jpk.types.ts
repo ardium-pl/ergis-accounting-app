@@ -9,18 +9,18 @@ export type xmlRecord = {
   nrdostawcy: string;
   dowodzakupu: string;
   datazakupu: string;
-  k_40: string;
-  k_41: string;
-  k_42: string;
-  k_43: string;
-  k_44: string;
-  k_45: string;
-  k_46: string;
-  k_47: string;
+  k_40: number;
+  k_41: number;
+  k_42: number;
+  k_43: number;
+  k_44: number;
+  k_45: number;
+  k_46: number;
+  k_47: number;
   datawplywu?: string;
 }
 
-export type csvVerificationRecord = {
+export type csvRawRecord = {
   'Data płatności': string;
   'Data płatności ze skontem': string;
   Kompensaty: string;
@@ -45,11 +45,30 @@ export type csvVerificationRecord = {
   ZalacznikiTest: string;
 };
 
-export type readyVerifRecord = {
-  'NIP i numer': string;
-} & csvVerificationRecord;
-
-
+export type csvReadyRecord = {
+  'Data płatności': string;
+  'Data płatności ze skontem': string;
+  Kompensaty: number;
+  Kontrahent: string;
+  Lp: string;
+  NIP: string;
+  'Numer faktury': string;
+  'Numer faktury korygowanej': string;
+  'Numer referencyjny': string;
+  'Numer wewnętrzny': string;
+  'Numer własny': string;
+  Opis: string;
+  'Opis (dekretacja)': string;
+  Przedpłaty: number;
+  Rejestr: string;
+  Skonto: number;
+  'Status płatności': string;
+  'Termin płatności': string;
+  'Typ faktury': string;
+  Waluta: string;
+  'Wartość skonta': number;
+  ZalacznikiTest: string;
+};
 
 type VatItem = {
   netValue: number;
