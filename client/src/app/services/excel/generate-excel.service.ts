@@ -11,7 +11,7 @@ type HeadersType = {
   PZN: string[];
   RejZ: string[];
   WeryfikacjaVAT: string[];
-  DaneJPKZakupy: string[];
+  DaneJpkZakupy: string[];
 };
 
 @Injectable({
@@ -47,7 +47,7 @@ export class GenerateExcelService {
       'Termin płatności', 'Data płatności ze skontem', 'Wartość skonta', 'Skonto', 'Kompensaty',
       'Przedpłaty', 'Numer faktury korygowanej', 'Opis', 'Numer własny', 'ZalacznikiTest'
     ],
-    DaneJPKZakupy: [
+    DaneJpkZakupy: [
       'Lp Zakupu', 'Kod Kraju Nadania TIN4', 'Nazwa Dostawcy', 'Numer Dostawcy',
       'Dowod Zakupu', 'Data Zakupu', 'Data Wplywu', 'K40', 'K41',
       'K42', 'K43', 'K44', 'K45', 'K46', 'K47', 'Dokument Zakupu', 'NIP i Numer',
@@ -67,8 +67,9 @@ export class GenerateExcelService {
     // utworzenie skoroszytu
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
 
-    // iteruje po parach nazwa, dane tworząc arkusze i uzupełniając je recordami
-    Object.entries(data).forEach(([sheetName, records]) => {
+    // Iteruje tylko po arkuszach MAPZ, WNPZ, PZN i RejZ
+    ['MAPZ', 'WNPZ', 'PZN', 'RejZ'].forEach(sheetName => {
+      const records = data[sheetName as keyof typeof data];
       if (!records || !this.headers[sheetName as keyof HeadersType]) {
         console.error(`Records or headers for sheet ${sheetName} are undefined`);
         return;
@@ -96,7 +97,7 @@ export class GenerateExcelService {
     const errorCheckSheet = this.createErrorCheckSheet(data);
     XLSX.utils.book_append_sheet(wb, errorCheckSheet, 'ErrorCheck');
 
-    // Dodanie arkusza Weryfikacja VAT
+    // Dodanie arkusza WeryfikacjaVAT
     const vatVerificationData = data.WeryfikacjaVAT;
     if (vatVerificationData && vatVerificationData.length > 0) {
       const vatVerificationSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
@@ -111,18 +112,18 @@ export class GenerateExcelService {
       console.warn('No VAT verification data available');
     }
 
-    // Dodanie arkusza Dane JPK zakupy
+    // Dodanie arkusza DaneJpkZakupy
     const xmlData = this.addFormulasToXmlData(data.DaneJPKZakupy); // Dodanie formuł do danych XML
     console.log(xmlData);
     if (xmlData && xmlData.length > 0) {
       const xmlSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
-      XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.DaneJPKZakupy], { origin: 'A1' });
-      this.applyHeaderStyles(xmlSheet, this.headers.DaneJPKZakupy.length);
+      XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.DaneJpkZakupy], { origin: 'A1' });
+      this.applyHeaderStyles(xmlSheet, this.headers.DaneJpkZakupy.length);
       XLSX.utils.sheet_add_json(xmlSheet, xmlData, { skipHeader: true, origin: 'A2' });
       xmlSheet['!cols'] = this.calculateColumnWidths(xmlData);
       this.applyRowStyles(xmlSheet, xmlData.length);
       // Apply auto filter
-      xmlSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.DaneJPKZakupy.length - 1)}1` };
+      xmlSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.DaneJpkZakupy.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, xmlSheet, 'Dane JPK zakupy');
     } else {
       console.warn('No XML data available');
@@ -144,22 +145,22 @@ export class GenerateExcelService {
         ...Object.values(record),
         '',
         { f: `CONCATENATE(IF(B${rowIndex}="",D${rowIndex},IF(B${rowIndex}="AT",RIGHT(D${rowIndex},8),IF(B${rowIndex}="CY",LEFT(D${rowIndex},8),IF(B${rowIndex}="FR",RIGHT(D${rowIndex},9),IF(B${rowIndex}="EL",RIGHT(D${rowIndex},8),IF(B${rowIndex}="ES",MID(D${rowIndex},2,7),IF(B${rowIndex}="IE",LEFT(D${rowIndex},7),IF(B${rowIndex}="NL",REPLACE(D${rowIndex},10,1,""),D${rowIndex})))))))),E${rowIndex})` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:F,6,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:G,7,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:H,8,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:F,6,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:G,7,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:H,8,FALSE)` },
         { f: `IFERROR(( H${rowIndex} + J${rowIndex}) / W${rowIndex}, "-")` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:I,9,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:I,9,FALSE)` },
         { f: `IFERROR(IF(R${rowIndex}="PLN",1,VLOOKUP(F${rowIndex}-1,kursy!E:F,2,TRUE)),"-")` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:J,10,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:K,11,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:L,12,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:M,13,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:N,14,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:O,15,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:P,16,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:Q,17,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:R,18,FALSE)` },
-        { f: `VLOOKUP(Q${rowIndex},WeryfikacjaVAT!A:S,19,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:J,10,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:K,11,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:L,12,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:M,13,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:N,14,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:O,15,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:P,16,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:Q,17,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:R,18,FALSE)` },
+        { f: `VLOOKUP(Q${rowIndex},'Weryfikacja VAT'!A:S,19,FALSE)` },
         { f: `IFERROR(VLOOKUP(R${rowIndex},MAPZ!C:T,17,FALSE),"Nie podane w MAPZ")` },
         { f: `IFERROR(VLOOKUP(R${rowIndex},MAPZ!C:T,18,FALSE),"Nie podane w MAPZ")` },
         { f: `IFERROR(VLOOKUP(R${rowIndex},WNPZ!C:T,17,FALSE),"Nie podane w WNPZ")` },

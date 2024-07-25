@@ -6,7 +6,7 @@ import { FaktoringService } from '../faktoring/faktoring.service';
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { parseString, processors } from 'xml2js';
-import { xmlObject, xmlRecord as xmlReadyRecord, csvRawRecord, rejzReadyRecord as rejzReadyRecord, rejzRawRecord, pznRawRecord, wnpzRawRecord, wnpzReadyRecord as wnpzReadyRecord, pznReadyRecord as pznReadyRecord, mapzRawRecord, mapzReadyRecord as mapzReadyRecord, csvReadyRecord } from './jpk.types';
+import { xmlReadyRecord, csvRawRecord, rejzReadyRecord as rejzReadyRecord, rejzRawRecord, pznRawRecord, wnpzRawRecord, wnpzReadyRecord as wnpzReadyRecord, pznReadyRecord as pznReadyRecord, mapzRawRecord, mapzReadyRecord as mapzReadyRecord, csvReadyRecord, xmlRawRecord } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
 import { PZNSubitem } from '@services/weird-prn-reader/pzn';
@@ -127,7 +127,9 @@ export class JpkService {
 
         if (!validation) {
           const xmlData = this.readAsXml(fileContent);
+          console.log(xmlData)
           this._xmlData = this._parseXmlData(xmlData)
+          console.log(this._xmlData)
         }
         fileIndex = 0;
         break;
@@ -286,7 +288,7 @@ export class JpkService {
     return ['Dodany plik nie wygląda na poprawny plik MAPZ. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
   }
 
-  private readAsXml(xmlContent: string): any {
+  private readAsXml(xmlContent: string): xmlRawRecord[] {
     const options = {
       explicitArray: false,
       mergeAttrs: true,
@@ -295,7 +297,7 @@ export class JpkService {
       explicitRoot: false,
       tagNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw tagów
       attrNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw atrybutów
-      valueProcessors: [this.parseNumbersWithCommas, processors.parseBooleans] // Przetwarza wartości liczbowe i zastępuje kropki przecinkami
+      // valueProcessors: [this.parseNumbersWithCommas, processors.parseBooleans] // Przetwarza wartości liczbowe i zastępuje kropki przecinkami
     };
 
     let result: any;
@@ -307,7 +309,8 @@ export class JpkService {
       console.log(result);
     });
 
-    return result;
+    const xmlRawRecords: xmlRawRecord[] = result.ewidencja.zakupwiersz;
+    return xmlRawRecords;
   }
 
   // przetwarzanie danych liczbowych :)
@@ -326,11 +329,9 @@ export class JpkService {
   }
 
   // parsuje obiekt odczytany z xml na listę recordów gotowych do excella
-  private _parseXmlData(xmlObject: any): xmlReadyRecord[] {
-    const xmlArray: xmlReadyRecord[] = xmlObject.ewidencja.zakupwiersz;
+  private _parseXmlData(xmlData: xmlRawRecord[]): xmlReadyRecord[] {
 
-    // Ensure dataWplywu is always present and positioned correctly
-    return xmlArray.map(record => ({
+    const xmlReadyRecords =  xmlData.map(record => ({
         lpzakupu: record.lpzakupu  || '',
         kodkrajunadaniatin: record.kodkrajunadaniatin || '',
         nazwadostawcy: record.nazwadostawcy || '',
@@ -338,15 +339,16 @@ export class JpkService {
         dowodzakupu: record.dowodzakupu || '',
         datazakupu: record.datazakupu || '',
         datawplywu: record.datawplywu || '',
-        k_40: record.k_40,
-        k_41: record.k_41,
-        k_42: record.k_42,
-        k_43: record.k_43,
-        k_44: record.k_44,
-        k_45: record.k_45,
-        k_46: record.k_46,
-        k_47: record.k_47
+        k_40: this.parseStringToFloat(record.k_40),
+        k_41: this.parseStringToFloat(record.k_41),
+        k_42: this.parseStringToFloat(record.k_42),
+        k_43: this.parseStringToFloat(record.k_43),
+        k_44: this.parseStringToFloat(record.k_44),
+        k_45: this.parseStringToFloat(record.k_45),
+        k_46: this.parseStringToFloat(record.k_46),
+        k_47: this.parseStringToFloat(record.k_47)
     }));
+    return xmlReadyRecords
   }
 
   private _parseVatVerificationData(csvContent: Array<csvRawRecord>): csvReadyRecord[] {
