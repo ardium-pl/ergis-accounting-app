@@ -1,6 +1,4 @@
 import { parseNumberWithThousandSeparator } from "@utils";
-
-
 export class PZItem {
   public readonly code!: string; // Kod PZ
   public readonly deliveryDate!: Date; // Data dostawy
@@ -15,7 +13,7 @@ export class PZItem {
     this.code = PZ[1];
     this.deliveryDate = new Date('20' + PZ[2]);
     
-    const [_, PZAmount, PZAmountUnit] = PZ[3].match(/([0-9,.]+)([a-z]+)/i) ?? [];
+    const [_, PZAmount, PZAmountUnit] = PZ[3].match(/([-]?[0-9,.]+)([a-z]+)/i) ?? [];
     if (!PZAmount || !PZAmountUnit) {
       throw new Error('Cannot parse PZ amount or unit.');
     }
