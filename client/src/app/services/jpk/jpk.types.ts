@@ -127,7 +127,6 @@ export type pznRawRecord = {
   subitems: PZNSubitem[];
   supplierName: string;
   supplierNumber: string;
-  // currencyInfo: PZNCurrencyData;
 };
 
 export type pznReadyRecord = {
@@ -189,7 +188,6 @@ export type wnpzReadyRecord = {
   code: string;
   deliveryDate: Date;
   PZAmount: number;
-  // PZAmountUnit: string;
   invoiceAmount: number;
   netValue: number;
   vat: string;
@@ -197,7 +195,6 @@ export type wnpzReadyRecord = {
   vatValue: number;
   invoice: string;
   invoiceDate: Date;
-  // grossValue: number;
 }
 
 export type mapzRawRecord = {

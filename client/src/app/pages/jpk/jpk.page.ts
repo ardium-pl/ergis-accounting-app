@@ -59,12 +59,12 @@ export class JpkPage {
       return;
     }
     const data = {
-      rejz: this.jpkService.rejzData,
-      pzn: this.jpkService.pznData,
-      wnpz: this.jpkService.wnpzData,
-      mapz: this.jpkService.mapzData,
-      vatVerification: this.jpkService.vatVerificationData,
-      xml: this.jpkService.xmlData
+      RejZ: this.jpkService.rejzData,
+      PZN: this.jpkService.pznData,
+      WNPZ: this.jpkService.wnpzData,
+      MAPZ: this.jpkService.mapzData,
+      WeryfikacjaVAT: this.jpkService.vatVerificationData,
+      DaneJPKZakupy: this.jpkService.xmlData
     };
     this.excelService.generateExcel(data);
   }
