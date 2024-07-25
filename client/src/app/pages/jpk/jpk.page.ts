@@ -51,9 +51,6 @@ export class JpkPage {
 
   // jeśli wszystkie pliki przeszły walidacje i się wyparsowały po naciśnięciu generuj z danych tworzony jest plik excell
   onGenerateButtonClick() {
-    console.log('Generating excel file');
-    console.log('Parsed RejZ Data:', this.jpkService.rejzData);
-    console.log('Prepared VAT Verification Data:', this.jpkService.vatVerificationData);
     if (!this.jpkService.areAllFilesOK()) {
       console.log("Not all files are ready for generation.");
       return;

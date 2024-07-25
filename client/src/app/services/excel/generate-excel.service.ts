@@ -114,7 +114,6 @@ export class GenerateExcelService {
 
     // Dodanie arkusza DaneJpkZakupy
     const xmlData = this.addFormulasToXmlData(data.DaneJPKZakupy); // Dodanie formuł do danych XML
-    console.log(xmlData);
     if (xmlData && xmlData.length > 0) {
       const xmlSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
       XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.DaneJpkZakupy], { origin: 'A1' });
