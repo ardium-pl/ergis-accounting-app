@@ -234,7 +234,7 @@ export class GenerateExcelService {
         pznSum,
         wnpzSum,
         mapzSum,
-        { f: `IF(B${rowIndex}=0,IF(C${rowIndex}=0,D${rowIndex},0,B${rowIndex}-C${rowIndex}-D${rowIndex})` },
+        { f: `IF(B${rowIndex}=0,IF(C${rowIndex}=0,D${rowIndex},0),B${rowIndex}-C${rowIndex}-D${rowIndex})` },
         { f: `IF(B${rowIndex}=0,"Brak dostawy",D${rowIndex}-B${rowIndex})` },
         { f: `D${rowIndex}-E${rowIndex}` },
         { f: `IF(B${rowIndex}=0,"Brak dostawy",C${rowIndex}-B${rowIndex})` },
