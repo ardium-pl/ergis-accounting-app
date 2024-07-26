@@ -120,9 +120,7 @@ export class JpkService {
 
         if (!validation) {
           const xmlData = this.readAsXml(fileContent);
-          console.log(xmlData)
           this._xmlData = this._parseXmlData(xmlData)
-          console.log(this._xmlData)
         }
         fileIndex = 0;
         break;
@@ -298,7 +296,6 @@ export class JpkService {
         throw new Error(`Error parsing XML: ${err.message}`);
       }
       result = res;
-      console.log(result);
     });
 
     const xmlRawRecords: xmlRawRecord[] = result.ewidencja.zakupwiersz;

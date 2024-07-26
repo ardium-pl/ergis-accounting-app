@@ -21,6 +21,17 @@ export class GenerateExcelService {
 
   constructor() { }
 
+  // Kolory dla każdego arkusza
+  private sheetColors: { [key: string]: { headerColor: string, rowColor: string, alternateRowColor: string } } = {
+    MAPZ: { headerColor: 'FF4472C4', rowColor: 'FFFFFFFF', alternateRowColor: 'FFD9E1F2' },
+    WNPZ: { headerColor: 'FF29B6F6', rowColor: 'FFFFFFFF', alternateRowColor: 'FFE1F5FE' },
+    PZN: { headerColor: 'FFEC407A', rowColor: 'FFFFFFFF', alternateRowColor: 'FFFCE4EC' },
+    RejZ: { headerColor: 'FF92D050', rowColor: 'FFFFFFFF', alternateRowColor: 'FFE2EFDA' },
+    WeryfikacjaVAT: { headerColor: 'FF00B050', rowColor: 'FFFFFFFF', alternateRowColor: 'FFD9EAD3' },
+    DaneJpkZakupy: { headerColor: 'FFFFC000', rowColor: 'FFFFFFFF', alternateRowColor: 'FFFFF2CC' },
+    ErrorCheck: { headerColor: 'FF9E9E9E', rowColor: 'FFFFFFFF', alternateRowColor: 'FFEEEEEE' }
+  };
+
   // nagłówki poszczególnych arkuszy w Excelu
   private headers: HeadersType = {
     MAPZ: [
@@ -79,12 +90,12 @@ export class GenerateExcelService {
       const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
 
       XLSX.utils.sheet_add_aoa(ws, [this.headers[sheetName as keyof HeadersType]], { origin: 'A1' });
-      this.applyHeaderStyles(ws, this.headers[sheetName as keyof HeadersType].length);
+      this.applyHeaderStyles(ws, this.headers[sheetName as keyof HeadersType].length, sheetName);
       XLSX.utils.sheet_add_json(ws, recordsWithCheckAmount, { skipHeader: true, origin: 'A2' });
 
       ws['!cols'] = this.calculateColumnWidths(recordsWithCheckAmount);
 
-      this.applyRowStyles(ws, recordsWithCheckAmount.length);
+      this.applyRowStyles(ws, recordsWithCheckAmount.length, sheetName);
 
       const headerLength = this.headers[sheetName as keyof HeadersType].length;
       ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(headerLength - 1)}1` };
@@ -102,10 +113,10 @@ export class GenerateExcelService {
     if (vatVerificationData && vatVerificationData.length > 0) {
       const vatVerificationSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
       XLSX.utils.sheet_add_aoa(vatVerificationSheet, [this.headers.WeryfikacjaVAT], { origin: 'A1' });
-      this.applyHeaderStyles(vatVerificationSheet, this.headers.WeryfikacjaVAT.length);
+      this.applyHeaderStyles(vatVerificationSheet, this.headers.WeryfikacjaVAT.length, 'WeryfikacjaVAT');
       XLSX.utils.sheet_add_json(vatVerificationSheet, vatVerificationData, { skipHeader: true, origin: 'A2' });
       vatVerificationSheet['!cols'] = this.calculateColumnWidths(vatVerificationData);
-      this.applyRowStyles(vatVerificationSheet, vatVerificationData.length);
+      this.applyRowStyles(vatVerificationSheet, vatVerificationData.length, 'WeryfikacjaVAT');
       vatVerificationSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.WeryfikacjaVAT.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, vatVerificationSheet, 'Weryfikacja VAT');
     } else {
@@ -117,10 +128,10 @@ export class GenerateExcelService {
     if (xmlData && xmlData.length > 0) {
       const xmlSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
       XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.DaneJpkZakupy], { origin: 'A1' });
-      this.applyHeaderStyles(xmlSheet, this.headers.DaneJpkZakupy.length);
+      this.applyHeaderStyles(xmlSheet, this.headers.DaneJpkZakupy.length, 'DaneJpkZakupy');
       XLSX.utils.sheet_add_json(xmlSheet, xmlData, { skipHeader: true, origin: 'A2' });
       xmlSheet['!cols'] = this.calculateColumnWidths(xmlData);
-      this.applyRowStyles(xmlSheet, xmlData.length);
+      this.applyRowStyles(xmlSheet, xmlData.length, 'DaneJpkZakupy');
       // Apply auto filter
       xmlSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.DaneJpkZakupy.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, xmlSheet, 'Dane JPK zakupy');
@@ -250,9 +261,9 @@ export class GenerateExcelService {
     });
   
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(errorCheckData);
-    this.applyHeaderStyles(ws, errorCheckData[0].length);
+    this.applyHeaderStyles(ws, errorCheckData[0].length, 'ErrorCheck');
     ws['!cols'] = Array(errorCheckData[0].length).fill({ wch: 20 }); // Ustawienie szerokości kolumn
-    this.applyRowStyles(ws, errorCheckData.length);
+    this.applyRowStyles(ws, errorCheckData.length, 'ErrorCheck');
     ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(errorCheckData[0].length - 1)}1` };
   
     this.applyConditionalFormatting(ws, errorCheckData.length, 'ErrorCheck');
@@ -317,14 +328,16 @@ export class GenerateExcelService {
     window.URL.revokeObjectURL(url);
   }
 
-  private applyRowStyles(worksheet: XLSX.WorkSheet, numRows: number): void {
+  private applyRowStyles(worksheet: XLSX.WorkSheet, numRows: number, sheetName: string): void {
     const columnCount = worksheet['!cols']?.length || 0;  //liczba kolumn w danym arkuszu
     const borderColor = 'FFCCD7EE';
     const borderStyle = 'thin';
-    const lightBlueColor = 'FFD9E1F2';
+    const colors = this.sheetColors[sheetName] || this.sheetColors['default'];
+    const rowColor = colors.rowColor;
+    const alternateRowColor = colors.alternateRowColor;
 
     for (let row = 1; row <= numRows; row++) {
-      const rowColor = row % 2 === 0 ? lightBlueColor : 'FFFFFFFF'; // Alternate row color
+      const currentRowColor = row % 2 === 0 ? alternateRowColor : rowColor; // Alternate row color
 
       for (let col = 0; col < columnCount; col++) {
         const cellAddress = XLSX.utils.encode_cell({ c: col, r: row });
@@ -333,7 +346,7 @@ export class GenerateExcelService {
         worksheet[cellAddress].s = {
           fill: {
             patternType: "solid",
-            fgColor: { rgb: rowColor }
+            fgColor: { rgb: currentRowColor }
           },
           border: {
             top: { style: borderStyle, color: { rgb: borderColor } },
@@ -346,12 +359,12 @@ export class GenerateExcelService {
     }
   }
 
-  private applyHeaderStyles(worksheet: XLSX.WorkSheet, columnCount: number): void {
-    const headerColor = 'FF4472C4';
+  private applyHeaderStyles(worksheet: XLSX.WorkSheet, columnCount: number, sheetName: string): void {
+    const colors = this.sheetColors[sheetName] || this.sheetColors['default'];
+    const headerColor = colors.headerColor;
     const fontColor = 'FFFFFFFF';
     const borderColor = 'FFCCD7EE';
     const borderStyle = 'thin';
-
 
     for (let col = 0; col < columnCount; col++) {
       const cellAddress = XLSX.utils.encode_cell({ c: col, r: 0 });
