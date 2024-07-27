@@ -11,6 +11,7 @@ import { JpkChooseTypeDialogComponent } from 'src/app/components/jpk-choose-type
 import { JpkFileComponent } from 'src/app/components/jpk-file/jpk-file.component';
 import { GenerateExcelService } from '@services/excel/generate-excel.service';
 import { FileSystemService } from '@ardium-ui/devkit';
+import { MixpanelService } from '@services/mixpanel/mixpanel.service';
 
 
 @Component({
@@ -35,6 +36,7 @@ export class JpkPage {
   readonly jpkService = inject(JpkService);
   readonly excelService = inject(GenerateExcelService); // Inject the Excel service
   readonly dialog = inject(MatDialog);
+  private readonly mixpanelService = inject(MixpanelService);
 
   async onFilesUpload(files: File | File[]) {
     const failedFiles = await this.jpkService.handleFilesUpload(files as File[]);
@@ -65,6 +67,7 @@ export class JpkPage {
       WeryfikacjaVAT: this.jpkService.vatVerificationData,
       DaneJPKZakupy: this.jpkService.xmlData
     };
+    this.mixpanelService.track('JPK');
     this.excelService.generateExcel(data);
   }
 }

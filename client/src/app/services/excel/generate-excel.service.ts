@@ -86,7 +86,7 @@ export class GenerateExcelService {
       this.excelStylesService.applyHeaderStyles(ws, this.headers[sheetName as keyof HeadersType].length, sheetName);
       XLSX.utils.sheet_add_json(ws, recordsWithCheckAmount, { skipHeader: true, origin: 'A2' });
 
-      ws['!cols'] = this.calculateColumnWidths(recordsWithCheckAmount);
+      ws['!cols'] = this.excelStylesService.calculateColumnWidths(recordsWithCheckAmount);
 
       this.excelStylesService.applyRowStyles(ws, recordsWithCheckAmount.length, sheetName);
 
@@ -108,7 +108,7 @@ export class GenerateExcelService {
       XLSX.utils.sheet_add_aoa(vatVerificationSheet, [this.headers.WeryfikacjaVAT], { origin: 'A1' });
       this.excelStylesService.applyHeaderStyles(vatVerificationSheet, this.headers.WeryfikacjaVAT.length, 'WeryfikacjaVAT');
       XLSX.utils.sheet_add_json(vatVerificationSheet, vatVerificationData, { skipHeader: true, origin: 'A2' });
-      vatVerificationSheet['!cols'] = this.calculateColumnWidths(vatVerificationData);
+      vatVerificationSheet['!cols'] = this.excelStylesService.calculateColumnWidths(vatVerificationData);
       this.excelStylesService.applyRowStyles(vatVerificationSheet, vatVerificationData.length, 'WeryfikacjaVAT');
       vatVerificationSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.WeryfikacjaVAT.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, vatVerificationSheet, 'Weryfikacja VAT');
@@ -123,9 +123,8 @@ export class GenerateExcelService {
       XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.DaneJpkZakupy], { origin: 'A1' });
       this.excelStylesService.applyHeaderStyles(xmlSheet, this.headers.DaneJpkZakupy.length, 'DaneJpkZakupy');
       XLSX.utils.sheet_add_json(xmlSheet, xmlData, { skipHeader: true, origin: 'A2' });
-      xmlSheet['!cols'] = this.calculateColumnWidths(xmlData);
+      xmlSheet['!cols'] = this.excelStylesService.calculateColumnWidths(xmlData);
       this.excelStylesService.applyRowStyles(xmlSheet, xmlData.length, 'DaneJpkZakupy');
-      // Apply auto filter
       xmlSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.DaneJpkZakupy.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, xmlSheet, 'Dane JPK zakupy');
     } else {
@@ -179,29 +178,6 @@ export class GenerateExcelService {
       });
     }
     return records;
-  }
-
-  private calculateColumnWidths(records: any[]): { wch: number }[] {
-    if (!records || records.length === 0) return [];
-
-    let maxWidths: number[] = [];
-
-    records.forEach(record => {
-      Object.keys(record).forEach((key, index) => {
-        const value = record[key];
-        let valueLength = value ? value.toString().length : 0;
-        if (this.isDate(value)) {
-          valueLength = 10; // Przykład stałej szerokości dla daty
-        }
-        maxWidths[index] = Math.max(maxWidths[index] || 0, valueLength);
-      });
-    });
-
-    return maxWidths.map(width => ({ wch: width + 2 }));
-  }
-
-  private isDate(value: any): boolean {
-    return !isNaN(Date.parse(value)) && !isNaN(new Date(value).getTime());
   }
 
   private createErrorCheckSheet(data: { RejZ: any[], PZN: pznReadyRecord[], WNPZ: wnpzReadyRecord[], MAPZ: mapzReadyRecord[] }): XLSX.WorkSheet {
@@ -267,7 +243,7 @@ export class GenerateExcelService {
   private saveExcelFile(buffer: ArrayBuffer): void {
     const data: Blob = new Blob([buffer], { type: 'application/octet-stream' });
     this.fileSystemService.saveAs(data, {
-      fileName: 'Sprawdzenie JPK ',
+      fileName: 'Sprawdzenie JPK',
       types: [{ description: 'Plik Excel', accept: { 'application/xlsx': ['.xlsx'] } }],
     });
   }

@@ -134,4 +134,25 @@ export class ExcelStylesService {
       };
     }
   }
+  public calculateColumnWidths(records: any[]): { wch: number }[] {
+    if (!records || records.length === 0) return [];
+
+    let maxWidths: number[] = [];
+
+    records.forEach(record => {
+      Object.keys(record).forEach((key, index) => {
+        const value = record[key];
+        let valueLength = value ? value.toString().length : 0;
+        if (this.isDate(value)) {
+          valueLength = 10; // Przykład stałej szerokości dla daty
+        }
+        maxWidths[index] = Math.max(maxWidths[index] || 0, valueLength);
+      });
+    });
+
+    return maxWidths.map(width => ({ wch: width + 2 }));
+  }
+  private isDate(value: any): boolean {
+    return !isNaN(Date.parse(value)) && !isNaN(new Date(value).getTime());
+  }
 }

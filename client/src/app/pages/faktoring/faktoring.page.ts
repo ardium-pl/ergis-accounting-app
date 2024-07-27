@@ -22,6 +22,7 @@ import {
 } from '@components';
 import { ExcelService } from '@services/excel';
 import { FaktoringObject, FaktoringService, FinalFaktoringObject, LeftOverObject } from '@services/faktoring';
+import { MixpanelService } from '@services/mixpanel/mixpanel.service';
 import { randomBetween, sleep } from '@utils';
 import { Subscription } from 'rxjs';
 import { IconComponent } from 'src/app/components/icon/icon.component';
@@ -54,6 +55,7 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
   public readonly faktoringService = inject(FaktoringService);
   private readonly fileSystem = inject(FileSystemService);
   private readonly excelService = inject(ExcelService);
+  private readonly mixpanelService = inject(MixpanelService);
 
   constructor() {
     effect(() => {
@@ -166,6 +168,7 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
 
   async onGenerateButtonClick(): Promise<void> {
     if (!this.faktoringService.hasPrn()) return;
+    this.mixpanelService.track('faktoring');
 
     this.areResultsLoading.set(true);
     // sleep for a short while so that if an error is thrown, the results aren't immediate
