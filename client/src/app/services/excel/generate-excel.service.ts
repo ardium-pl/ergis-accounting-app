@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import * as XLSX from 'xlsx-js-style';
 import { wnpzReadyRecord, pznReadyRecord, mapzReadyRecord, csvReadyRecord } from '../jpk/jpk.types';
+import { ExcelStylesService } from './excel-styles.service';
+import { FileSystemService } from '@ardium-ui/devkit';
 
 // deklaracje typów do przeniesienia do pliku types
 type CellValue = string | number | { f: string };
@@ -18,19 +20,10 @@ type HeadersType = {
   providedIn: 'root'
 })
 export class GenerateExcelService {
+  private readonly excelStylesService = inject(ExcelStylesService);
+  private readonly fileSystemService = inject(FileSystemService);
 
   constructor() { }
-
-  // Kolory dla każdego arkusza
-  private sheetColors: { [key: string]: { headerColor: string, rowColor: string, alternateRowColor: string } } = {
-    MAPZ: { headerColor: 'FF4472C4', rowColor: 'FFFFFFFF', alternateRowColor: 'FFD9E1F2' },
-    WNPZ: { headerColor: 'FF29B6F6', rowColor: 'FFFFFFFF', alternateRowColor: 'FFE1F5FE' },
-    PZN: { headerColor: 'FFEC407A', rowColor: 'FFFFFFFF', alternateRowColor: 'FFFCE4EC' },
-    RejZ: { headerColor: 'FF92D050', rowColor: 'FFFFFFFF', alternateRowColor: 'FFE2EFDA' },
-    WeryfikacjaVAT: { headerColor: 'FF00B050', rowColor: 'FFFFFFFF', alternateRowColor: 'FFD9EAD3' },
-    DaneJpkZakupy: { headerColor: 'FFFFC000', rowColor: 'FFFFFFFF', alternateRowColor: 'FFFFF2CC' },
-    ErrorCheck: { headerColor: 'FF9E9E9E', rowColor: 'FFFFFFFF', alternateRowColor: 'FFEEEEEE' }
-  };
 
   // nagłówki poszczególnych arkuszy w Excelu
   private headers: HeadersType = {
@@ -90,16 +83,16 @@ export class GenerateExcelService {
       const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
 
       XLSX.utils.sheet_add_aoa(ws, [this.headers[sheetName as keyof HeadersType]], { origin: 'A1' });
-      this.applyHeaderStyles(ws, this.headers[sheetName as keyof HeadersType].length, sheetName);
+      this.excelStylesService.applyHeaderStyles(ws, this.headers[sheetName as keyof HeadersType].length, sheetName);
       XLSX.utils.sheet_add_json(ws, recordsWithCheckAmount, { skipHeader: true, origin: 'A2' });
 
       ws['!cols'] = this.calculateColumnWidths(recordsWithCheckAmount);
 
-      this.applyRowStyles(ws, recordsWithCheckAmount.length, sheetName);
+      this.excelStylesService.applyRowStyles(ws, recordsWithCheckAmount.length, sheetName);
 
       const headerLength = this.headers[sheetName as keyof HeadersType].length;
       ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(headerLength - 1)}1` };
-      this.applyConditionalFormatting(ws, recordsWithCheckAmount.length, sheetName);
+      this.excelStylesService.applyConditionalFormatting(ws, recordsWithCheckAmount.length, sheetName);
 
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
@@ -113,10 +106,10 @@ export class GenerateExcelService {
     if (vatVerificationData && vatVerificationData.length > 0) {
       const vatVerificationSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
       XLSX.utils.sheet_add_aoa(vatVerificationSheet, [this.headers.WeryfikacjaVAT], { origin: 'A1' });
-      this.applyHeaderStyles(vatVerificationSheet, this.headers.WeryfikacjaVAT.length, 'WeryfikacjaVAT');
+      this.excelStylesService.applyHeaderStyles(vatVerificationSheet, this.headers.WeryfikacjaVAT.length, 'WeryfikacjaVAT');
       XLSX.utils.sheet_add_json(vatVerificationSheet, vatVerificationData, { skipHeader: true, origin: 'A2' });
       vatVerificationSheet['!cols'] = this.calculateColumnWidths(vatVerificationData);
-      this.applyRowStyles(vatVerificationSheet, vatVerificationData.length, 'WeryfikacjaVAT');
+      this.excelStylesService.applyRowStyles(vatVerificationSheet, vatVerificationData.length, 'WeryfikacjaVAT');
       vatVerificationSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.WeryfikacjaVAT.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, vatVerificationSheet, 'Weryfikacja VAT');
     } else {
@@ -128,10 +121,10 @@ export class GenerateExcelService {
     if (xmlData && xmlData.length > 0) {
       const xmlSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
       XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.DaneJpkZakupy], { origin: 'A1' });
-      this.applyHeaderStyles(xmlSheet, this.headers.DaneJpkZakupy.length, 'DaneJpkZakupy');
+      this.excelStylesService.applyHeaderStyles(xmlSheet, this.headers.DaneJpkZakupy.length, 'DaneJpkZakupy');
       XLSX.utils.sheet_add_json(xmlSheet, xmlData, { skipHeader: true, origin: 'A2' });
       xmlSheet['!cols'] = this.calculateColumnWidths(xmlData);
-      this.applyRowStyles(xmlSheet, xmlData.length, 'DaneJpkZakupy');
+      this.excelStylesService.applyRowStyles(xmlSheet, xmlData.length, 'DaneJpkZakupy');
       // Apply auto filter
       xmlSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.DaneJpkZakupy.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, xmlSheet, 'Dane JPK zakupy');
@@ -145,7 +138,7 @@ export class GenerateExcelService {
 
     // zapis pliku Excel
     const wbout: ArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    this.saveExcelFile(wbout, 'jpk_data.xlsx');
+    this.saveExcelFile(wbout);
   }
 
   private addFormulasToXmlData(xmlData: any[]): any[] {
@@ -261,131 +254,22 @@ export class GenerateExcelService {
     });
   
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(errorCheckData);
-    this.applyHeaderStyles(ws, errorCheckData[0].length, 'ErrorCheck');
+    this.excelStylesService.applyHeaderStyles(ws, errorCheckData[0].length, 'ErrorCheck');
     ws['!cols'] = Array(errorCheckData[0].length).fill({ wch: 20 }); // Ustawienie szerokości kolumn
-    this.applyRowStyles(ws, errorCheckData.length, 'ErrorCheck');
+    this.excelStylesService.applyRowStyles(ws, errorCheckData.length, 'ErrorCheck');
     ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(errorCheckData[0].length - 1)}1` };
   
-    this.applyConditionalFormatting(ws, errorCheckData.length, 'ErrorCheck');
+    this.excelStylesService.applyConditionalFormatting(ws, errorCheckData.length, 'ErrorCheck');
   
     return ws;
   }
   
-  private applyConditionalFormatting(ws: XLSX.WorkSheet, numRows: number, sheetName: string): void {
-    const lightRedColor = 'FFFFCCCC';
-    const borderStyle = 'thin';
-    const borderColor = 'FFCCA3A3';
-  
-    const applyCellStyle = (cell: XLSX.CellObject, fillColor: string) => {
-      cell.s = {
-        fill: {
-          patternType: 'solid',
-          fgColor: { rgb: fillColor }
-        },
-        border: {
-          top: { style: borderStyle, color: { rgb: borderColor } },
-          bottom: { style: borderStyle, color: { rgb: borderColor } },
-          left: { style: borderStyle, color: { rgb: borderColor } },
-          right: { style: borderStyle, color: { rgb: borderColor } }
-        }
-      };
-    };
-  
-    for (let row = 1; row <= numRows; row++) {
-      const columnBAddress = XLSX.utils.encode_cell({ c: 1, r: row }); // Column B
-      const columnEAddress = XLSX.utils.encode_cell({ c: 4, r: row }); // Column E
-      const columnSAddress = XLSX.utils.encode_cell({ c: 17, r: row }); // Column S
-      const columnRAddress = XLSX.utils.encode_cell({ c: 18, r: row }); // Column R
-      const columnTAddress = XLSX.utils.encode_cell({ c: 19, r: row }); // Column T
-  
-      const cellT = ws[columnTAddress];
-      const cellB = ws[columnBAddress];
-      const cellE = ws[columnEAddress];
-      const cellS = ws[columnSAddress];
-      const cellR = ws[columnRAddress];
-  
-      if (sheetName === 'MAPZ' || sheetName === 'WNPZ') {
-        if (cellS && cellR && cellS.v !== cellR.v) {
-          applyCellStyle(cellT, lightRedColor);
-        }
-      }
-  
-      if (sheetName === 'ErrorCheck') {
-        if (cellB && cellE && cellB.v === 0) {
-          applyCellStyle(cellE, lightRedColor);
-        }
-      }
-    }
-  }
-
-  private saveExcelFile(buffer: ArrayBuffer, filename: string): void {
+  private saveExcelFile(buffer: ArrayBuffer): void {
     const data: Blob = new Blob([buffer], { type: 'application/octet-stream' });
-    const url: string = window.URL.createObjectURL(data);
-    const link: HTMLAnchorElement = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    window.URL.revokeObjectURL(url);
+    this.fileSystemService.saveAs(data, {
+      fileName: 'Sprawdzenie JPK ',
+      types: [{ description: 'Plik Excel', accept: { 'application/xlsx': ['.xlsx'] } }],
+    });
   }
 
-  private applyRowStyles(worksheet: XLSX.WorkSheet, numRows: number, sheetName: string): void {
-    const columnCount = worksheet['!cols']?.length || 0;  //liczba kolumn w danym arkuszu
-    const borderColor = 'FFCCD7EE';
-    const borderStyle = 'thin';
-    const colors = this.sheetColors[sheetName] || this.sheetColors['default'];
-    const rowColor = colors.rowColor;
-    const alternateRowColor = colors.alternateRowColor;
-
-    for (let row = 1; row <= numRows; row++) {
-      const currentRowColor = row % 2 === 0 ? alternateRowColor : rowColor; // Alternate row color
-
-      for (let col = 0; col < columnCount; col++) {
-        const cellAddress = XLSX.utils.encode_cell({ c: col, r: row });
-        if (!worksheet[cellAddress]) continue;
-
-        worksheet[cellAddress].s = {
-          fill: {
-            patternType: "solid",
-            fgColor: { rgb: currentRowColor }
-          },
-          border: {
-            top: { style: borderStyle, color: { rgb: borderColor } },
-            bottom: { style: borderStyle, color: { rgb: borderColor } },
-            left: { style: borderStyle, color: { rgb: borderColor } },
-            right: { style: borderStyle, color: { rgb: borderColor } }
-          }
-        };
-      }
-    }
-  }
-
-  private applyHeaderStyles(worksheet: XLSX.WorkSheet, columnCount: number, sheetName: string): void {
-    const colors = this.sheetColors[sheetName] || this.sheetColors['default'];
-    const headerColor = colors.headerColor;
-    const fontColor = 'FFFFFFFF';
-    const borderColor = 'FFCCD7EE';
-    const borderStyle = 'thin';
-
-    for (let col = 0; col < columnCount; col++) {
-      const cellAddress = XLSX.utils.encode_cell({ c: col, r: 0 });
-      if (!worksheet[cellAddress]) continue;
-
-      worksheet[cellAddress].s = {
-        fill: {
-          patternType: "solid",
-          fgColor: { rgb: headerColor }
-        },
-        font: {
-          color: { rgb: fontColor },
-          bold: true
-        },
-        border: {
-          top: { style: borderStyle, color: { rgb: borderColor } },
-          bottom: { style: borderStyle, color: { rgb: borderColor } },
-          left: { style: borderStyle, color: { rgb: borderColor } },
-          right: { style: borderStyle, color: { rgb: borderColor } }
-        }
-      };
-    }
-  }
 }

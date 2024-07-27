@@ -10,6 +10,7 @@ import { JpkService } from '@services/jpk';
 import { JpkChooseTypeDialogComponent } from 'src/app/components/jpk-choose-type-dialog/jpk-choose-type-dialog.component';
 import { JpkFileComponent } from 'src/app/components/jpk-file/jpk-file.component';
 import { GenerateExcelService } from '@services/excel/generate-excel.service';
+import { FileSystemService } from '@ardium-ui/devkit';
 
 
 @Component({
@@ -25,6 +26,7 @@ import { GenerateExcelService } from '@services/excel/generate-excel.service';
     ButtonComponent,
     MatTooltipModule,
   ],
+  providers: [FileSystemService],
   templateUrl: './jpk.page.html',
   styleUrls: ['./jpk.page.scss'],
   encapsulation: ViewEncapsulation.None,
