@@ -1,27 +1,30 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx-js-style';
+import { isDate } from 'simple-bool';
+
+const LIGHT_RED_BORDER_COLOR = 'FFCCA3A3' as const;
+const BLUE_BORDER_COLOR = 'FFCCD7EE' as const;
+const WHITE_COLOR = 'FFFFFFFF' as const;
+const BORDER_STYLE = 'thin' as const;
+const LIGHT_RED_COLOR = 'FFFFCCCC' as const;
 
 @Injectable({
   providedIn: 'root',
 })
 export class ExcelStylesService {
   
-  // Kolory dla każdego arkusza
+  // Colors for each sheet
   private sheetColors: { [key: string]: { headerColor: string; rowColor: string; alternateRowColor: string } } = {
-    MAPZ: { headerColor: 'FF4472C4', rowColor: 'FFFFFFFF', alternateRowColor: 'FFD9E1F2' },
-    WNPZ: { headerColor: 'FF29B6F6', rowColor: 'FFFFFFFF', alternateRowColor: 'FFE1F5FE' },
-    PZN: { headerColor: 'FFEC407A', rowColor: 'FFFFFFFF', alternateRowColor: 'FFFCE4EC' },
-    RejZ: { headerColor: 'FF92D050', rowColor: 'FFFFFFFF', alternateRowColor: 'FFE2EFDA' },
-    WeryfikacjaVAT: { headerColor: 'FF00B050', rowColor: 'FFFFFFFF', alternateRowColor: 'FFD9EAD3' },
-    DaneJpkZakupy: { headerColor: 'FFFFC000', rowColor: 'FFFFFFFF', alternateRowColor: 'FFFFF2CC' },
-    ErrorCheck: { headerColor: 'FF9E9E9E', rowColor: 'FFFFFFFF', alternateRowColor: 'FFEEEEEE' },
+    MAPZ: { headerColor: 'FF4472C4', rowColor: WHITE_COLOR, alternateRowColor: 'FFD9E1F2' }, // Regular blue 
+    WNPZ: { headerColor: 'FF29B6F6', rowColor: WHITE_COLOR, alternateRowColor: 'FFE1F5FE' }, // Light blue 
+    PZN: { headerColor: 'FFEC407A', rowColor: WHITE_COLOR, alternateRowColor: 'FFFCE4EC' }, // Pink 
+    RejZ: { headerColor: 'FF92D050', rowColor: WHITE_COLOR, alternateRowColor: 'FFE2EFDA' }, // Light green
+    WeryfikacjaVAT: { headerColor: 'FF00B050', rowColor: WHITE_COLOR, alternateRowColor: 'FFD9EAD3' }, // Green
+    DaneJpkZakupy: { headerColor: 'FFFFC000', rowColor: WHITE_COLOR, alternateRowColor: 'FFFFF2CC' }, // Yellow
+    ErrorCheck: { headerColor: 'FF9E9E9E', rowColor: WHITE_COLOR, alternateRowColor: 'FFEEEEEE' }, // Gray
   };
 
   public applyConditionalFormatting(ws: XLSX.WorkSheet, numRows: number, sheetName: string): void {
-    const lightRedColor = 'FFFFCCCC';
-    const borderStyle = 'thin';
-    const borderColor = 'FFCCA3A3';
-
     const applyCellStyle = (cell: XLSX.CellObject, fillColor: string) => {
       cell.s = {
         fill: {
@@ -29,10 +32,10 @@ export class ExcelStylesService {
           fgColor: { rgb: fillColor },
         },
         border: {
-          top: { style: borderStyle, color: { rgb: borderColor } },
-          bottom: { style: borderStyle, color: { rgb: borderColor } },
-          left: { style: borderStyle, color: { rgb: borderColor } },
-          right: { style: borderStyle, color: { rgb: borderColor } },
+          top: { style: BORDER_STYLE, color: { rgb: LIGHT_RED_BORDER_COLOR } },
+          bottom: { style: BORDER_STYLE, color: { rgb: LIGHT_RED_BORDER_COLOR } },
+          left: { style: BORDER_STYLE, color: { rgb: LIGHT_RED_BORDER_COLOR } },
+          right: { style: BORDER_STYLE, color: { rgb: LIGHT_RED_BORDER_COLOR } },
         },
       };
     };
@@ -52,22 +55,20 @@ export class ExcelStylesService {
 
       if (sheetName === 'MAPZ' || sheetName === 'WNPZ') {
         if (cellS && cellR && cellS.v !== cellR.v) {
-          applyCellStyle(cellT, lightRedColor);
+          applyCellStyle(cellT, LIGHT_RED_COLOR);
         }
       }
 
       if (sheetName === 'ErrorCheck') {
         if (cellB && cellE && cellB.v === 0) {
-          applyCellStyle(cellE, lightRedColor);
+          applyCellStyle(cellE, LIGHT_RED_COLOR);
         }
       }
     }
   }
 
   public applyRowStyles(worksheet: XLSX.WorkSheet, numRows: number, sheetName: string): void {
-    const columnCount = worksheet['!cols']?.length || 0; //liczba kolumn w danym arkuszu
-    const borderColor = 'FFCCD7EE';
-    const borderStyle = 'thin';
+    const columnCount = worksheet['!cols']?.length || 0; //number of columns in a given sheet
     const colors = this.sheetColors[sheetName] || this.sheetColors['default'];
     const rowColor = colors.rowColor;
     const alternateRowColor = colors.alternateRowColor;
@@ -85,10 +86,10 @@ export class ExcelStylesService {
             fgColor: { rgb: currentRowColor },
           },
           border: {
-            top: { style: borderStyle, color: { rgb: borderColor } },
-            bottom: { style: borderStyle, color: { rgb: borderColor } },
-            left: { style: borderStyle, color: { rgb: borderColor } },
-            right: { style: borderStyle, color: { rgb: borderColor } },
+            top: { style: BORDER_STYLE, color: { rgb: BLUE_BORDER_COLOR } },
+            bottom: { style: BORDER_STYLE, color: { rgb: BLUE_BORDER_COLOR } },
+            left: { style: BORDER_STYLE, color: { rgb: BLUE_BORDER_COLOR } },
+            right: { style: BORDER_STYLE, color: { rgb: BLUE_BORDER_COLOR } },
           },
         };
       }
@@ -98,9 +99,7 @@ export class ExcelStylesService {
   public applyHeaderStyles(worksheet: XLSX.WorkSheet, columnCount: number, sheetName: string): void {
     const colors = this.sheetColors[sheetName] || this.sheetColors['default'];
     const headerColor = colors.headerColor;
-    const fontColor = 'FFFFFFFF';
-    const borderColor = 'FFCCD7EE';
-    const borderStyle = 'thin';
+    const fontColor = WHITE_COLOR;
 
     for (let col = 0; col < columnCount; col++) {
       const cellAddress = XLSX.utils.encode_cell({ c: col, r: 0 });
@@ -116,14 +115,15 @@ export class ExcelStylesService {
           bold: true,
         },
         border: {
-          top: { style: borderStyle, color: { rgb: borderColor } },
-          bottom: { style: borderStyle, color: { rgb: borderColor } },
-          left: { style: borderStyle, color: { rgb: borderColor } },
-          right: { style: borderStyle, color: { rgb: borderColor } },
+          top: { style: BORDER_STYLE, color: { rgb: BLUE_BORDER_COLOR } },
+          bottom: { style: BORDER_STYLE, color: { rgb: BLUE_BORDER_COLOR } },
+          left: { style: BORDER_STYLE, color: { rgb: BLUE_BORDER_COLOR } },
+          right: { style: BORDER_STYLE, color: { rgb: BLUE_BORDER_COLOR } },
         },
       };
     }
   }
+
   public calculateColumnWidths(records: any[]): { wch: number }[] {
     if (!records || records.length === 0) return [];
 
@@ -133,16 +133,13 @@ export class ExcelStylesService {
       Object.keys(record).forEach((key, index) => {
         const value = record[key];
         let valueLength = value ? value.toString().length : 0;
-        if (this.isDate(value)) {
-          valueLength = 10; // Przykład stałej szerokości dla daty
+        if (isDate(value)) {
+          valueLength = 10; // 
         }
         maxWidths[index] = Math.max(maxWidths[index] || 0, valueLength);
       });
     });
 
     return maxWidths.map(width => ({ wch: width + 2 }));
-  }
-  private isDate(value: any): boolean {
-    return !isNaN(Date.parse(value)) && !isNaN(new Date(value).getTime());
   }
 }

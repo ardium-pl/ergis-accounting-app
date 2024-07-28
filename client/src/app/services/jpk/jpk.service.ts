@@ -4,7 +4,7 @@ import { parseString, processors } from 'xml2js';
 import { ExcelService } from '../excel/excel.service';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
-import { csvRawRecord, csvReadyRecord, mapzRawRecord, mapzReadyRecord, pznRawRecord, pznReadyRecord, rejzRawRecord, rejzReadyRecord, wnpzRawRecord, wnpzReadyRecord, xmlRawRecord, xmlReadyRecord } from './jpk.types';
+import { CsvRawRecord, CsvReadyRecord, MapzRawRecord, MapzReadyRecord, PznRawRecord, PznReadyRecord, RejzRawRecord, RejzReadyRecord, WnpzRawRecord, WnpzReadyRecord, XmlRawRecord, XmlReadyRecord } from './jpk.types';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 import { parseNumberWithThousandSeparator } from '@utils';
 import { isCsvRecord } from './validators';
@@ -63,34 +63,34 @@ export class JpkService {
     return this.files.every(file => file.state() === JpkFileState.OK);
   });
 
-  private _vatVerificationData: csvReadyRecord[] = [];
-  private _xmlData: xmlReadyRecord[] = [];
-  private _rejzData: rejzReadyRecord[] = [];
-  private _pznData: pznReadyRecord[] = [];
-  private _wnpzData: wnpzReadyRecord[] = [];
-  private _mapzData: mapzReadyRecord[] = [];
+  private _vatVerificationData: CsvReadyRecord[] = [];
+  private _xmlData: XmlReadyRecord[] = [];
+  private _rejzData: RejzReadyRecord[] = [];
+  private _pznData: PznReadyRecord[] = [];
+  private _wnpzData: WnpzReadyRecord[] = [];
+  private _mapzData: MapzReadyRecord[] = [];
 
-  get xmlData(): xmlReadyRecord[] {
+  get xmlData(): XmlReadyRecord[] {
     return this._xmlData;
   }
 
-  get vatVerificationData(): csvReadyRecord[] {
+  get vatVerificationData(): CsvReadyRecord[] {
     return this._vatVerificationData;
   }
 
-  get rejzData(): rejzReadyRecord[] {
+  get rejzData(): RejzReadyRecord[] {
     return this._rejzData;
   }
 
-  get pznData(): pznReadyRecord[] {
+  get pznData(): PznReadyRecord[] {
     return this._pznData;
   }
 
-  get wnpzData(): wnpzReadyRecord[] {
+  get wnpzData(): WnpzReadyRecord[] {
     return this._wnpzData;
   }
 
-  get mapzData(): mapzReadyRecord[] {
+  get mapzData(): MapzReadyRecord[] {
     return this._mapzData;
   }
 
@@ -115,7 +115,7 @@ export class JpkService {
     let fileIndex: number;
 
     switch (determinedName) {
-      // parsowanie xml
+      // parsing xml
       case JpkFileName.XML:
         validation = this._validateXmlFile(fileContent);
 
@@ -126,12 +126,12 @@ export class JpkService {
         fileIndex = 0;
         break;
 
-      // parsowanie csv
+      // parsing csv
       case JpkFileName.WeryfikacjaVAT:
         validation = this._validateVerificationFile(fileContent);
 
         if (!validation) {
-          const csvRawData = this.excelService.readAsCsv<keyof csvRawRecord>(fileContent);
+          const csvRawData = this.excelService.readAsCsv<keyof CsvRawRecord>(fileContent);
           const csvData = csvRawData.filter(isCsvRecord);
           this._vatVerificationData = this._parseVatVerificationData(csvData);
         }
@@ -280,15 +280,15 @@ export class JpkService {
     return ['Dodany plik nie wygląda na poprawny plik MAPZ. Upewnij się, że dodajesz odpowiedni plik.', validationResults];
   }
 
-  private readAsXml(xmlContent: string): xmlRawRecord[] {
+  private readAsXml(xmlContent: string): XmlRawRecord[] {
     const options = {
       explicitArray: false,
       mergeAttrs: true,
       trim: true,
       normalizeTags: true,
       explicitRoot: false,
-      tagNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw tagów
-      attrNameProcessors: [processors.stripPrefix], // Usuwa przedrostki przestrzeni nazw z nazw atrybutów
+      tagNameProcessors: [processors.stripPrefix], // Removes namespace prefixes from tag names
+      attrNameProcessors: [processors.stripPrefix], // Removes namespace prefixes from attribute names
     };
 
     let result: any;
@@ -302,8 +302,8 @@ export class JpkService {
     return result.ewidencja.zakupwiersz;
   }
 
-  // parsuje obiekt odczytany z xml na listę recordów gotowych do excella
-  private _parseXmlData(xmlData: xmlRawRecord[]): xmlReadyRecord[] {
+  // parses the object read from xml into a list of records ready for excel
+  private _parseXmlData(xmlData: XmlRawRecord[]): XmlReadyRecord[] {
     return xmlData.map(record => ({
       lpzakupu: record.lpzakupu  || '',
       kodkrajunadaniatin: record.kodkrajunadaniatin || '',
@@ -324,7 +324,7 @@ export class JpkService {
     }));
   }
 
-  private _parseVatVerificationData(csvContent: Array<csvRawRecord>): csvReadyRecord[] {
+  private _parseVatVerificationData(csvContent: Array<CsvRawRecord>): CsvReadyRecord[] {
     return csvContent.map(vatRecord => ({
       ['NIP i numer']: vatRecord.NIP + vatRecord['Numer faktury'].substring(0, 20),
       Lp: vatRecord.Lp,
@@ -352,7 +352,7 @@ export class JpkService {
     }));
   }
 
-  private _parseRejzData(rejzData: rejzRawRecord[]): rejzReadyRecord[] {
+  private _parseRejzData(rejzData: RejzRawRecord[]): RejzReadyRecord[] {
     return rejzData.flatMap(({ num, reference, package: packageVar, type, supplier, invoice, invoiceDate, vatItems }) =>
       vatItems.map(vatItem => ({
         num,
@@ -370,7 +370,7 @@ export class JpkService {
     );
   }
 
-  private _parsePznData(pznData: pznRawRecord[]): pznReadyRecord[] {
+  private _parsePznData(pznData: PznRawRecord[]): PznReadyRecord[] {
     return pznData.flatMap(({ commission, subitems, supplierName, supplierNumber}) =>
       subitems.map(PZNSubitem => ({
         num: PZNSubitem.num,
@@ -389,7 +389,7 @@ export class JpkService {
     );
   }
 
-  private _parseWnpzData(wnpzData: wnpzRawRecord[]): wnpzReadyRecord[] {
+  private _parseWnpzData(wnpzData: WnpzRawRecord[]): WnpzReadyRecord[] {
     return wnpzData.flatMap(({ num, reference, package: packageVar, type, vatNumber, supplier, dataPod, naDzien, dataWplywu, pzItems, vatItems, invoice, invoiceDate, vatSummary }) =>
       pzItems.map(PZItem => ({
         num,
@@ -415,7 +415,7 @@ export class JpkService {
     );
   }
 
-  private _parseMapzData(mapzData: mapzRawRecord[]): mapzReadyRecord[] {
+  private _parseMapzData(mapzData: MapzRawRecord[]): MapzReadyRecord[] {
     return mapzData.flatMap(({dataPod, dataWplywu, invoice, invoiceDate, naDzien, num, package: packageVar, pzItems, reference, supplier, type, vatItems, vatNumber, vatSummary }) =>
       pzItems.map(PZItem => ({
         num,

@@ -1,4 +1,4 @@
-import { csvRawRecord } from './jpk.types';
+import { CsvRawRecord } from './jpk.types';
 
 export const requiredKeys = [
   'Data płatności',
@@ -25,6 +25,6 @@ export const requiredKeys = [
   'ZalacznikiTest',
 ] as const;
 
-export function isCsvRecord(record: any): record is csvRawRecord {
+export function isCsvRecord(record: any): record is CsvRawRecord {
   return requiredKeys.every(key => key in record);
 }

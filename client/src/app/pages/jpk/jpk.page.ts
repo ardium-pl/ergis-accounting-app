@@ -53,7 +53,7 @@ export class JpkPage {
     });
   }
 
-  // jeśli wszystkie pliki przeszły walidacje i się wyparsowały po naciśnięciu generuj z danych tworzony jest plik excell
+  // if all files passed validation and are parsed, an excel file is created from the data after pressing generate
   onGenerateButtonClick() {
     if (!this.jpkService.areAllFilesOK()) {
       console.log("Not all files are ready for generation.");

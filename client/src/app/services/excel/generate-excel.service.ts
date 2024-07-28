@@ -1,11 +1,11 @@
-import { inject, Injectable, signal } from '@angular/core';
-import * as XLSX from 'xlsx-js-style';
-import { wnpzReadyRecord, pznReadyRecord, mapzReadyRecord, csvReadyRecord, rejzReadyRecord, xmlReadyRecord } from '../jpk/jpk.types';
-import { ExcelStylesService } from './excel-styles.service';
+import { inject, Injectable } from '@angular/core';
 import { FileSystemService } from '@ardium-ui/devkit';
 import { JpkService } from '@services/jpk';
+import * as XLSX from 'xlsx-js-style';
+import { MapzReadyRecord, PznReadyRecord, RejzReadyRecord, WnpzReadyRecord, XmlReadyRecord } from '../jpk/jpk.types';
+import { ExcelStylesService } from './excel-styles.service';
 
-// deklaracje typów do przeniesienia do pliku types
+// declarations of types to be moved to the types file
 type CellValue = string | number | { f: string };
 type ErrorCheckRow = CellValue[];
 type ExcelSheetHeaders = {
@@ -16,6 +16,40 @@ type ExcelSheetHeaders = {
   WeryfikacjaVAT: string[];
   DaneJpkZakupy: string[];
 };
+const EXCEL_HEADERS: ExcelSheetHeaders = {
+  MAPZ: [
+    'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT',
+    '%VAT', 'Kwota VAT', 'Faktura', 'Data fak', 'Data pod', 'Na dzień', 'Data wpływu',
+    'Kod PZ', 'Data dostawy', 'Ilość PZ', 'Ilość Faktura', 'check ilość'
+  ],
+  WNPZ: [
+    'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT',
+    '%VAT', 'Kwota VAT', 'Faktura', 'Data fak', 'Data pod', 'Na dzień', 'Data wpływu',
+    'Kod PZ', 'Data dostawy', 'Ilość PZ', 'Ilość Faktura', 'check ilość'
+  ],
+  PZN: [
+    'Lp', 'Zlecenie', 'Numer dostawcy', 'Nazwa dostawcy', 'Numer spec', 'Opcja ERS',
+    'Data wys', 'Data przyjęcia', 'Dok dost', 'Wyl koszt KG', 'Zewn podatek ZZ', 'Odch KG-ZZ/Partia dostawcy'
+  ],
+  RejZ: [
+    'Lp', 'Referencja', 'Paczka', 'Numer VAT', 'Dostawca', 'Kwota opodatkowania',
+    'VAT', '%VAT', 'Kwota VAT', 'Faktura', 'Data faktury'
+  ],
+  WeryfikacjaVAT: [
+    'NIP i numer', 'Lp', 'Numer faktury', 'Kontrahent', 'NIP', 'Numer wewnętrzny', 'Numer referencyjny',
+    'Rejestr', 'Waluta', 'Typ faktury', 'Opis (dekretacja)', 'Status płatności', 'Data płatności',
+    'Termin płatności', 'Data płatności ze skontem', 'Wartość skonta', 'Skonto', 'Kompensaty',
+    'Przedpłaty', 'Numer faktury korygowanej', 'Opis', 'Numer własny', 'ZalacznikiTest'
+  ],
+  DaneJpkZakupy: [
+    'Lp Zakupu', 'Kod Kraju Nadania TIN4', 'Nazwa Dostawcy', 'Numer Dostawcy',
+    'Dowod Zakupu', 'Data Zakupu', 'Data Wplywu', 'K40', 'K41',
+    'K42', 'K43', 'K44', 'K45', 'K46', 'K47', 'Dokument Zakupu', 'NIP i Numer',
+    'Numer Wewnętrzny', 'Ref', 'Rejestr', 'Netto w wal', 'Waluta', 'kurs', 'Typ faktury', 'Opis dekretacja',
+    'Status platnosci', 'Data platnosci', 'Termin platnosci', 'Data platnosci ze skontem', 'Wartosc skonta', 'Skonto', 'Kompensaty', 'Przedplaty',
+    'Ma ilosc', 'roznica FA_PZ', 'WN ilosc', 'Roznica FA_PZ2', 'Komentarz'
+  ],
+} as const;
 
 @Injectable({
   providedIn: 'root'
@@ -25,43 +59,7 @@ export class GenerateExcelService {
   private readonly fileSystemService = inject(FileSystemService);
   private readonly jpkService = inject(JpkService);
 
-  // nagłówki poszczególnych arkuszy w Excelu
-  private headers: ExcelSheetHeaders = {
-    MAPZ: [
-      'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT',
-      '%VAT', 'Kwota VAT', 'Faktura', 'Data fak', 'Data pod', 'Na dzień', 'Data wpływu',
-      'Kod PZ', 'Data dostawy', 'Ilość PZ', 'Ilość Faktura', 'check ilość'
-    ],
-    WNPZ: [
-      'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT',
-      '%VAT', 'Kwota VAT', 'Faktura', 'Data fak', 'Data pod', 'Na dzień', 'Data wpływu',
-      'Kod PZ', 'Data dostawy', 'Ilość PZ', 'Ilość Faktura', 'check ilość'
-    ],
-    PZN: [
-      'Lp', 'Zlecenie', 'Numer dostawcy', 'Nazwa dostawcy', 'Numer spec', 'Opcja ERS',
-      'Data wys', 'Data przyjęcia', 'Dok dost', 'Wyl koszt KG', 'Zewn podatek ZZ', 'Odch KG-ZZ/Partia dostawcy'
-    ],
-    RejZ: [
-      'Lp', 'Referencja', 'Paczka', 'Numer VAT', 'Dostawca', 'Kwota opodatkowania',
-      'VAT', '%VAT', 'Kwota VAT', 'Faktura', 'Data faktury'
-    ],
-    WeryfikacjaVAT: [
-      'NIP i numer', 'Lp', 'Numer faktury', 'Kontrahent', 'NIP', 'Numer wewnętrzny', 'Numer referencyjny',
-      'Rejestr', 'Waluta', 'Typ faktury', 'Opis (dekretacja)', 'Status płatności', 'Data płatności',
-      'Termin płatności', 'Data płatności ze skontem', 'Wartość skonta', 'Skonto', 'Kompensaty',
-      'Przedpłaty', 'Numer faktury korygowanej', 'Opis', 'Numer własny', 'ZalacznikiTest'
-    ],
-    DaneJpkZakupy: [
-      'Lp Zakupu', 'Kod Kraju Nadania TIN4', 'Nazwa Dostawcy', 'Numer Dostawcy',
-      'Dowod Zakupu', 'Data Zakupu', 'Data Wplywu', 'K40', 'K41',
-      'K42', 'K43', 'K44', 'K45', 'K46', 'K47', 'Dokument Zakupu', 'NIP i Numer',
-      'Numer Wewnętrzny', 'Ref', 'Rejestr', 'Netto w wal', 'Waluta', 'kurs', 'Typ faktury', 'Opis dekretacja',
-      'Status platnosci', 'Data platnosci', 'Termin platnosci', 'Data platnosci ze skontem', 'Wartosc skonta', 'Skonto', 'Kompensaty', 'Przedplaty',
-      'Ma ilosc', 'roznica FA_PZ', 'WN ilosc', 'Roznica FA_PZ2', 'Komentarz'
-    ],
-  };
-
-  // z wyparsowanych danych w jpk.service po naciśnięciu generuj tworzy plik Excel
+  // from parsed data in jpk.service, creates an Excel file after pressing generate
   public generateExcel(): void {
     const data = {
       RejZ: this.jpkService.rejzData,
@@ -76,13 +74,12 @@ export class GenerateExcelService {
       return;
     }
 
-    // utworzenie skoroszytu
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
 
-    // Iteruje tylko po arkuszach MAPZ, WNPZ, PZN i RejZ
+    // Iterates only over MAPZ, WNPZ, PZN and RejZ sheets
     ['MAPZ', 'WNPZ', 'PZN', 'RejZ'].forEach(sheetName => {
       const records = data[sheetName as keyof typeof data];
-      if (!records || !this.headers[sheetName as keyof ExcelSheetHeaders]) {
+      if (!records || !EXCEL_HEADERS[sheetName as keyof ExcelSheetHeaders]) {
         console.error(`Records or headers for sheet ${sheetName} are undefined`);
         return;
       }
@@ -90,67 +87,67 @@ export class GenerateExcelService {
       const recordsWithCheckAmount = this.addCheckAmount(records, sheetName);
       const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
 
-      XLSX.utils.sheet_add_aoa(ws, [this.headers[sheetName as keyof ExcelSheetHeaders]], { origin: 'A1' });
-      this.excelStylesService.applyHeaderStyles(ws, this.headers[sheetName as keyof ExcelSheetHeaders].length, sheetName);
+      XLSX.utils.sheet_add_aoa(ws, [EXCEL_HEADERS[sheetName as keyof ExcelSheetHeaders]], { origin: 'A1' });
+      this.excelStylesService.applyHeaderStyles(ws, EXCEL_HEADERS[sheetName as keyof ExcelSheetHeaders].length, sheetName);
       XLSX.utils.sheet_add_json(ws, recordsWithCheckAmount, { skipHeader: true, origin: 'A2' });
 
       ws['!cols'] = this.excelStylesService.calculateColumnWidths(recordsWithCheckAmount);
 
       this.excelStylesService.applyRowStyles(ws, recordsWithCheckAmount.length, sheetName);
 
-      const headerLength = this.headers[sheetName as keyof ExcelSheetHeaders].length;
+      const headerLength = EXCEL_HEADERS[sheetName as keyof ExcelSheetHeaders].length;
       ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(headerLength - 1)}1` };
       this.excelStylesService.applyConditionalFormatting(ws, recordsWithCheckAmount.length, sheetName);
 
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
 
-    // Stworzenie arkusza ErrorCheck
+    // Create ErrorCheck sheet
     const errorCheckSheet = this.createErrorCheckSheet(data);
     XLSX.utils.book_append_sheet(wb, errorCheckSheet, 'ErrorCheck');
 
-    // Dodanie arkusza WeryfikacjaVAT
+    // Adding WeryfikacjaVAT sheet
     const vatVerificationData = data.WeryfikacjaVAT;
     if (vatVerificationData && vatVerificationData.length > 0) {
       const vatVerificationSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
-      XLSX.utils.sheet_add_aoa(vatVerificationSheet, [this.headers.WeryfikacjaVAT], { origin: 'A1' });
-      this.excelStylesService.applyHeaderStyles(vatVerificationSheet, this.headers.WeryfikacjaVAT.length, 'WeryfikacjaVAT');
+      XLSX.utils.sheet_add_aoa(vatVerificationSheet, [EXCEL_HEADERS.WeryfikacjaVAT], { origin: 'A1' });
+      this.excelStylesService.applyHeaderStyles(vatVerificationSheet, EXCEL_HEADERS.WeryfikacjaVAT.length, 'WeryfikacjaVAT');
       XLSX.utils.sheet_add_json(vatVerificationSheet, vatVerificationData, { skipHeader: true, origin: 'A2' });
       vatVerificationSheet['!cols'] = this.excelStylesService.calculateColumnWidths(vatVerificationData);
       this.excelStylesService.applyRowStyles(vatVerificationSheet, vatVerificationData.length, 'WeryfikacjaVAT');
-      vatVerificationSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.WeryfikacjaVAT.length - 1)}1` };
+      vatVerificationSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(EXCEL_HEADERS.WeryfikacjaVAT.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, vatVerificationSheet, 'Weryfikacja VAT');
     } else {
       console.warn('No VAT verification data available');
     }
 
-    // Dodanie arkusza DaneJpkZakupy
-    const xmlData = this.addFormulasToXmlData(data.DaneJPKZakupy); // Dodanie formuł do danych XML
+    // Adding DaneJpkZakupy sheet
+    const xmlData = this.addFormulasToXmlData(data.DaneJPKZakupy);
     if (xmlData && xmlData.length > 0) {
       const xmlSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
-      XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.DaneJpkZakupy], { origin: 'A1' });
-      this.excelStylesService.applyHeaderStyles(xmlSheet, this.headers.DaneJpkZakupy.length, 'DaneJpkZakupy');
+      XLSX.utils.sheet_add_aoa(xmlSheet, [EXCEL_HEADERS.DaneJpkZakupy], { origin: 'A1' });
+      this.excelStylesService.applyHeaderStyles(xmlSheet, EXCEL_HEADERS.DaneJpkZakupy.length, 'DaneJpkZakupy');
       XLSX.utils.sheet_add_json(xmlSheet, xmlData, { skipHeader: true, origin: 'A2' });
       xmlSheet['!cols'] = this.excelStylesService.calculateColumnWidths(xmlData);
       this.excelStylesService.applyRowStyles(xmlSheet, xmlData.length, 'DaneJpkZakupy');
-      xmlSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(this.headers.DaneJpkZakupy.length - 1)}1` };
+      xmlSheet['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(EXCEL_HEADERS.DaneJpkZakupy.length - 1)}1` };
       XLSX.utils.book_append_sheet(wb, xmlSheet, 'Dane JPK zakupy');
     } else {
       console.warn('No XML data available');
     }
 
-    // Dodanie pustego arkusza 'kursy'
+    // Adding empty 'kursy' sheet
     const kursySheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
     XLSX.utils.book_append_sheet(wb, kursySheet, 'kursy');
 
-    // zapis pliku Excel
+    // save Excel file
     const wbout: ArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     this.saveExcelFile(wbout);
   }
 
-  private addFormulasToXmlData(xmlData: any[]): any[] {
+  private addFormulasToXmlData(xmlData: XmlReadyRecord[]): any[] {
     return xmlData.map((record, index) => {
-      const rowIndex = index + 2;  // Zakładamy, że dane zaczynają się od drugiego wiersza (pierwszy wiersz to nagłówki)
+      const rowIndex = index + 2;  // Assume data starts from the second row (first row is headers)
       return [
         ...Object.values(record),
         { f: `CONCATENATE(IF(B${rowIndex}="",D${rowIndex},IF(B${rowIndex}="AT",RIGHT(D${rowIndex},8),IF(B${rowIndex}="CY",LEFT(D${rowIndex},8),IF(B${rowIndex}="FR",RIGHT(D${rowIndex},9),IF(B${rowIndex}="EL",RIGHT(D${rowIndex},8),IF(B${rowIndex}="ES",MID(D${rowIndex},2,7),IF(B${rowIndex}="IE",LEFT(D${rowIndex},7),IF(B${rowIndex}="NL",REPLACE(D${rowIndex},10,1,""),D${rowIndex})))))))),E${rowIndex})` },
@@ -188,7 +185,7 @@ export class GenerateExcelService {
     return records;
   }
 
-  private createErrorCheckSheet(data: { RejZ: any[], PZN: pznReadyRecord[], WNPZ: wnpzReadyRecord[], MAPZ: mapzReadyRecord[] }): XLSX.WorkSheet {
+  private createErrorCheckSheet(data: { RejZ: RejzReadyRecord[], PZN: PznReadyRecord[], WNPZ: WnpzReadyRecord[], MAPZ: MapzReadyRecord[] }): XLSX.WorkSheet {
     const transactionCodes = new Set<string>();
     data.PZN.forEach(record => transactionCodes.add(record.specNum.split('/')[0]));
     data.WNPZ.forEach(record => transactionCodes.add(record.code.split('/')[0]));
@@ -239,7 +236,7 @@ export class GenerateExcelService {
   
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(errorCheckData);
     this.excelStylesService.applyHeaderStyles(ws, errorCheckData[0].length, 'ErrorCheck');
-    ws['!cols'] = Array(errorCheckData[0].length).fill({ wch: 20 }); // Ustawienie szerokości kolumn
+    ws['!cols'] = Array(errorCheckData[0].length).fill({ wch: 20 }); // Set column width
     this.excelStylesService.applyRowStyles(ws, errorCheckData.length, 'ErrorCheck');
     ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(errorCheckData[0].length - 1)}1` };
   

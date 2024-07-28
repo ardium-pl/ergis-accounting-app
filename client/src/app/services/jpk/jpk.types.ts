@@ -1,4 +1,4 @@
-export type xmlRawRecord = {
+export type XmlRawRecord = {
   lpzakupu: string;
   kodkrajunadaniatin: string;
   nazwadostawcy: string;
@@ -17,7 +17,7 @@ export type xmlRawRecord = {
   dokumentzakupu?: string
 }
 
-export type xmlReadyRecord = {
+export type XmlReadyRecord = {
   lpzakupu: string;
   kodkrajunadaniatin: string;
   nazwadostawcy: string;
@@ -36,7 +36,7 @@ export type xmlReadyRecord = {
   dokumentzakupu: string
 }
 
-export type csvRawRecord = {
+export type CsvRawRecord = {
   'Data płatności': string;
   'Data płatności ze skontem': string;
   Kompensaty: string;
@@ -61,7 +61,7 @@ export type csvRawRecord = {
   ZalacznikiTest: string;
 };
 
-export type csvReadyRecord = {
+export type CsvReadyRecord = {
   'Data płatności': string;
   'Data płatności ze skontem': string;
   Kompensaty: number;
@@ -99,7 +99,7 @@ type VatSummary = {
   grossValue: number;
 };
 
-export type rejzRawRecord = {
+export type RejzRawRecord = {
   num: number;
   reference: string;
   package: string;
@@ -112,7 +112,7 @@ export type rejzRawRecord = {
   vatSummary: VatSummary;
 };
 
-export type rejzReadyRecord = {
+export type RejzReadyRecord = {
   num: number;
   reference: string;
   package: string;
@@ -138,14 +138,14 @@ type PZNSubitem = {
   zewnPodatekZZ: number;
 }
 
-export type pznRawRecord = {
+export type PznRawRecord = {
   commission: string;
   subitems: PZNSubitem[];
   supplierName: string;
   supplierNumber: string;
 };
 
-export type pznReadyRecord = {
+export type PznReadyRecord = {
   commission: string,
   dokDost: number;
   num: number;
@@ -168,7 +168,7 @@ type PZItem = {
   invoiceAmount: number;
 };
 
-export type wnpzRawRecord = {
+export type WnpzRawRecord = {
   num: number;
   reference: string;
   package: string;
@@ -185,7 +185,7 @@ export type wnpzRawRecord = {
   vatSummary: VatSummary;
 };
 
-export type wnpzReadyRecord = {
+export type WnpzReadyRecord = {
   num: number;
   reference: string;
   package: string;
@@ -207,7 +207,7 @@ export type wnpzReadyRecord = {
   invoiceDate: Date;
 }
 
-export type mapzRawRecord = {
+export type MapzRawRecord = {
   dataPod: Date;
   dataWplywu: Date;
   invoice: string;
@@ -224,7 +224,7 @@ export type mapzRawRecord = {
   vatSummary: VatSummary;
 }
 
-export type mapzReadyRecord = {
+export type MapzReadyRecord = {
   dataPod: Date;
   dataWplywu: Date;
   invoice: string;
