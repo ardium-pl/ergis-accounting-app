@@ -34,7 +34,7 @@ import { MixpanelService } from '@services/mixpanel/mixpanel.service';
 })
 export class JpkPage {
   readonly jpkService = inject(JpkService);
-  readonly excelService = inject(GenerateExcelService); // Inject the Excel service
+  readonly generateExcelService = inject(GenerateExcelService);
   readonly dialog = inject(MatDialog);
   private readonly mixpanelService = inject(MixpanelService);
 
@@ -59,15 +59,7 @@ export class JpkPage {
       console.log("Not all files are ready for generation.");
       return;
     }
-    const data = {
-      RejZ: this.jpkService.rejzData,
-      PZN: this.jpkService.pznData,
-      WNPZ: this.jpkService.wnpzData,
-      MAPZ: this.jpkService.mapzData,
-      WeryfikacjaVAT: this.jpkService.vatVerificationData,
-      DaneJPKZakupy: this.jpkService.xmlData
-    };
     this.mixpanelService.track('JPK');
-    this.excelService.generateExcel(data);
+    this.generateExcelService.generateExcel();
   }
 }

@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx-js-style';
   providedIn: 'root',
 })
 export class ExcelStylesService {
-  constructor() {}
+  
   // Kolory dla każdego arkusza
   private sheetColors: { [key: string]: { headerColor: string; rowColor: string; alternateRowColor: string } } = {
     MAPZ: { headerColor: 'FF4472C4', rowColor: 'FFFFFFFF', alternateRowColor: 'FFD9E1F2' },
@@ -62,16 +62,6 @@ export class ExcelStylesService {
         }
       }
     }
-  }
-
-  public saveExcelFile(buffer: ArrayBuffer, filename: string): void {
-    const data: Blob = new Blob([buffer], { type: 'application/octet-stream' });
-    const url: string = window.URL.createObjectURL(data);
-    const link: HTMLAnchorElement = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    window.URL.revokeObjectURL(url);
   }
 
   public applyRowStyles(worksheet: XLSX.WorkSheet, numRows: number, sheetName: string): void {

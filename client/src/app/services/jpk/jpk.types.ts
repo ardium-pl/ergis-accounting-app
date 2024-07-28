@@ -1,7 +1,3 @@
-export type xmlObject = {
-  
-}
-
 export type xmlRawRecord = {
   lpzakupu: string;
   kodkrajunadaniatin: string;

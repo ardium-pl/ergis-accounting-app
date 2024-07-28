@@ -1,13 +1,14 @@
 import { inject, Injectable, signal } from '@angular/core';
 import * as XLSX from 'xlsx-js-style';
-import { wnpzReadyRecord, pznReadyRecord, mapzReadyRecord, csvReadyRecord } from '../jpk/jpk.types';
+import { wnpzReadyRecord, pznReadyRecord, mapzReadyRecord, csvReadyRecord, rejzReadyRecord, xmlReadyRecord } from '../jpk/jpk.types';
 import { ExcelStylesService } from './excel-styles.service';
 import { FileSystemService } from '@ardium-ui/devkit';
+import { JpkService } from '@services/jpk';
 
 // deklaracje typów do przeniesienia do pliku types
 type CellValue = string | number | { f: string };
 type ErrorCheckRow = CellValue[];
-type HeadersType = {
+type ExcelSheetHeaders = {
   MAPZ: string[];
   WNPZ: string[];
   PZN: string[];
@@ -22,11 +23,10 @@ type HeadersType = {
 export class GenerateExcelService {
   private readonly excelStylesService = inject(ExcelStylesService);
   private readonly fileSystemService = inject(FileSystemService);
-
-  constructor() { }
+  private readonly jpkService = inject(JpkService);
 
   // nagłówki poszczególnych arkuszy w Excelu
-  private headers: HeadersType = {
+  private headers: ExcelSheetHeaders = {
     MAPZ: [
       'Lp', 'Referencja', 'Paczka', 'Typ', 'Numer VAT', 'Dostawca', 'Kw opodatk', 'VAT',
       '%VAT', 'Kwota VAT', 'Faktura', 'Data fak', 'Data pod', 'Na dzień', 'Data wpływu',
@@ -62,7 +62,15 @@ export class GenerateExcelService {
   };
 
   // z wyparsowanych danych w jpk.service po naciśnięciu generuj tworzy plik Excel
-  public generateExcel(data: { RejZ: any[], PZN: pznReadyRecord[], WNPZ: wnpzReadyRecord[], MAPZ: mapzReadyRecord[], WeryfikacjaVAT: csvReadyRecord[], DaneJPKZakupy: any[] }): void {
+  public generateExcel(): void {
+    const data = {
+      RejZ: this.jpkService.rejzData,
+      PZN: this.jpkService.pznData,
+      WNPZ: this.jpkService.wnpzData,
+      MAPZ: this.jpkService.mapzData,
+      WeryfikacjaVAT: this.jpkService.vatVerificationData,
+      DaneJPKZakupy: this.jpkService.xmlData
+    };
     if (!data) {
       console.error('Data is undefined or null');
       return;
@@ -74,7 +82,7 @@ export class GenerateExcelService {
     // Iteruje tylko po arkuszach MAPZ, WNPZ, PZN i RejZ
     ['MAPZ', 'WNPZ', 'PZN', 'RejZ'].forEach(sheetName => {
       const records = data[sheetName as keyof typeof data];
-      if (!records || !this.headers[sheetName as keyof HeadersType]) {
+      if (!records || !this.headers[sheetName as keyof ExcelSheetHeaders]) {
         console.error(`Records or headers for sheet ${sheetName} are undefined`);
         return;
       }
@@ -82,15 +90,15 @@ export class GenerateExcelService {
       const recordsWithCheckAmount = this.addCheckAmount(records, sheetName);
       const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
 
-      XLSX.utils.sheet_add_aoa(ws, [this.headers[sheetName as keyof HeadersType]], { origin: 'A1' });
-      this.excelStylesService.applyHeaderStyles(ws, this.headers[sheetName as keyof HeadersType].length, sheetName);
+      XLSX.utils.sheet_add_aoa(ws, [this.headers[sheetName as keyof ExcelSheetHeaders]], { origin: 'A1' });
+      this.excelStylesService.applyHeaderStyles(ws, this.headers[sheetName as keyof ExcelSheetHeaders].length, sheetName);
       XLSX.utils.sheet_add_json(ws, recordsWithCheckAmount, { skipHeader: true, origin: 'A2' });
 
       ws['!cols'] = this.excelStylesService.calculateColumnWidths(recordsWithCheckAmount);
 
       this.excelStylesService.applyRowStyles(ws, recordsWithCheckAmount.length, sheetName);
 
-      const headerLength = this.headers[sheetName as keyof HeadersType].length;
+      const headerLength = this.headers[sheetName as keyof ExcelSheetHeaders].length;
       ws['!autofilter'] = { ref: `A1:${XLSX.utils.encode_col(headerLength - 1)}1` };
       this.excelStylesService.applyConditionalFormatting(ws, recordsWithCheckAmount.length, sheetName);
 

@@ -6,6 +6,8 @@ import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.serv
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
 import { csvRawRecord, csvReadyRecord, mapzRawRecord, mapzReadyRecord, pznRawRecord, pznReadyRecord, rejzRawRecord, rejzReadyRecord, wnpzRawRecord, wnpzReadyRecord, xmlRawRecord, xmlReadyRecord } from './jpk.types';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
+import { parseNumberWithThousandSeparator } from '@utils';
+import { isCsvRecord } from './validators';
 
 export const JpkFileName = {
   XML: 'Plik JPK_VAT',
@@ -41,7 +43,6 @@ const REQUIRED_VERIFICATION_COLUMNS = [
   'Opis',
   'Numer własny',
 ] as const;
-
 @Injectable({
   providedIn: 'root',
 })
@@ -131,7 +132,7 @@ export class JpkService {
 
         if (!validation) {
           const csvRawData = this.excelService.readAsCsv<keyof csvRawRecord>(fileContent);
-          const csvData = csvRawData.filter(this._isCsvRecord);
+          const csvData = csvRawData.filter(isCsvRecord);
           this._vatVerificationData = this._parseVatVerificationData(csvData);
         }
         fileIndex = 1;
@@ -298,46 +299,33 @@ export class JpkService {
       result = res;
     });
 
-    const xmlRawRecords: xmlRawRecord[] = result.ewidencja.zakupwiersz;
-    return xmlRawRecords;
-  }
-
-  private parseStringToFloat(value: string): number {
-    if (value==='') {
-      return 0;
-    }
-    const normalizedValue = value.replace(',', '.'); // Zamiana przecinków na kropki
-    const numberValue = parseFloat(normalizedValue);
-
-    return numberValue
+    return result.ewidencja.zakupwiersz;
   }
 
   // parsuje obiekt odczytany z xml na listę recordów gotowych do excella
   private _parseXmlData(xmlData: xmlRawRecord[]): xmlReadyRecord[] {
-
-    const xmlReadyRecords =  xmlData.map(record => ({
-        lpzakupu: record.lpzakupu  || '',
-        kodkrajunadaniatin: record.kodkrajunadaniatin || '',
-        nazwadostawcy: record.nazwadostawcy || '',
-        nrdostawcy: record.nrdostawcy || '',
-        dowodzakupu: record.dowodzakupu || '',
-        datazakupu: record.datazakupu || '',
-        datawplywu: record.datawplywu || '',
-        k_40: this.parseStringToFloat(record.k_40),
-        k_41: this.parseStringToFloat(record.k_41),
-        k_42: this.parseStringToFloat(record.k_42),
-        k_43: this.parseStringToFloat(record.k_43),
-        k_44: this.parseStringToFloat(record.k_44),
-        k_45: this.parseStringToFloat(record.k_45),
-        k_46: this.parseStringToFloat(record.k_46),
-        k_47: this.parseStringToFloat(record.k_47),
-        dokumentzakupu: record.dokumentzakupu || ''
+    return xmlData.map(record => ({
+      lpzakupu: record.lpzakupu  || '',
+      kodkrajunadaniatin: record.kodkrajunadaniatin || '',
+      nazwadostawcy: record.nazwadostawcy || '',
+      nrdostawcy: record.nrdostawcy || '',
+      dowodzakupu: record.dowodzakupu || '',
+      datazakupu: record.datazakupu || '',
+      datawplywu: record.datawplywu || '',
+      k_40: parseNumberWithThousandSeparator(record.k_40),
+      k_41: parseNumberWithThousandSeparator(record.k_41),
+      k_43: parseNumberWithThousandSeparator(record.k_43),
+      k_44: parseNumberWithThousandSeparator(record.k_44),
+      k_45: parseNumberWithThousandSeparator(record.k_45),
+      k_46: parseNumberWithThousandSeparator(record.k_46),
+      k_47: parseNumberWithThousandSeparator(record.k_47),
+      k_42: parseNumberWithThousandSeparator(record.k_42),
+      dokumentzakupu: record.dokumentzakupu || ''
     }));
-    return xmlReadyRecords
   }
 
   private _parseVatVerificationData(csvContent: Array<csvRawRecord>): csvReadyRecord[] {
-    const csvReadyRecords = csvContent.map(vatRecord => ({
+    return csvContent.map(vatRecord => ({
       ['NIP i numer']: vatRecord.NIP + vatRecord['Numer faktury'].substring(0, 20),
       Lp: vatRecord.Lp,
       'Numer faktury': vatRecord['Numer faktury'],
@@ -353,48 +341,19 @@ export class JpkService {
       'Data płatności': vatRecord['Data płatności'],
       'Termin płatności': vatRecord['Termin płatności'],
       'Data płatności ze skontem': vatRecord['Data płatności ze skontem'],
-      'Wartość skonta': this.parseStringToFloat(vatRecord['Wartość skonta']),
-      Skonto: this.parseStringToFloat(vatRecord.Skonto),
-      Kompensaty: this.parseStringToFloat(vatRecord.Kompensaty),
-      Przedpłaty: this.parseStringToFloat(vatRecord.Przedpłaty),
+      'Wartość skonta': parseNumberWithThousandSeparator(vatRecord['Wartość skonta']),
+      Skonto: parseNumberWithThousandSeparator(vatRecord.Skonto),
+      Kompensaty: parseNumberWithThousandSeparator(vatRecord.Kompensaty),
+      Przedpłaty: parseNumberWithThousandSeparator(vatRecord.Przedpłaty),
       'Numer faktury korygowanej': vatRecord['Numer faktury korygowanej'],
       Opis: vatRecord.Opis,
       'Numer własny': vatRecord['Numer własny'],
       'ZalacznikiTest': vatRecord['ZalacznikiTest']
     }));
-    return csvReadyRecords
-  }
-
-  private _isCsvRecord(record: any): record is csvRawRecord {
-    const requiredKeys = [
-      'Data płatności',
-      'Data płatności ze skontem',
-      'Kompensaty',
-      'Kontrahent',
-      'Lp',
-      'NIP',
-      'Numer faktury',
-      'Numer faktury korygowanej',
-      'Numer referencyjny',
-      'Numer wewnętrzny',
-      'Numer własny',
-      'Opis',
-      'Opis (dekretacja)',
-      'Przedpłaty',
-      'Rejestr',
-      'Skonto',
-      'Status płatności',
-      'Termin płatności',
-      'Typ faktury',
-      'Waluta',
-      'Wartość skonta',
-      'ZalacznikiTest',
-    ];
-    return requiredKeys.every(key => key in record);
   }
 
   private _parseRejzData(rejzData: rejzRawRecord[]): rejzReadyRecord[] {
-    const rejzReadyRecords = rejzData.flatMap(({ num, reference, package: packageVar, type, supplier, invoice, invoiceDate, vatItems }) =>
+    return rejzData.flatMap(({ num, reference, package: packageVar, type, supplier, invoice, invoiceDate, vatItems }) =>
       vatItems.map(vatItem => ({
         num,
         reference,
@@ -409,11 +368,10 @@ export class JpkService {
         invoiceDate,
       }))
     );
-    return rejzReadyRecords
   }
 
   private _parsePznData(pznData: pznRawRecord[]): pznReadyRecord[] {
-    const pznReadyRecords = pznData.flatMap(({ commission, subitems, supplierName, supplierNumber}) =>
+    return pznData.flatMap(({ commission, subitems, supplierName, supplierNumber}) =>
       subitems.map(PZNSubitem => ({
         num: PZNSubitem.num,
         commission,
@@ -429,12 +387,10 @@ export class JpkService {
         odchKGZZ: PZNSubitem.odchKGZZ,
       }))
     );
-    return pznReadyRecords
   }
 
-
   private _parseWnpzData(wnpzData: wnpzRawRecord[]): wnpzReadyRecord[] {
-    const wnpzReadyRecords = wnpzData.flatMap(({ num, reference, package: packageVar, type, vatNumber, supplier, dataPod, naDzien, dataWplywu, pzItems, vatItems, invoice, invoiceDate, vatSummary }) =>
+    return wnpzData.flatMap(({ num, reference, package: packageVar, type, vatNumber, supplier, dataPod, naDzien, dataWplywu, pzItems, vatItems, invoice, invoiceDate, vatSummary }) =>
       pzItems.map(PZItem => ({
         num,
         reference,
@@ -457,11 +413,10 @@ export class JpkService {
         invoiceAmount: PZItem.invoiceAmount,
       }))
     );
-    return wnpzReadyRecords
   }
 
   private _parseMapzData(mapzData: mapzRawRecord[]): mapzReadyRecord[] {
-    const mapzReadyRecords = mapzData.flatMap(({dataPod, dataWplywu, invoice, invoiceDate, naDzien, num, package: packageVar, pzItems, reference, supplier, type, vatItems, vatNumber, vatSummary }) =>
+    return mapzData.flatMap(({dataPod, dataWplywu, invoice, invoiceDate, naDzien, num, package: packageVar, pzItems, reference, supplier, type, vatItems, vatNumber, vatSummary }) =>
       pzItems.map(PZItem => ({
         num,
         reference,
@@ -484,7 +439,5 @@ export class JpkService {
         invoiceAmount: PZItem.invoiceAmount,
       }))
     );
-    return mapzReadyRecords
   }
-
 }

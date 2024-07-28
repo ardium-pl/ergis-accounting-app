@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import mixpanel from 'mixpanel-browser';
+import mixpanel, { Dict } from 'mixpanel-browser';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -15,7 +15,7 @@ export class MixpanelService {
     });
   }
 
-  track(eventName: string, properties?: any) {
+  track(eventName: string, properties?: Dict) {
     mixpanel.track(eventName, properties);
   }
 }
