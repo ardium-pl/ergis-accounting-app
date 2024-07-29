@@ -76,7 +76,6 @@ export class GenerateExcelService {
 
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
 
-    // Iterates only over MAPZ, WNPZ, PZN and RejZ sheets
     ['MAPZ', 'WNPZ', 'PZN', 'RejZ'].forEach(sheetName => {
       const records = data[sheetName as keyof typeof data];
       if (!records || !EXCEL_HEADERS[sheetName as keyof ExcelSheetHeaders]) {
