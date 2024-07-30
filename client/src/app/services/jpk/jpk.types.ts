@@ -1,8 +1,4 @@
-export type xmlObject = {
-  
-}
-
-export type xmlRecord = {
+export type XmlRawRecord = {
   lpzakupu: string;
   kodkrajunadaniatin: string;
   nazwadostawcy: string;
@@ -18,9 +14,29 @@ export type xmlRecord = {
   k_46: string;
   k_47: string;
   datawplywu?: string;
+  dokumentzakupu?: string
 }
 
-export type csvVerificationRecord = {
+export type XmlReadyRecord = {
+  lpzakupu: string;
+  kodkrajunadaniatin: string;
+  nazwadostawcy: string;
+  nrdostawcy: string;
+  dowodzakupu: string;
+  datazakupu: string;
+  k_40: number;
+  k_41: number;
+  k_42: number;
+  k_43: number;
+  k_44: number;
+  k_45: number;
+  k_46: number;
+  k_47: number;
+  datawplywu?: string;
+  dokumentzakupu: string
+}
+
+export type CsvRawRecord = {
   'Data płatności': string;
   'Data płatności ze skontem': string;
   Kompensaty: string;
@@ -45,39 +61,32 @@ export type csvVerificationRecord = {
   ZalacznikiTest: string;
 };
 
-export type readyVerifRecord = {
-  'NIP i numer': string;
-} & csvVerificationRecord;
-
-
-
-type VatItem = {
-  netValue: number;
-  vat: string;
-  vatPercent: number;
-  vatValue: number;
+export type CsvReadyRecord = {
+  'Data płatności': string;
+  'Data płatności ze skontem': string;
+  Kompensaty: number;
+  Kontrahent: string;
+  Lp: string;
+  NIP: string;
+  'Numer faktury': string;
+  'Numer faktury korygowanej': string;
+  'Numer referencyjny': string;
+  'Numer wewnętrzny': string;
+  'Numer własny': string;
+  Opis: string;
+  'Opis (dekretacja)': string;
+  Przedpłaty: number;
+  Rejestr: string;
+  Skonto: number;
+  'Status płatności': string;
+  'Termin płatności': string;
+  'Typ faktury': string;
+  Waluta: string;
+  'Wartość skonta': number;
+  ZalacznikiTest: string;
 };
 
-type VatSummary = {
-  netValue: number;
-  vatValue: number;
-  grossValue: number;
-};
-
-export type rejzPrnData = {
-  num: number;
-  reference: string;
-  package: string;
-  type: string;
-  vatNumber: string | null;
-  supplier: string;
-  invoice: string;
-  invoiceDate: Date;
-  vatItems: VatItem[];
-  vatSummary: VatSummary;
-};
-
-export type rejzObject = {
+export type RejzReadyRecord = {
   num: number;
   reference: string;
   package: string;
@@ -91,27 +100,7 @@ export type rejzObject = {
   invoiceDate: Date;
 };
 
-type PZNSubitem = {
-  dokDost: number;
-  num: number;
-  odchKGZZ: number;
-  receiveDate: Date;
-  sendDate: Date;
-  specNum: string;
-  opcjaERS: string;
-  wylKosztKG: number;
-  zewnPodatekZZ: number;
-}
-
-export type pznPrnData = {
-  commission: string;
-  subitems: PZNSubitem[];
-  supplierName: string;
-  supplierNumber: string;
-  // currencyInfo: PZNCurrencyData;
-};
-
-export type pznObject = {
+export type PznReadyRecord = {
   commission: string,
   dokDost: number;
   num: number;
@@ -126,38 +115,7 @@ export type pznObject = {
   supplierNumber: string;
 }
 
-type PZNCurrencyData = {
-  original: string;
-  target: string;
-  rate: number;
-};
-
-type PZItem = {
-  code: string;
-  deliveryDate: Date;
-  PZAmount: number;
-  PZAmountUnit: string;
-  invoiceAmount: number;
-};
-
-export type wnpzPrnData = {
-  num: number;
-  reference: string;
-  package: string;
-  type: string;
-  vatNumber: string;
-  supplier: string;
-  dataPod: Date;
-  naDzien: Date;
-  dataWplywu: Date;
-  pzItems: PZItem[];
-  vatItems: VatItem[];
-  invoice: string;
-  invoiceDate: Date;
-  vatSummary: VatSummary;
-};
-
-export type wnpzObject = {
+export type WnpzReadyRecord = {
   num: number;
   reference: string;
   package: string;
@@ -170,7 +128,6 @@ export type wnpzObject = {
   code: string;
   deliveryDate: Date;
   PZAmount: number;
-  // PZAmountUnit: string;
   invoiceAmount: number;
   netValue: number;
   vat: string;
@@ -178,27 +135,9 @@ export type wnpzObject = {
   vatValue: number;
   invoice: string;
   invoiceDate: Date;
-  // grossValue: number;
 }
 
-export type mapzPrnData = {
-  dataPod: Date;
-  dataWplywu: Date;
-  invoice: string;
-  invoiceDate: Date;
-  naDzien: Date;
-  num: number;
-  package: string;
-  pzItems: PZItem[];
-  reference: string;
-  supplier: string;
-  type: string;
-  vatItems: VatItem[]
-  vatNumber: string;
-  vatSummary: VatSummary;
-}
-
-export type mapzObject = {
+export type MapzReadyRecord = {
   dataPod: Date;
   dataWplywu: Date;
   invoice: string;

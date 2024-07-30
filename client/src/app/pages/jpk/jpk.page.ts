@@ -10,6 +10,8 @@ import { JpkService } from '@services/jpk';
 import { JpkChooseTypeDialogComponent } from 'src/app/components/jpk-choose-type-dialog/jpk-choose-type-dialog.component';
 import { JpkFileComponent } from 'src/app/components/jpk-file/jpk-file.component';
 import { GenerateExcelService } from '@services/excel/generate-excel.service';
+import { FileSystemService } from '@ardium-ui/devkit';
+import { MixpanelService } from '@services/mixpanel/mixpanel.service';
 
 
 @Component({
@@ -25,14 +27,16 @@ import { GenerateExcelService } from '@services/excel/generate-excel.service';
     ButtonComponent,
     MatTooltipModule,
   ],
+  providers: [FileSystemService],
   templateUrl: './jpk.page.html',
   styleUrls: ['./jpk.page.scss'],
   encapsulation: ViewEncapsulation.None,
 })
 export class JpkPage {
   readonly jpkService = inject(JpkService);
-  readonly excelService = inject(GenerateExcelService); // Inject the Excel service
+  readonly generateExcelService = inject(GenerateExcelService);
   readonly dialog = inject(MatDialog);
+  private readonly mixpanelService = inject(MixpanelService);
 
   async onFilesUpload(files: File | File[]) {
     const failedFiles = await this.jpkService.handleFilesUpload(files as File[]);
@@ -49,23 +53,13 @@ export class JpkPage {
     });
   }
 
-  // jeśli wszystkie pliki przeszły walidacje i się wyparsowały po naciśnięciu generuj z danych tworzony jest plik excell
+  // if all files passed validation and are parsed, an excel file is created from the data after pressing generate
   onGenerateButtonClick() {
-    console.log('Generating excel file');
-    console.log('Parsed RejZ Data:', this.jpkService.rejzData);
-    console.log('Prepared VAT Verification Data:', this.jpkService.vatVerificationData);
     if (!this.jpkService.areAllFilesOK()) {
       console.log("Not all files are ready for generation.");
       return;
     }
-    const data = {
-      rejz: this.jpkService.rejzData,
-      pzn: this.jpkService.pznData,
-      wnpz: this.jpkService.wnpzData,
-      mapz: this.jpkService.mapzData,
-      vatVerification: this.jpkService.vatVerificationData,
-      xml: this.jpkService.xmlData
-    };
-    this.excelService.generateExcel(data);
+    this.mixpanelService.track('JPK');
+    this.generateExcelService.generateExcel();
   }
 }
