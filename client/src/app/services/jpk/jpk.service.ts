@@ -1,12 +1,15 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { Tuple, sleep } from '@utils';
+import { MAPZItem } from '@services/weird-prn-reader/mapz';
+import { PZNItem } from '@services/weird-prn-reader/pzn';
+import { RejZItem } from '@services/weird-prn-reader/rejz';
+import { WNPZItem } from '@services/weird-prn-reader/wnpz';
+import { Tuple, parseNumberWithThousandSeparator, sleep } from '@utils';
 import { parseString, processors } from 'xml2js';
 import { ExcelService } from '../excel/excel.service';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
 import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
-import { CsvRawRecord, CsvReadyRecord, MapzRawRecord, MapzReadyRecord, PznRawRecord, PznReadyRecord, RejzRawRecord, RejzReadyRecord, WnpzRawRecord, WnpzReadyRecord, XmlRawRecord, XmlReadyRecord } from './jpk.types';
+import { CsvRawRecord, CsvReadyRecord, MapzReadyRecord, PznReadyRecord, RejzReadyRecord, WnpzReadyRecord, XmlRawRecord, XmlReadyRecord } from './jpk.types';
 import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
-import { parseNumberWithThousandSeparator } from '@utils';
 import { isCsvRecord } from './validators';
 
 export const JpkFileName = {
@@ -352,7 +355,7 @@ export class JpkService {
     }));
   }
 
-  private _parseRejzData(rejzData: RejzRawRecord[]): RejzReadyRecord[] {
+  private _parseRejzData(rejzData: RejZItem[]): RejzReadyRecord[] {
     return rejzData.flatMap(({ num, reference, package: packageVar, type, supplier, invoice, invoiceDate, vatItems }) =>
       vatItems.map(vatItem => ({
         num,
@@ -370,7 +373,7 @@ export class JpkService {
     );
   }
 
-  private _parsePznData(pznData: PznRawRecord[]): PznReadyRecord[] {
+  private _parsePznData(pznData: PZNItem[]): PznReadyRecord[] {
     return pznData.flatMap(({ commission, subitems, supplierName, supplierNumber}) =>
       subitems.map(PZNSubitem => ({
         num: PZNSubitem.num,
@@ -389,8 +392,8 @@ export class JpkService {
     );
   }
 
-  private _parseWnpzData(wnpzData: WnpzRawRecord[]): WnpzReadyRecord[] {
-    return wnpzData.flatMap(({ num, reference, package: packageVar, type, vatNumber, supplier, dataPod, naDzien, dataWplywu, pzItems, vatItems, invoice, invoiceDate, vatSummary }) =>
+  private _parseWnpzData(wnpzData: WNPZItem[]): WnpzReadyRecord[] {
+    return wnpzData.flatMap(({ num, reference, package: packageVar, type, vatNumber, supplier, dataPod, naDzien, dataWplywu, pzItems, vatItems, invoice, invoiceDate }) =>
       pzItems.map(PZItem => ({
         num,
         reference,
@@ -415,7 +418,7 @@ export class JpkService {
     );
   }
 
-  private _parseMapzData(mapzData: MapzRawRecord[]): MapzReadyRecord[] {
+  private _parseMapzData(mapzData: MAPZItem[]): MapzReadyRecord[] {
     return mapzData.flatMap(({dataPod, dataWplywu, invoice, invoiceDate, naDzien, num, package: packageVar, pzItems, reference, supplier, type, vatItems, vatNumber, vatSummary }) =>
       pzItems.map(PZItem => ({
         num,

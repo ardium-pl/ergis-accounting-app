@@ -86,32 +86,6 @@ export type CsvReadyRecord = {
   ZalacznikiTest: string;
 };
 
-type VatItem = {
-  netValue: number;
-  vat: string;
-  vatPercent: number;
-  vatValue: number;
-};
-
-type VatSummary = {
-  netValue: number;
-  vatValue: number;
-  grossValue: number;
-};
-
-export type RejzRawRecord = {
-  num: number;
-  reference: string;
-  package: string;
-  type: string;
-  vatNumber: string | null;
-  supplier: string;
-  invoice: string;
-  invoiceDate: Date;
-  vatItems: VatItem[];
-  vatSummary: VatSummary;
-};
-
 export type RejzReadyRecord = {
   num: number;
   reference: string;
@@ -124,25 +98,6 @@ export type RejzReadyRecord = {
   vatValue: number;
   invoice: string;
   invoiceDate: Date;
-};
-
-type PZNSubitem = {
-  dokDost: number;
-  num: number;
-  odchKGZZ: number;
-  receiveDate: Date;
-  sendDate: Date;
-  specNum: string;
-  opcjaERS: string;
-  wylKosztKG: number;
-  zewnPodatekZZ: number;
-}
-
-export type PznRawRecord = {
-  commission: string;
-  subitems: PZNSubitem[];
-  supplierName: string;
-  supplierNumber: string;
 };
 
 export type PznReadyRecord = {
@@ -159,31 +114,6 @@ export type PznReadyRecord = {
   supplierName: string;
   supplierNumber: string;
 }
-
-type PZItem = {
-  code: string;
-  deliveryDate: Date;
-  PZAmount: number;
-  PZAmountUnit: string;
-  invoiceAmount: number;
-};
-
-export type WnpzRawRecord = {
-  num: number;
-  reference: string;
-  package: string;
-  type: string;
-  vatNumber: string;
-  supplier: string;
-  dataPod: Date;
-  naDzien: Date;
-  dataWplywu: Date;
-  pzItems: PZItem[];
-  vatItems: VatItem[];
-  invoice: string;
-  invoiceDate: Date;
-  vatSummary: VatSummary;
-};
 
 export type WnpzReadyRecord = {
   num: number;
@@ -205,23 +135,6 @@ export type WnpzReadyRecord = {
   vatValue: number;
   invoice: string;
   invoiceDate: Date;
-}
-
-export type MapzRawRecord = {
-  dataPod: Date;
-  dataWplywu: Date;
-  invoice: string;
-  invoiceDate: Date;
-  naDzien: Date;
-  num: number;
-  package: string;
-  pzItems: PZItem[];
-  reference: string;
-  supplier: string;
-  type: string;
-  vatItems: VatItem[]
-  vatNumber: string;
-  vatSummary: VatSummary;
 }
 
 export type MapzReadyRecord = {
