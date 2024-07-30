@@ -8,21 +8,20 @@ const WHITE_COLOR = 'FFFFFFFF' as const;
 const BORDER_STYLE = 'thin' as const;
 const LIGHT_RED_COLOR = 'FFFFCCCC' as const;
 
+const SHEET_COLORS: { [key: string]: { headerColor: string; rowColor: string; alternateRowColor: string } } = {
+  MAPZ: { headerColor: 'FF4472C4', rowColor: WHITE_COLOR, alternateRowColor: 'FFD9E1F2' }, // Regular blue 
+  WNPZ: { headerColor: 'FF29B6F6', rowColor: WHITE_COLOR, alternateRowColor: 'FFE1F5FE' }, // Light blue 
+  PZN: { headerColor: 'FFEC407A', rowColor: WHITE_COLOR, alternateRowColor: 'FFFCE4EC' }, // Pink 
+  RejZ: { headerColor: 'FF92D050', rowColor: WHITE_COLOR, alternateRowColor: 'FFE2EFDA' }, // Light green
+  WeryfikacjaVAT: { headerColor: 'FF00B050', rowColor: WHITE_COLOR, alternateRowColor: 'FFD9EAD3' }, // Green
+  DaneJpkZakupy: { headerColor: 'FFFFC000', rowColor: WHITE_COLOR, alternateRowColor: 'FFFFF2CC' }, // Yellow
+  ErrorCheck: { headerColor: 'FF9E9E9E', rowColor: WHITE_COLOR, alternateRowColor: 'FFEEEEEE' }, // Gray
+} as const;
+
 @Injectable({
   providedIn: 'root',
 })
 export class ExcelStylesService {
-  
-  // Colors for each sheet
-  private sheetColors: { [key: string]: { headerColor: string; rowColor: string; alternateRowColor: string } } = {
-    MAPZ: { headerColor: 'FF4472C4', rowColor: WHITE_COLOR, alternateRowColor: 'FFD9E1F2' }, // Regular blue 
-    WNPZ: { headerColor: 'FF29B6F6', rowColor: WHITE_COLOR, alternateRowColor: 'FFE1F5FE' }, // Light blue 
-    PZN: { headerColor: 'FFEC407A', rowColor: WHITE_COLOR, alternateRowColor: 'FFFCE4EC' }, // Pink 
-    RejZ: { headerColor: 'FF92D050', rowColor: WHITE_COLOR, alternateRowColor: 'FFE2EFDA' }, // Light green
-    WeryfikacjaVAT: { headerColor: 'FF00B050', rowColor: WHITE_COLOR, alternateRowColor: 'FFD9EAD3' }, // Green
-    DaneJpkZakupy: { headerColor: 'FFFFC000', rowColor: WHITE_COLOR, alternateRowColor: 'FFFFF2CC' }, // Yellow
-    ErrorCheck: { headerColor: 'FF9E9E9E', rowColor: WHITE_COLOR, alternateRowColor: 'FFEEEEEE' }, // Gray
-  };
 
   public applyConditionalFormatting(ws: XLSX.WorkSheet, numRows: number, sheetName: string): void {
     const applyCellStyle = (cell: XLSX.CellObject, fillColor: string) => {
@@ -69,7 +68,7 @@ export class ExcelStylesService {
 
   public applyRowStyles(worksheet: XLSX.WorkSheet, numRows: number, sheetName: string): void {
     const columnCount = worksheet['!cols']?.length || 0; //number of columns in a given sheet
-    const colors = this.sheetColors[sheetName] || this.sheetColors['default'];
+    const colors = SHEET_COLORS[sheetName] || WHITE_COLOR;
     const rowColor = colors.rowColor;
     const alternateRowColor = colors.alternateRowColor;
 
@@ -97,7 +96,7 @@ export class ExcelStylesService {
   }
 
   public applyHeaderStyles(worksheet: XLSX.WorkSheet, columnCount: number, sheetName: string): void {
-    const colors = this.sheetColors[sheetName] || this.sheetColors['default'];
+    const colors = SHEET_COLORS[sheetName] || WHITE_COLOR;
     const headerColor = colors.headerColor;
     const fontColor = WHITE_COLOR;
 
