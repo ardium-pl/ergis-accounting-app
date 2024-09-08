@@ -6,10 +6,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ButtonComponent, FileDropZoneComponent } from '@components';
+import { GenerateExcelService } from '@services/excel/generate-excel.service';
 import { JpkService } from '@services/jpk';
 import { JpkChooseTypeDialogComponent } from 'src/app/components/jpk-choose-type-dialog/jpk-choose-type-dialog.component';
 import { JpkFileComponent } from 'src/app/components/jpk-file/jpk-file.component';
-import { GenerateExcelService } from '@services/excel/generate-excel.service';
 
 
 @Component({
@@ -51,11 +51,7 @@ export class JpkPage {
 
   // jeśli wszystkie pliki przeszły walidacje i się wyparsowały po naciśnięciu generuj z danych tworzony jest plik excell
   onGenerateButtonClick() {
-    console.log('Generating excel file');
-    console.log('Parsed RejZ Data:', this.jpkService.rejzData);
-    console.log('Prepared VAT Verification Data:', this.jpkService.vatVerificationData);
     if (!this.jpkService.areAllFilesOK()) {
-      console.log("Not all files are ready for generation.");
       return;
     }
     const data = {

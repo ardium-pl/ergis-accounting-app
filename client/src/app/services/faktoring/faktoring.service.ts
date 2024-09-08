@@ -113,7 +113,6 @@ export class FaktoringService {
 
   public processData() {
     const fromPrn = this._deleteSameDocumentTransactions(this._mapPrnObjectsToFaktoringObjects(this._prnArray()));
-    console.table(fromPrn);
     const pastEntries = this._csvArray();
 
     let positives: FaktoringObject[] = [];
@@ -242,7 +241,6 @@ export class FaktoringService {
     faktoringMode: FaktoringMode
   ): [FinalFaktoringObject[], LeftOverObject[]] {
     const corrections = [...negatives, ...positives].filter(v => v.korekta);
-    console.log(corrections);
     negatives = negatives.filter(v => !v.korekta);
     positives = positives.filter(v => !v.korekta);
     //handle no negatives

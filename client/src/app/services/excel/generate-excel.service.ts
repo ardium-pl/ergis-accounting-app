@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx-js-style';
-import { wnpzObject, pznObject, mapzObject, readyVerifRecord } from '../jpk/jpk.types';
+import { mapzObject, pznObject, readyVerifRecord, wnpzObject } from '../jpk/jpk.types';
 
 // deklaracje typów do przeniesienia do pliku types
 type CellValue = string | number | { f: string };
@@ -113,7 +113,6 @@ export class GenerateExcelService {
 
     // Dodanie arkusza dane jpk zakupy
     const xmlData = this.addFormulasToXmlData(data.xml); // Dodanie formuł do danych XML
-    console.log(xmlData);
     if (xmlData && xmlData.length > 0) {
       const xmlSheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
       XLSX.utils.sheet_add_aoa(xmlSheet, [this.headers.daneJpkZakupy], { origin: 'A1' });
