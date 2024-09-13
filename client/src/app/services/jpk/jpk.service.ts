@@ -1,16 +1,12 @@
-import { Injectable, computed, importProvidersFrom, inject, signal } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 import { Tuple, sleep } from '@utils';
-import { parseStringPromise } from 'xml2js';
+import { parseString, processors } from 'xml2js';
 import { ExcelService } from '../excel/excel.service';
 import { FaktoringService } from '../faktoring/faktoring.service';
-import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
-import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
-import { parseString, processors } from 'xml2js';
-import { xmlObject, xmlRecord, readyVerifRecord, csvVerificationRecord, rejzObject, rejzPrnData, pznPrnData, wnpzPrnData, wnpzObject, pznObject, mapzPrnData, mapzObject } from './jpk.types';
 import { WeirdPrnReaderService } from '../weird-prn-reader/weird-prn-reader.service';
-import { VatItem, VatSummary } from '@services/weird-prn-reader/vat-item';
-import { PZNSubitem } from '@services/weird-prn-reader/pzn';
-import { PZItem } from '@services/weird-prn-reader/pz-item';
+import { JpkFile, JpkFileState, JpkFileType } from './jpk-file';
+import { csvVerificationRecord, mapzObject, mapzPrnData, pznObject, pznPrnData, readyVerifRecord, rejzObject, rejzPrnData, wnpzObject, wnpzPrnData, xmlRecord } from './jpk.types';
+import { MAPZValidationPatterns, PZNValidationPatterns, RejZValidationPatterns, WNPZValidationPatterns } from './validation-patterns';
 
 export const JpkFileName = {
   XML: 'Plik JPK_VAT',
@@ -126,9 +122,7 @@ export class JpkService {
         validation = this._validateXmlFile(fileContent);
         if (!validation) {
           const xmlObject = this.readAsXml(fileContent);
-          console.log(xmlObject);
           this._xmlData = this._parseXmlData(xmlObject)
-          console.log(this._xmlData);
 
         }
         fileIndex = 0;
@@ -138,9 +132,7 @@ export class JpkService {
         if (!validation) {
           const csvData = this.excelService.readAsCsv<keyof csvVerificationRecord>(fileContent);
           const csvObjects = csvData.filter(this._isCsvVerifRecord);
-          console.log(csvObjects)
           this._parseVatVerificationData(csvObjects);
-          console.log(this._vatVerificationData)
         }
         fileIndex = 1;
         break;
@@ -148,9 +140,7 @@ export class JpkService {
         validation = this._validateRejZFile(fileContent);
         if (!validation) {
           const rejzObjects = this.prnReaderService.readRejZ(fileContent);
-          console.log(rejzObjects)
           this._parseRejzData(rejzObjects);
-          console.log(this._rejzData)
         }
         fileIndex = 2;
         break;
@@ -158,9 +148,7 @@ export class JpkService {
         validation = this._validatePZNFile(fileContent);
         if (!validation) {
           const pznObjects = this.prnReaderService.readPZN(fileContent);
-          console.log(pznObjects);
           this._parsePznData(pznObjects)
-          console.log(this._pznData)
         }
         fileIndex = 3;
         break;
@@ -168,9 +156,7 @@ export class JpkService {
         validation = this._validateWNPZFile(fileContent);
         if (!validation) {
           const wnpzObjects = this.prnReaderService.readWNPZ(fileContent);
-          console.log(wnpzObjects);
           this._parseWnpzData(wnpzObjects)
-          console.log(this._wnpzData)
         }
         fileIndex = 4;
         break;
@@ -178,9 +164,7 @@ export class JpkService {
         validation = this._validateMAPZFile(fileContent);
         if (!validation) {
           const mapzObjects = this.prnReaderService.readMAPZ(fileContent);
-          console.log(mapzObjects);
           this._parseMapzData(mapzObjects)
-          console.log(this._mapzData)
         }
         fileIndex = 5;
         break;
@@ -304,7 +288,6 @@ export class JpkService {
         throw new Error(`Error parsing XML: ${err.message}`);
       }
       result = res;
-      console.log(result);
     });
 
     return result;
