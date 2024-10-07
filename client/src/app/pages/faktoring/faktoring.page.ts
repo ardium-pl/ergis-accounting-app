@@ -222,14 +222,53 @@ export class FaktoringPage implements AfterViewInit, OnDestroy {
     }
   }
 
-    readonly tableData = signal<FinalFaktoringObject[] | null>(null);
-    private readonly _leftovers = signal<LeftOverObject[] | null>(null);
-    readonly leftoversCount = signal<number | null>(null);
+  readonly tableData = signal<FinalFaktoringObject[] | null>(null);
+  private readonly _leftovers = signal<LeftOverObject[] | null>(null);
+  readonly leftoversCount = signal<number | null>(null);
 
   downloadLeftovers(): void {
     const leftovers = this._leftovers();
     if (!leftovers) return;
-    const csvData = this.excelService.jsonToCsv(leftovers);
+
+    console.log(
+      leftovers,
+      leftovers.map(v => ({
+        referencjaKG: v.referencjaKG,
+        naDzien: v.naDzien,
+        kwotaWWalucie: v.kwotaWWalucie,
+        kwotaWZl: v.kwotaWZl,
+        konto: v.konto,
+        subkonto: v.subkonto,
+        mpk: v.mpk,
+        document: v.document,
+        korekta: v.korekta,
+      }))
+    );
+    const leftoversUnwrapped = leftovers.flatMap(v => [
+      {
+        referencjaKG: v.referencjaKG,
+        naDzien: v.naDzien,
+        kwotaWWalucie: v.kwotaWWalucie,
+        kwotaWZl: v.kwotaWZl,
+        konto: v.konto,
+        subkonto: v.subkonto,
+        mpk: v.mpk,
+        korekta: v.korekta,
+      },
+      ...v.corrections.map(v => ({
+        referencjaKG: v.referencjaKG,
+        naDzien: v.naDzien,
+        kwotaWWalucie: v.kwotaWWalucie,
+        kwotaWZl: v.kwotaWZl,
+        konto: v.konto,
+        subkonto: v.subkonto,
+        mpk: v.mpk,
+        korekta: v.korekta,
+      })),
+    ]);
+    console.table(leftoversUnwrapped);
+
+    const csvData = this.excelService.jsonToCsv(leftoversUnwrapped);
     const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
 
     this.fileSystem.saveAs(blob, {
