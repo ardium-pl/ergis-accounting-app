@@ -155,7 +155,7 @@ export class FaktoringService {
   }
 
   private _mapPrnObjectsToFaktoringObjects(rawObjects: PrnObject[]): FaktoringObject[] {
-    return rawObjects.map(this._mapRawPrnObject).filter(obj => !obj.korekta && obj.kwotaWWalucie != 0);
+    return rawObjects.map(this._mapRawPrnObject);
   }
 
   private _deleteSameDocumentTransactions(faktoringObjects: FaktoringObject[]): FaktoringObject[] {
@@ -254,8 +254,6 @@ export class FaktoringService {
       kwotaWZl: -v.kwotaWZl,
     }));
 
-    console.table(negativesArray)
-    console.table(positivesArray)
     // get the first
     const positives = new SkippingIterator(positivesArray, v => v.korekta);
     const negatives = new SkippingIterator(negativesArray, v => v.korekta);
@@ -268,18 +266,7 @@ export class FaktoringService {
     const allCurrencyCorrections: FinalFaktoringObject[] = [];
     let leftoversFlag: LeftoversFlag = LeftoversFlag.NoneLeft;
 
-    let i = 0;
     while ((positives.hasNext() || !isNaN(positiveAmount)) && (negatives.hasNext() || !isNaN(negativeAmount))) {
-      i++;
-      console.log(
-        negativeObject?.referencjaKG,
-        positiveObject?.referencjaKG,
-        negativeAmount,
-        positiveAmount,
-        negatives.remaining().length,
-        positives.remaining().length,
-        i
-      );
       const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
       const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
 
