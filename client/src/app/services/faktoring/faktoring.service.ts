@@ -1,6 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { CsvObject, ExcelService } from '@services/excel';
 import { PrnObject } from '@services/prn-reader';
+import { roundToPrecision } from 'more-rounding';
+import { SkippingIterator } from 'src/app/utils/skipping-iterator';
 import { parseNumber, parseYesNo } from './../../utils/helpers';
 import { PrnReaderService } from './../prn-reader/prn-reader.service';
 import { FaktoringDetails, FaktoringMode, FaktoringObject, FinalFaktoringObject, LeftOverObject, LeftoversFlag } from './faktoring.types';
@@ -153,7 +155,7 @@ export class FaktoringService {
   }
 
   private _mapPrnObjectsToFaktoringObjects(rawObjects: PrnObject[]): FaktoringObject[] {
-    return rawObjects.map(this._mapRawPrnObject).filter(obj => obj.kwotaWWalucie != 0);
+    return rawObjects.map(this._mapRawPrnObject);
   }
 
   private _deleteSameDocumentTransactions(faktoringObjects: FaktoringObject[]): FaktoringObject[] {
@@ -210,7 +212,7 @@ export class FaktoringService {
       naDzien: rawObject['NaDzie'] ?? rawObject['NaDzien'], //The polish character ń is usually removed
       kwotaWWalucie: parseNumber(rawObject['KwotaWWalucie']),
       kwotaWZl: parseNumber(rawObject['Kwota']),
-      korekta: parseYesNo(rawObject['Kor']),
+      korekta: parseYesNo(rawObject['Kor']) || parseNumber(rawObject['KwotaWWalucie']) === 0,
       konto: rawObject['Konto'],
       subkonto: rawObject['Subkonto'],
       mpk: rawObject['MPK'],
@@ -236,28 +238,27 @@ export class FaktoringService {
   }
 
   private _processData(
-    positives: FaktoringObject[],
-    negatives: FaktoringObject[],
+    positivesArray: FaktoringObject[],
+    negativesArray: FaktoringObject[],
     faktoringMode: FaktoringMode
   ): [FinalFaktoringObject[], LeftOverObject[]] {
-    const corrections = [...negatives, ...positives].filter(v => v.korekta);
-    negatives = negatives.filter(v => !v.korekta);
-    positives = positives.filter(v => !v.korekta);
     //handle no negatives
-    if (negatives.length == 0) return [[], positives];
+    if (negativesArray.length == 0) return [[], positivesArray];
     //handle no positives
-    if (positives.length == 0) return [[], negatives];
+    if (positivesArray.length == 0) return [[], negativesArray];
 
     // make negative entries positive for easier logic
-    negatives = negatives.map(v => ({
+    negativesArray = negativesArray.map(v => ({
       ...v,
       kwotaWWalucie: -v.kwotaWWalucie,
       kwotaWZl: -v.kwotaWZl,
     }));
 
     // get the first
-    let positiveObject = positives.shift()!;
-    let negativeObject = negatives.shift()!;
+    const positives = new SkippingIterator(positivesArray, v => v.korekta);
+    const negatives = new SkippingIterator(negativesArray, v => v.korekta);
+    let positiveObject = positives.next().value;
+    let negativeObject = negatives.next().value;
 
     let positiveAmount = positiveObject?.kwotaWWalucie;
     let negativeAmount = negativeObject.kwotaWWalucie;
@@ -265,13 +266,13 @@ export class FaktoringService {
     const allCurrencyCorrections: FinalFaktoringObject[] = [];
     let leftoversFlag: LeftoversFlag = LeftoversFlag.NoneLeft;
 
-    while ((positives.length > 0 || !isNaN(positiveAmount)) && (negatives.length > 0 || !isNaN(negativeAmount))) {
-      const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
+    while ((positives.hasNext() || !isNaN(positiveAmount)) && (negatives.hasNext() || !isNaN(negativeAmount))) {
       const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
+      const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
 
       //const positiveDate = this.getReferencesDate(positiveObject.referencjaKG);
-      const positiveDate = this.getReferencesDate(positiveObject.naDzien);
-      const negativeDate = this.getReferencesDate(negativeObject.naDzien);
+      const positiveDate = this._getReferencesDate(positiveObject.naDzien);
+      const negativeDate = this._getReferencesDate(negativeObject.naDzien);
 
       if (positiveDate > negativeDate) {
         faktoringMode = FaktoringMode.Positive;
@@ -283,7 +284,9 @@ export class FaktoringService {
 
         if (positiveObjectIndex && negativeObjectIndex && positiveObjectIndex > negativeObjectIndex) {
           faktoringMode = FaktoringMode.Positive;
-        } else faktoringMode = FaktoringMode.Negative;
+        } else {
+          faktoringMode = FaktoringMode.Negative;
+        }
       }
 
       const referencjaKG = faktoringMode == FaktoringMode.Positive ? positiveObject.referencjaKG : negativeObject.referencjaKG; //This is the line that I have to modify
@@ -291,10 +294,9 @@ export class FaktoringService {
       const subkonto = faktoringMode == FaktoringMode.Positive ? positiveObject.subkonto : negativeObject.subkonto;
       const mpk = faktoringMode == FaktoringMode.Positive ? positiveObject.mpk : negativeObject.mpk;
 
-      // get the valid correction amount
       let correctionAmount: number;
 
-      // for validation purpase
+      // for validation purposes
       const lookUpPositiveAmount: number = positiveAmount;
       const lookUpNegativeAmount: number = -negativeAmount;
       const lookUpPositiveReference: string = positiveObject.referencjaKG;
@@ -304,8 +306,9 @@ export class FaktoringService {
         // negative is the valid correction amount - remove one entry and subtract from the positive total
         correctionAmount = negativeAmount;
         positiveAmount -= negativeAmount;
+        positiveAmount = roundToPrecision(positiveAmount, 5);
 
-        negativeObject = negatives.shift()!;
+        negativeObject = negatives.next().value;
         negativeAmount = negativeObject?.kwotaWWalucie ?? NaN;
 
         leftoversFlag = LeftoversFlag.Positive;
@@ -313,8 +316,9 @@ export class FaktoringService {
         // positive is the valid correction amount - remove one entry and subtract from the negative total
         correctionAmount = positiveAmount;
         negativeAmount -= positiveAmount;
+        negativeAmount = roundToPrecision(negativeAmount, 5);
 
-        positiveObject = positives.shift()!;
+        positiveObject = positives.next().value;
         positiveAmount = positiveObject?.kwotaWWalucie ?? NaN;
 
         leftoversFlag = LeftoversFlag.Negative;
@@ -322,10 +326,10 @@ export class FaktoringService {
         // both types are the valid correction amounts - remove one entry from both and set new totals
         correctionAmount = positiveAmount;
 
-        positiveObject = positives.shift()!;
+        positiveObject = positives.next().value;
         positiveAmount = positiveObject?.kwotaWWalucie ?? NaN;
-
-        negativeObject = negatives.shift()!;
+        
+        negativeObject = negatives.next().value;
         negativeAmount = negativeObject?.kwotaWWalucie ?? NaN;
 
         leftoversFlag = LeftoversFlag.NoneLeft;
@@ -354,18 +358,16 @@ export class FaktoringService {
     }
 
     // determine which type of objects to return
-    if (leftoversFlag == LeftoversFlag.Negative || (leftoversFlag == LeftoversFlag.NoneLeft && negativeAmount)) {
+    if (leftoversFlag === LeftoversFlag.Negative || (leftoversFlag === LeftoversFlag.NoneLeft && negativeAmount)) {
       // make all negative entries negative again
-      negatives = negatives.map(v => ({
-        ...v,
-        kwotaWWalucie: -v.kwotaWWalucie,
-        kwotaWZl: -v.kwotaWZl,
-      }));
-
       const negativeExchangeRate = negativeObject.kwotaWZl / negativeObject.kwotaWWalucie;
       const leftOverNegatives: LeftOverObject[] = this._retrieveUnusedElement(
         -negativeAmount,
-        [...negatives, ...corrections],
+        negatives.remaining(false).map(v => ({
+          ...v,
+          kwotaWWalucie: -v.kwotaWWalucie,
+          kwotaWZl: -v.kwotaWZl,
+        })),
         negativeExchangeRate,
         negativeObject.referencjaKG,
         negativeObject.naDzien,
@@ -376,11 +378,11 @@ export class FaktoringService {
 
       return [allCurrencyCorrections, leftOverNegatives];
     }
-    if (leftoversFlag == LeftoversFlag.Positive || (leftoversFlag == LeftoversFlag.NoneLeft && positiveAmount)) {
+    if (leftoversFlag === LeftoversFlag.Positive || (leftoversFlag === LeftoversFlag.NoneLeft && positiveAmount)) {
       const positiveExchangeRate = positiveObject.kwotaWZl / positiveObject.kwotaWWalucie;
       const leftOverPositives: LeftOverObject[] = this._retrieveUnusedElement(
         positiveAmount,
-        [...positives, ...corrections],
+        positives.remaining(false),
         positiveExchangeRate,
         positiveObject.referencjaKG,
         positiveObject.naDzien,
@@ -393,16 +395,15 @@ export class FaktoringService {
     return [allCurrencyCorrections, []];
   }
 
-  private getReferencesDate(referenceNumber: string) {
+  private _getReferencesDate(referenceNumber: string) {
     //TODO: Add an error message visible to the user
     if (referenceNumber.length < 8) {
       throw new Error(`Invalid reference number format at ${referenceNumber}`);
     }
 
-    const parts = referenceNumber.split('/');
-    const year = '20' + parts[0];
-    const month = parts[1];
-    const day = parts[2];
+    const year = '20' + referenceNumber.substring(0, 2);
+    const month = referenceNumber.substring(3, 5);
+    const day = referenceNumber.substring(6, 8);
 
     const date = new Date(`${year}-${month}-${day}`);
     if (isNaN(date.getTime())) {

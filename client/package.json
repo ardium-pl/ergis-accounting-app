@@ -30,6 +30,7 @@
     "dotenv": "^16.3.1",
     "exceljs": "^4.4.0",
     "marked": "^9.0.0",
+    "more-rounding": "^4.2.2",
     "ngx-markdown": "^18.0.0",
     "ngxtension": "^2.0.0",
     "pdfjs-dist": "^4.0.379",
