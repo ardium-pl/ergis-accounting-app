@@ -12,6 +12,7 @@ export class PrnReaderService {
         const noHeaders = this._filterOutHeadersAndReverse(lines);
         return this._linesToPrnObjects(noHeaders);
     }
+
     readPrnHeaders(data: string): string[] {
         const lines = this._filterOnlyDataRows(data);
         lines.reverse();
@@ -19,6 +20,7 @@ export class PrnReaderService {
         const widths = this._getWidths(lines);
         return this._splitSingleLine(headersLine, widths);
     }
+
     private _filterOnlyDataRows(data: string): string[] {
         const lines = data.split('\n');
         const filtered = lines
@@ -26,6 +28,7 @@ export class PrnReaderService {
             .map((v) => v.trimStart());
         return filtered;
     }
+
     private _filterOutHeadersAndReverse(lines: string[]): string[] {
         let wasLastLineHeaderDivider = false;
         return [...lines].reverse().filter((line, i) => {
@@ -41,12 +44,14 @@ export class PrnReaderService {
             return true;
         });
     }
+
     private _getWidths(lines: string[]): number[] {
         return lines
             .pop()!
             .split(/\s/)
             .map(v => v.length);
     }
+
     private _linesToPrnObjects(lines: string[]): PrnObject[] {
         const headersLine = lines.pop()!;
         const widths = this._getWidths(lines);
@@ -65,8 +70,10 @@ export class PrnReaderService {
 
             for (let i = 0; i < line.length; i++) {
                 let header = headers[i];
-                while (header in resultObject) header = header + '_2'
-                const data = line[i];
+                while (header in resultObject) header = header + '_2';
+                
+                // Swap dots and commas in the data before assigning it
+                const data = this._swapDotAndComma(line[i]);
                 resultObject[header] = data;
             }
             return resultObject;
@@ -74,24 +81,30 @@ export class PrnReaderService {
 
         return objects;
     }
+
     private _splitSingleLine(line: string, widths: number[]): string[] {
         const items: string[] = [];
 
         let cumulativeWidth = 0;
         for (const width of widths) {
-            items.push(
-                line.substring(cumulativeWidth, cumulativeWidth + width).trim()
-            );
+            let item = line.substring(cumulativeWidth, cumulativeWidth + width).trim();
+            item = this._swapDotAndComma(item); // Swap dots and commas
+            items.push(item);
             cumulativeWidth += width + 1;
         }
 
         return items;
     }
+
     private _mapHeaderName(name: string): string {
         return name
             .split(' ')
             .map((v) => v.charAt(0).toUpperCase() + v.slice(1))
             .join('')
             .replace(/[^a-ząćęłńóśżź_]/gi, '');
+    }
+
+    private _swapDotAndComma(value: string): string {
+        return value.replace(/[.,]/g, (match) => (match === '.' ? ',' : '.'));
     }
 }
